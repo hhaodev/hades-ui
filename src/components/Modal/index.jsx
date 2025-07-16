@@ -17,6 +17,9 @@ document.addEventListener(
 );
 
 function getScrollbarWidth() {
+  const hasScrollbar =
+    document.documentElement.scrollHeight > window.innerHeight;
+  if (!hasScrollbar) return 0;
   const scrollDiv = document.createElement("div");
   scrollDiv.style.width = "100px";
   scrollDiv.style.height = "100px";
