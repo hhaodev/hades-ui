@@ -35,6 +35,7 @@ export default function Dropdown({
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [measureReady, setMeasureReady] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [placement, setPlacement] = useState("bottom");
   const [dropdownWidth, setDropdownWidth] = useState(undefined);
@@ -51,8 +52,7 @@ export default function Dropdown({
 
   const show = () => {
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-    setShouldRender(true);
-    requestAnimationFrame(() => setOpen(true));
+    setMeasureReady(true);
   };
 
   const hide = () => {
@@ -127,20 +127,31 @@ export default function Dropdown({
   };
 
   useLayoutEffect(() => {
-    if (shouldRender) {
+    if (measureReady) {
       updatePosition();
+      requestAnimationFrame(() => {
+        setShouldRender(true);
+        requestAnimationFrame(() => setOpen(true));
+      });
+      setMeasureReady(false);
     }
-  }, [shouldRender]);
+  }, [measureReady]);
 
   useEffect(() => {
     if (!open) return;
     const handler = () => updatePosition();
-    const hidePopup = () => hide();
-    window.addEventListener("resize", hidePopup);
+    const onResize = () => {
+      let timeout;
+      timeout = setTimeout(() => {
+        requestAnimationFrame(updatePosition);
+      });
+      return () => clearTimeout(timeout);
+    };
+    window.addEventListener("resize", onResize);
     window.addEventListener("scroll", handler, true);
     return () => {
-      window.removeEventListener("resize", hidePopup);
-      window.removeEventListener("scroll", handler, true);
+      window.removeEventListener("scroll", onResize, true);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
@@ -178,6 +189,33 @@ export default function Dropdown({
         {children}
       </Stack>
 
+      {measureReady && (
+        <DropdownPortal>
+          <Stack
+            ref={dropdownRef}
+            style={{
+              position: "absolute",
+              top: -9999,
+              left: -9999,
+              visibility: "hidden",
+              pointerEvents: "none",
+            }}
+          >
+            {popupRender ? (
+              popupRender()
+            ) : menu.length > 0 ? (
+              <DropdownMenu>
+                {menu.map((i, idx) => (
+                  <DropdownItem key={idx} onClick={i?.onClick}>
+                    {i?.text}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            ) : null}
+          </Stack>
+        </DropdownPortal>
+      )}
+
       {shouldRender && (
         <DropdownPortal>
           <Stack
@@ -213,15 +251,13 @@ export default function Dropdown({
               popupRender()
             ) : menu.length > 0 ? (
               <DropdownMenu>
-                {menu?.map((i, idx) => (
+                {menu.map((i, idx) => (
                   <DropdownItem key={idx} onClick={i?.onClick}>
                     {i?.text}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
-            ) : (
-              <React.Fragment />
-            )}
+            ) : null}
           </Stack>
         </DropdownPortal>
       )}
