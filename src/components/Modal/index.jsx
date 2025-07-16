@@ -16,6 +16,19 @@ document.addEventListener(
   true
 );
 
+function getScrollbarWidth() {
+  const scrollDiv = document.createElement("div");
+  scrollDiv.style.width = "100px";
+  scrollDiv.style.height = "100px";
+  scrollDiv.style.overflow = "scroll";
+  scrollDiv.style.position = "absolute";
+  scrollDiv.style.top = "-9999px";
+  document.body.appendChild(scrollDiv);
+  const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+  document.body.removeChild(scrollDiv);
+  return scrollbarWidth;
+}
+
 export default function Modal({ title, buttons, open, onClose, children }) {
   const [active, setActive] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -24,10 +37,16 @@ export default function Modal({ title, buttons, open, onClose, children }) {
   const modalRef = useRef(null);
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
     if (open) {
       setActive(true);
       setClosing(false);
-
+      const scrollbarWidth = getScrollbarWidth();
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      document.body.style.overflow = "hidden";
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (mousePosition && modalRef.current) {
@@ -45,6 +64,11 @@ export default function Modal({ title, buttons, open, onClose, children }) {
       setVisible(false);
       setClosing(true);
     }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
   }, [open]);
 
   const handleAnimationEnd = () => {
@@ -101,11 +125,7 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         <Stack className="modal-footer">
           {(
             buttons ?? [
-              <Button
-                type="default"
-                key={"close-button-modal"}
-                onClick={onClose}
-              >
+              <Button type="default" key="close-button-modal" onClick={onClose}>
                 Close
               </Button>,
             ]
