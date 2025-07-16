@@ -24,8 +24,9 @@ function App() {
         gap: 8,
       }}
     >
+      {/* theme region */}
       <Stack direction="row">
-        <span>Theme</span>: {theme}
+        <span>THEME</span>: {theme.toUpperCase()}
       </Stack>
       <Stack
         style={{
@@ -41,7 +42,10 @@ function App() {
         </Button>
         <Button onClick={() => setTheme("system")}>System</Button>
       </Stack>
-      <Stack>Button</Stack>
+      {/* end theme region */}
+
+      {/* button region */}
+      <Stack>BUTTON</Stack>
       <Stack
         style={{
           display: "flex",
@@ -58,21 +62,10 @@ function App() {
           <Button disabled>disabled</Button>
         </OverFlow>
       </Stack>
-      <Stack>horizontal overflow</Stack>
-      <Stack>
-        <ResizableBox width={500}>
-          <OverFlow>
-            <Button type="default">default</Button>
-            <Button type="primary">primary</Button>
-            <Button type="link">link</Button>
-            <Button type="text">text</Button>
-            <Button type="dashed">dashed</Button>
-            <Button loading>loading</Button>
-            <Button disabled>disabled</Button>
-          </OverFlow>
-        </ResizableBox>
-      </Stack>
-      <Stack>vertical overflow</Stack>
+      {/* end button region */}
+
+      {/* overflow region */}
+      <Stack>VERTICAL OVERFLOW</Stack>
       <Stack>
         <ResizableBox width={50}>
           <OverFlow mode="vertical">
@@ -86,9 +79,25 @@ function App() {
           </OverFlow>
         </ResizableBox>
       </Stack>
-
+      <Stack>HORIZONTAL OVERFLOW</Stack>
       <Stack>
-        <Stack>dropdown</Stack>
+        <ResizableBox width={500}>
+          <OverFlow>
+            <Button type="default">default</Button>
+            <Button type="primary">primary</Button>
+            <Button type="link">link</Button>
+            <Button type="text">text</Button>
+            <Button type="dashed">dashed</Button>
+            <Button loading>loading</Button>
+            <Button disabled>disabled</Button>
+          </OverFlow>
+        </ResizableBox>
+      </Stack>
+      {/* end overflow region */}
+
+      {/* dropdown region */}
+      <Stack>DROPDOWN</Stack>
+      <Stack>
         <Stack
           style={{
             display: "flex",
@@ -99,32 +108,10 @@ function App() {
             open={open}
             onOpenChange={setOpen}
             popupRender={() => (
-              <Dropdown.Menu>
-                <Dropdown.Item onClick={() => console.log("Action 1")}>
-                  <Stack>Action 1</Stack>
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 2")}>
-                  Action 2
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 3")}>
-                  Action 3
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 4")}>
-                  Action 4
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 5")}>
-                  Action 5
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 6")}>
-                  Action 6
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => console.log("Action 7")}>
-                  Action 7
-                </Dropdown.Item>
-              </Dropdown.Menu>
+              <Dropdown.Menu>this is custom popup</Dropdown.Menu>
             )}
           >
-            <Button type="default">OpenDropdown</Button>
+            <Button type="default">Open Custom Popup</Button>
           </Dropdown>
           <Dropdown
             open={open2}
@@ -149,20 +136,29 @@ function App() {
               { text: "text5", onClick: () => console.log("text 5") },
             ]}
           >
-            <Button type="default">
-              <EllipsisWithTooltip style={{ maxWidth: 75 }}>
-                Hover me !!!!!!!!
-              </EllipsisWithTooltip>
-            </Button>
+            <Button type="default">Open</Button>
           </Dropdown>
         </Stack>
       </Stack>
-      <Stack>tooltip</Stack>
+      {/* end dropdown region */}
+
+      {/* tooltip region */}
+      <Stack>TOOLTIP</Stack>
       <Stack>
         <Button>
-          <Tooltip title="tooltip">Tooltip</Tooltip>
+          <Tooltip tooltip="Button Tooltip">Button Tooltip</Tooltip>
         </Button>
       </Stack>
+      <Tooltip tooltip="Div Tooltip">
+        <div style={{ textAlign: "center", border: "1px solid red" }}>
+          Div Tooltip
+        </div>
+      </Tooltip>
+      <Tooltip tooltip="Tooltip string">Tooltip string</Tooltip>
+      <EllipsisWithTooltip style={{ maxWidth: 100 }}>
+        Tooltip with ellipsis
+      </EllipsisWithTooltip>
+      {/* end tooltip region */}
     </Stack>
   );
 }

@@ -32,7 +32,7 @@ const EllipsisWithTooltip = forwardRef(
     const isPlainText = typeof children === "string";
 
     return (
-      <Tooltip title={isPlainText && isOverflowing ? children : null}>
+      <Tooltip tooltip={isPlainText && isOverflowing ? children : null}>
         {(tooltipRef, events) => (
           <Stack
             {...rest}

@@ -6,6 +6,7 @@ import React, {
   forwardRef,
   isValidElement,
   cloneElement,
+  Fragment,
 } from "react";
 import { createPortal } from "react-dom";
 import Stack from "../Stack";
@@ -34,7 +35,7 @@ function TooltipPortal({ children }) {
 const Tooltip = forwardRef(
   (
     {
-      title,
+      tooltip,
       children,
       placement = "top",
       offset = 8,
@@ -138,18 +139,34 @@ const Tooltip = forwardRef(
     if (typeof children === "function") {
       triggerNode = children(mergedRef, triggerEvents);
     } else if (isValidElement(children)) {
-      triggerNode = cloneElement(children, {
-        ref: (el) => {
-          mergedRef(el);
-          const childRef = children.ref;
-          if (typeof childRef === "function") childRef(el);
-          else if (childRef) childRef.current = el;
-        },
-        ...triggerEvents,
-      });
+      if (children.type === Fragment) {
+        triggerNode = (
+          <Stack
+            ref={mergedRef}
+            style={{ width: "fit-content" }}
+            {...triggerEvents}
+          >
+            {children}
+          </Stack>
+        );
+      } else {
+        triggerNode = cloneElement(children, {
+          ref: (el) => {
+            mergedRef(el);
+            const childRef = children.ref;
+            if (typeof childRef === "function") childRef(el);
+            else if (childRef) childRef.current = el;
+          },
+          ...triggerEvents,
+        });
+      }
     } else if (typeof children === "string" || typeof children === "number") {
       triggerNode = (
-        <Stack ref={mergedRef} {...triggerEvents}>
+        <Stack
+          style={{ width: "fit-content" }}
+          ref={mergedRef}
+          {...triggerEvents}
+        >
           {children}
         </Stack>
       );
@@ -160,7 +177,7 @@ const Tooltip = forwardRef(
     return (
       <>
         {triggerNode}
-        {shouldRender && title && (
+        {shouldRender && tooltip && (
           <TooltipPortal>
             <Stack
               ref={tooltipRef}
@@ -189,7 +206,7 @@ const Tooltip = forwardRef(
               className={className}
               onClick={(e) => e.stopPropagation()}
             >
-              {title}
+              {tooltip}
             </Stack>
           </TooltipPortal>
         )}
