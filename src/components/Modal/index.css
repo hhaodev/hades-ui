@@ -1,0 +1,104 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    /* -webkit-user-select: none;
+    user-select: none; */
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay.close {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    background: var(--hadesui-bg-modal-color);
+    border-radius: 8px;
+    padding: 16px;
+    min-width: 450px;
+    animation-duration: 0.25s;
+    animation-fill-mode: both;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    min-height: 200px;
+    max-height: 90vh;
+    /* -webkit-user-select: auto;
+    user-select: auto; */
+}
+
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    flex-shrink: 0;
+    padding-bottom: 8px;
+
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 550;
+}
+
+.modal-close-btn {
+    cursor: pointer;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 4px;
+    justify-content: end;
+    flex-shrink: 0;
+    padding-top: 8px;
+}
+
+.modal-body {
+    flex: 1;
+    overflow: auto;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes zoomOut {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+}
+
+.zoom-in {
+    animation-name: zoomIn;
+}
+
+.zoom-out {
+    animation-name: zoomOut;
+}

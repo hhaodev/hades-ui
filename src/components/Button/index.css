@@ -67,8 +67,8 @@
 }
 
 .hds-btn-spinner {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     margin-right: 8px;
     border: 2px solid transparent;
     border-top-color: currentColor;
@@ -94,7 +94,6 @@
     border-radius: inherit;
     animation: hds-btn-wave-shadow 0.4s ease-out;
     pointer-events: none;
-    z-index: 1;
 }
 
 @keyframes hds-btn-wave-shadow {

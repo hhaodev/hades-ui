@@ -1,5 +1,6 @@
 import { forwardRef, useRef, useImperativeHandle } from "react";
 import "./index.css";
+import { cn } from "../../utils";
 
 const Button = forwardRef(
   (
@@ -18,16 +19,6 @@ const Button = forwardRef(
     const isDisabled = disabled || loading;
 
     useImperativeHandle(ref, () => innerRef.current);
-
-    const classes = [
-      "hds-btn",
-      `hds-btn-${type}`,
-      isDisabled ? "hds-btn-disabled" : "",
-      loading ? "hds-btn-loading" : "",
-      className,
-    ]
-      .filter(Boolean)
-      .join(" ");
 
     const handleClick = (e) => {
       const btn = innerRef.current;
@@ -51,7 +42,13 @@ const Button = forwardRef(
     return (
       <button
         ref={innerRef}
-        className={classes}
+        className={cn(
+          "hds-btn",
+          `hds-btn-${type}`,
+          { "hds-btn-disabled": isDisabled },
+          { "hds-btn-loading": loading },
+          className
+        )}
         onClick={isDisabled ? undefined : handleClick}
         disabled={isDisabled}
         {...rest}

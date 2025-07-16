@@ -79,6 +79,7 @@ html.light {
     --hadesui-boxshadow-color: var(--hadesui-gray-5);
     --hadesui-tooltip-color: var(--hadesui-gray-8);
     --hadesui-tooltiptext-color: var(--hadesui-gray-3);
+    --hadesui-bg-modal-color: var(--hadesui-gray-2);
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -90,6 +91,7 @@ html.dark {
     --hadesui-boxshadow-color: var(--hadesui-gray-8);
     --hadesui-tooltip-color: var(--hadesui-gray-5);
     --hadesui-tooltiptext-color: var(--hadesui-gray-10);
+    --hadesui-bg-modal-color: var(--hadesui-gray-9);
 }
 
 /* ===== Global Styles (using tokens) ===== */
@@ -117,4 +119,9 @@ body {
 
 * {
     box-sizing: border-box;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
 }
