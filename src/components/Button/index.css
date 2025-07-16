@@ -1,0 +1,110 @@
+.hds-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: 0.4s ease;
+    height: 34px;
+    line-height: 1;
+    width: fit-content;
+}
+
+.hds-btn-default {
+    background-color: var(--hadesui-bg-color);
+    color: var(--hadesui-text-color);
+    border-color: var(--hadesui-border-color);
+}
+
+.hds-btn-default:hover:not(.hds-btn-disabled) {
+    color: var(--hadesui-blue-6, #1677ff);
+    border-color: var(--hadesui-blue-6, #1677ff);
+}
+
+.hds-btn:active:not(.hds-btn-disabled):not(.hds-btn-link) {
+    filter: brightness(0.85)
+}
+
+.hds-btn-primary {
+    background-color: var(--hadesui-blue-6);
+    color: var(--hadesui-gray-1);
+    border-color: var(--hadesui-blue-6);
+}
+
+.hds-btn-link {
+    background-color: transparent;
+    color: var(--hadesui-blue-6, #1677ff);
+}
+
+.hds-btn-text:hover:not(.hds-btn-disabled) {
+    background-color: var(--hadesui-bg-btn-text, #d9d9d9);
+}
+
+.hds-btn-text {
+    background-color: transparent;
+    color: var(--text-color);
+}
+
+.hds-btn-dashed {
+    background-color: var(--hadesui-bg-color);
+    color: var(--hadesui-text-color);
+    border: 1px dashed var(--hadesui-border-color);
+}
+
+.hds-btn-dashed:hover:not(.hds-btn-disabled) {
+    color: var(--hadesui-blue-6, #1677ff);
+    border-color: var(--hadesui-blue-6, #1677ff);
+}
+
+.hds-btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.hds-btn-spinner {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: hds-spin 1s linear infinite;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+@keyframes hds-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.hds-btn-wave-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    animation: hds-btn-wave-shadow 0.4s ease-out;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes hds-btn-wave-shadow {
+    0% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 var(--hadesui-blue-6, #1677ff);
+    }
+
+    100% {
+        opacity: 0;
+        box-shadow: 0 0 0 4px var(--hadesui-blue-6, #1677ff);
+    }
+}
