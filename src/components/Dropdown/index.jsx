@@ -71,32 +71,58 @@ export default function Dropdown({
 
     const spacing = 8;
     const triggerRect = triggerEl.getBoundingClientRect();
+    const dropdownRect = dropdownEl.getBoundingClientRect();
+
     const scrollX = window.scrollX || window.pageXOffset;
     const scrollY = window.scrollY || window.pageYOffset;
+
+    const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    const dropdownWidth = triggerRect.width;
-    const estimatedDropdownHeight = dropdownEl.scrollHeight || 200;
+    const dropdownWidth = dropdownRect.width || triggerRect.width;
+    const dropdownHeight = dropdownRect.height || 200;
 
+    let top, verticalPlacement;
     const fitsBelow =
-      triggerRect.bottom + spacing + estimatedDropdownHeight <= viewportHeight;
-    const fitsAbove = triggerRect.top - spacing - estimatedDropdownHeight >= 0;
+      triggerRect.bottom + spacing + dropdownHeight <= viewportHeight;
+    const fitsAbove = triggerRect.top - spacing - dropdownHeight >= 0;
 
-    let top;
     if (fitsBelow) {
       top = triggerRect.bottom + spacing + scrollY;
-      setPlacement("bottom");
+      verticalPlacement = "bottom";
     } else if (fitsAbove) {
-      top = triggerRect.top - estimatedDropdownHeight - spacing + scrollY;
-      setPlacement("top");
+      top = triggerRect.top - dropdownHeight - spacing + scrollY;
+      verticalPlacement = "top";
     } else {
-      top = triggerRect.bottom + spacing + scrollY;
-      setPlacement("bottom");
+      top =
+        Math.max(spacing, viewportHeight - dropdownHeight - spacing) + scrollY;
+      verticalPlacement = "bottom";
     }
 
-    let left = triggerRect.left + scrollX;
+    let left, horizontalPlacement;
+    const fitsRight =
+      triggerRect.left + dropdownWidth <= viewportWidth - spacing;
+    const fitsLeft = triggerRect.right - dropdownWidth >= spacing;
 
-    setDropdownWidth(dropdownWidth);
+    if (fitsRight) {
+      left = triggerRect.left + scrollX;
+      horizontalPlacement = "left";
+    } else if (fitsLeft) {
+      left = triggerRect.right - dropdownWidth + scrollX;
+      horizontalPlacement = "right";
+    } else {
+      left = Math.max(
+        spacing,
+        Math.min(
+          triggerRect.left + scrollX,
+          viewportWidth - dropdownWidth - spacing
+        )
+      );
+      horizontalPlacement = "left";
+    }
+
+    setPlacement(`${verticalPlacement}-${horizontalPlacement}`);
+    setDropdownWidth(triggerRect.width);
     setPosition({ top: Math.round(top), left: Math.round(left) });
   };
 
@@ -109,10 +135,11 @@ export default function Dropdown({
   useEffect(() => {
     if (!open) return;
     const handler = () => updatePosition();
-    window.addEventListener("resize", handler);
+    const hidePopup = () => hide();
+    window.addEventListener("resize", hidePopup);
     window.addEventListener("scroll", handler, true);
     return () => {
-      window.removeEventListener("resize", handler);
+      window.removeEventListener("resize", hidePopup);
       window.removeEventListener("scroll", handler, true);
     };
   }, [open]);
@@ -171,7 +198,7 @@ export default function Dropdown({
               pointerEvents: open ? "auto" : "none",
               transform: open
                 ? "translateY(0)"
-                : placement === "bottom"
+                : placement.startsWith("bottom")
                 ? "translateY(-4px)"
                 : "translateY(4px)",
               transition: "opacity 0.2s ease, transform 0.2s ease",

@@ -10,6 +10,27 @@ import React, {
 import { createPortal } from "react-dom";
 import Stack from "../Stack";
 
+function TooltipPortal({ children }) {
+  const portalNodeRef = useRef(null);
+
+  if (!portalNodeRef.current) {
+    const div = document.createElement("div");
+    div.setAttribute("data-tooltip-portal", "true");
+    document.body?.appendChild(div);
+    portalNodeRef.current = div;
+  }
+
+  useEffect(() => {
+    return () => {
+      if (portalNodeRef.current) {
+        document.body?.removeChild(portalNodeRef.current);
+      }
+    };
+  }, []);
+
+  return createPortal(children, portalNodeRef.current);
+}
+
 const Tooltip = forwardRef(
   (
     {
@@ -134,9 +155,8 @@ const Tooltip = forwardRef(
     return (
       <>
         {triggerNode}
-        {shouldRender &&
-          title &&
-          createPortal(
+        {shouldRender && title && (
+          <TooltipPortal>
             <Stack
               ref={tooltipRef}
               onMouseEnter={show}
@@ -165,9 +185,9 @@ const Tooltip = forwardRef(
               onClick={(e) => e.stopPropagation()}
             >
               {title}
-            </Stack>,
-            document.body
-          )}
+            </Stack>
+          </TooltipPortal>
+        )}
       </>
     );
   }
