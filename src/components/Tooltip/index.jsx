@@ -147,9 +147,14 @@ const Tooltip = forwardRef(
         },
         ...triggerEvents,
       });
+    } else if (typeof children === "string" || typeof children === "number") {
+      triggerNode = (
+        <Stack ref={mergedRef} {...triggerEvents}>
+          {children}
+        </Stack>
+      );
     } else {
-      console.warn("[Tooltip] children must be an element or function");
-      return null;
+      triggerNode = children;
     }
 
     return (

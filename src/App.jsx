@@ -159,9 +159,9 @@ function App() {
       </Stack>
       <Stack>tooltip</Stack>
       <Stack>
-        <Tooltip title="tooltip">
-          <Button>hover me</Button>
-        </Tooltip>
+        <Button>
+          <Tooltip title="tooltip">Tooltip</Tooltip>
+        </Button>
       </Stack>
     </Stack>
   );

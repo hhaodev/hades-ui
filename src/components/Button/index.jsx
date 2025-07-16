@@ -57,7 +57,7 @@ const Button = forwardRef(
         {...rest}
       >
         {loading && <span className="hds-btn-spinner" />}
-        <span>{children}</span>
+        {children}
       </button>
     );
   }
