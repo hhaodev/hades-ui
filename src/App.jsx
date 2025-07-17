@@ -13,25 +13,26 @@ import {
   Divider,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
+import { DropdownItem } from "./components/Dropdown/DropdownItem";
 
 const menu = [
   {
-    text: <Stack>text111111111111111111</Stack>,
+    element: <Stack>text111111111111111111</Stack>,
     onClick: () => console.log("text 1"),
   },
   {
-    text: <Stack style={{ color: "red" }}>text2</Stack>,
+    element: <Stack style={{ color: "red" }}>text2</Stack>,
     onClick: () => console.log("text 2"),
   },
   {
-    text: <Stack>text3</Stack>,
+    element: <Stack>text3</Stack>,
     onClick: () => console.log("text 3"),
   },
   {
-    text: <Stack>text4</Stack>,
+    element: <Stack>text4</Stack>,
     onClick: () => console.log("text 4"),
   },
-  { text: "text111111111111111111", onClick: () => console.log("text 5") },
+  { element: "text111111111111111111", onClick: () => console.log("text 5") },
 ];
 
 function App() {
@@ -144,48 +145,56 @@ function App() {
             }}
           >
             <Dropdown
-              placement={"top-left"}
+              placement="top-start"
               open={open2}
               onOpenChange={setOpen2}
               menu={menu}
             >
               <Button type="default">TOP L</Button>
             </Dropdown>
-            <Dropdown placement={"top-center"} menu={menu}>
+            <Dropdown placement="top" menu={menu}>
               <Button type="default">TOP CENTER</Button>
             </Dropdown>
-            <Dropdown placement={"top-right"} menu={menu}>
+            <Dropdown placement="top-end" menu={menu}>
               <Button type="default">TOP R</Button>
             </Dropdown>
-            <Dropdown placement={"bottom-left"} menu={menu}>
+            <Dropdown placement="bottom-start" menu={menu}>
               <Button type="default">BOT L</Button>
             </Dropdown>
-            <Dropdown placement={"bottom-center"} menu={menu}>
+            <Dropdown placement="bottom" menu={menu}>
               <Button type="default">BOT CENTER</Button>
             </Dropdown>
-            <Dropdown placement={"bottom-right"} menu={menu}>
+            <Dropdown placement="bottom-end" menu={menu}>
               <Button type="default">BOT R</Button>
             </Dropdown>
             <Dropdown
+              popupStyles={{
+                maxWidth: "100%",
+              }}
               open={open}
               onOpenChange={setOpen}
               popupRender={() => (
                 <Dropdown.Menu>
-                  <EllipsisWithTooltip>
-                    contentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                  </EllipsisWithTooltip>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
+                  <DropdownItem>
+                    <EllipsisWithTooltip>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </EllipsisWithTooltip>
+                  </DropdownItem>
+                  <DropdownItem row={2}>
+                    <Stack>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </Stack>
+                  </DropdownItem>
                 </Dropdown.Menu>
               )}
+            >
+              <Button type="default">Open Custom Popup</Button>
+            </Dropdown>
+            <Dropdown
+              popupStyles={{
+                maxWidth: "100%",
+              }}
+              menu={<>hehehehehehe</>}
             >
               <Button type="default">Open Custom Popup</Button>
             </Dropdown>
@@ -201,23 +210,36 @@ function App() {
             <Tooltip tooltip="Button Tooltip">Button Tooltip</Tooltip>
           </Button>
         </Stack>
+        <Divider />
         <Tooltip tooltip="Div Tooltip">
           <div style={{ textAlign: "center", border: "1px solid red" }}>
             Div Tooltip
           </div>
         </Tooltip>
-        <Tooltip tooltip="Tooltip string">Tooltip string</Tooltip>
-        <EllipsisWithTooltip style={{ maxWidth: 100 }}>
+        <Divider />
+
+        <Tooltip tooltip="Tooltip string">auto có tooltip</Tooltip>
+        <Divider />
+
+        <EllipsisWithTooltip placement="bottom" style={{ maxWidth: 100 }}>
           <div>Tooltip with ellipsis</div>
         </EllipsisWithTooltip>
-        <EllipsisWithTooltip style={{ maxWidth: 200 }}>
-          Tooltip with ellipsis
+        <Divider />
+
+        <EllipsisWithTooltip style={{ maxWidth: 2000 }}>
+          Đủ chiều rộng. nên sẽ k có tooltip
+        </EllipsisWithTooltip>
+        <Divider />
+
+        <EllipsisWithTooltip row={3}>
+          ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
         </EllipsisWithTooltip>
         {/* end tooltip region */}
         <Divider>TOOLTIP</Divider>
 
         {/* modal region */}
         <Stack>MODAL</Stack>
+
         <Stack
           style={{
             display: "flex",

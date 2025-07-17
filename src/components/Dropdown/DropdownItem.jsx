@@ -1,7 +1,13 @@
-import React from "react";
+import EllipsisWithTooltip from "../EllipsisWithTooltip";
 import Stack from "../Stack";
 
-export const DropdownItem = ({ children, onClick, style, ...rest }) => {
+export const DropdownItem = ({
+  children,
+  onClick,
+  row = 1,
+  style,
+  ...rest
+}) => {
   return (
     <Stack
       role="menuitem"
@@ -25,7 +31,7 @@ export const DropdownItem = ({ children, onClick, style, ...rest }) => {
       }}
       {...rest}
     >
-      {children}
+      <EllipsisWithTooltip row={row}>{children}</EllipsisWithTooltip>
     </Stack>
   );
 };

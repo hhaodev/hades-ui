@@ -4,12 +4,13 @@ import {
   isValidElement,
   useRef,
   useState,
+  useEffect,
 } from "react";
 import Stack from "../Stack";
 import Tooltip from "../Tooltip";
 
 const EllipsisWithTooltip = forwardRef(
-  ({ children, style = {}, ...rest }, ref) => {
+  ({ children, style = {}, placement, row = 1, ...rest }, ref) => {
     const localRef = useRef(null);
 
     const combinedRef = (el) => {
@@ -23,8 +24,21 @@ const EllipsisWithTooltip = forwardRef(
     const checkOverflow = () => {
       const el = localRef.current;
       if (!el) return;
-      setIsOverflowing(el.scrollWidth > el.clientWidth);
+
+      const computed = getComputedStyle(el);
+
+      if (row === 1) {
+        setIsOverflowing(el.scrollWidth > el.clientWidth);
+      } else {
+        const lineHeight = parseFloat(computed.lineHeight);
+        const maxHeight = lineHeight * row;
+        setIsOverflowing(el.scrollHeight > maxHeight + 1);
+      }
     };
+
+    useEffect(() => {
+      checkOverflow();
+    }, [children, row]);
 
     const handleMouseEnter = () => {
       checkOverflow();
@@ -41,8 +55,25 @@ const EllipsisWithTooltip = forwardRef(
       wrappedChild = <span style={{ display: "inline" }}>{children}</span>;
     }
 
+    const multiLineStyle =
+      row === 1
+        ? {
+            whiteSpace: "nowrap",
+          }
+        : {
+            display: "-webkit-box",
+            WebkitLineClamp: row,
+            WebkitBoxOrient: "vertical",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            lineHeight: "20px",
+          };
+
     return (
-      <Tooltip tooltip={isOverflowing ? localRef.current?.textContent : null}>
+      <Tooltip
+        placement={placement}
+        tooltip={isOverflowing ? localRef.current?.textContent : null}
+      >
         {(tooltipRef, events) => (
           <Stack
             {...rest}
@@ -60,9 +91,9 @@ const EllipsisWithTooltip = forwardRef(
             onBlur={events.onBlur}
             style={{
               display: "inline-block",
-              whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              ...multiLineStyle,
               ...style,
             }}
           >

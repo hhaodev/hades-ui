@@ -163,6 +163,10 @@ export default function OverFlow({ children, mode = "horizontal" }) {
                   React.cloneElement(item, {
                     key: i,
                     ...item.props,
+                    style: {
+                      ...item.props?.style,
+                      width: "100%",
+                    },
                     onClick: (...args) => {
                       item.props?.onClick?.(...args);
                       setOpen(false);
