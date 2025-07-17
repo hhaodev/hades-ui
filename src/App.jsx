@@ -14,6 +14,26 @@ import {
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 
+const menu = [
+  {
+    text: <Stack>text1</Stack>,
+    onClick: () => console.log("text 1"),
+  },
+  {
+    text: <Stack style={{ color: "red" }}>text2</Stack>,
+    onClick: () => console.log("text 2"),
+  },
+  {
+    text: <Stack>text3</Stack>,
+    onClick: () => console.log("text 3"),
+  },
+  {
+    text: <Stack>text4</Stack>,
+    onClick: () => console.log("text 4"),
+  },
+  { text: "text5", onClick: () => console.log("text 5") },
+];
+
 function App() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -127,35 +147,37 @@ function App() {
               open={open}
               onOpenChange={setOpen}
               popupRender={() => (
-                <Dropdown.Menu>this is custom popup</Dropdown.Menu>
+                <Dropdown.Menu>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                </Dropdown.Menu>
               )}
             >
               <Button type="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
+              placement={"top-left"}
               open={open2}
               onOpenChange={setOpen2}
-              menu={[
-                {
-                  text: <Stack>text1</Stack>,
-                  onClick: () => console.log("text 1"),
-                },
-                {
-                  text: <Stack style={{ color: "red" }}>text2</Stack>,
-                  onClick: () => console.log("text 2"),
-                },
-                {
-                  text: <Stack>text3</Stack>,
-                  onClick: () => console.log("text 3"),
-                },
-                {
-                  text: <Stack>text4</Stack>,
-                  onClick: () => console.log("text 4"),
-                },
-                { text: "text5", onClick: () => console.log("text 5") },
-              ]}
+              menu={menu}
             >
-              <Button type="default">Open</Button>
+              <Button type="default">TOP L</Button>
+            </Dropdown>
+            <Dropdown placement={"top-center"} menu={menu}>
+              <Button type="default">TOP CENTER</Button>
+            </Dropdown>
+            <Dropdown placement={"top-right"} menu={menu}>
+              <Button type="default">TOP R</Button>
+            </Dropdown>
+            <Dropdown placement={"bottom-left"} menu={menu}>
+              <Button type="default">BOT L</Button>
+            </Dropdown>
+            <Dropdown placement={"bottom-center"} menu={menu}>
+              <Button type="default">BOT CENTER</Button>
+            </Dropdown>
+            <Dropdown placement={"bottom-right"} menu={menu}>
+              <Button type="default">BOT R</Button>
             </Dropdown>
           </Stack>
         </Stack>

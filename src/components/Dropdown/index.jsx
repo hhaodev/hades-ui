@@ -25,6 +25,28 @@ function DropdownPortal({ children }) {
   return createPortal(children, portalNodeRef.current);
 }
 
+const fallbackPlacements = {
+  "bottom-right": ["bottom-right", "bottom-left", "top-right", "top-left"],
+  "bottom-left": ["bottom-left", "bottom-right", "top-left", "top-right"],
+  "top-right": ["top-right", "top-left", "bottom-right", "bottom-left"],
+  "top-left": ["top-left", "top-right", "bottom-left", "bottom-right"],
+  "bottom-center": [
+    "bottom-center",
+    "top-center",
+    "bottom-right",
+    "bottom-left",
+    "top-right",
+    "top-left",
+  ],
+  "top-center": [
+    "top-center",
+    "bottom-center",
+    "top-right",
+    "top-left",
+    "bottom-right",
+    "bottom-left",
+  ],
+};
 export default function Dropdown({
   popupRender,
   menu,
@@ -32,12 +54,13 @@ export default function Dropdown({
   open: controlledOpen,
   onOpenChange,
   popupStyle,
+  placement: customPlacement,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [measureReady, setMeasureReady] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const [placement, setPlacement] = useState("bottom");
+  const [placement, setPlacement] = useState(customPlacement ?? "bottom");
   const [dropdownWidth, setDropdownWidth] = useState(undefined);
 
   const open = controlledOpen ?? uncontrolledOpen;
@@ -82,46 +105,59 @@ export default function Dropdown({
     const dropdownWidth = dropdownRect.width || triggerRect.width;
     const dropdownHeight = dropdownRect.height || 200;
 
-    let top, verticalPlacement;
-    const fitsBelow =
-      triggerRect.bottom + spacing + dropdownHeight <= viewportHeight;
-    const fitsAbove = triggerRect.top - spacing - dropdownHeight >= 0;
+    const tryPlacements = fallbackPlacements[customPlacement] ?? [
+      "bottom-right",
+    ];
 
-    if (fitsBelow) {
-      top = triggerRect.bottom + spacing + scrollY;
-      verticalPlacement = "bottom";
-    } else if (fitsAbove) {
-      top = triggerRect.top - dropdownHeight - spacing + scrollY;
-      verticalPlacement = "top";
-    } else {
-      top =
-        Math.max(spacing, viewportHeight - dropdownHeight - spacing) + scrollY;
-      verticalPlacement = "bottom";
+    let finalPlacement = "bottom-right";
+    let top = 0;
+    let left = 0;
+
+    for (const place of tryPlacements) {
+      const [v, h] = place.split("-");
+
+      const fitsBelow =
+        triggerRect.bottom + spacing + dropdownHeight <= viewportHeight;
+      const fitsAbove = triggerRect.top - spacing - dropdownHeight >= 0;
+
+      let candidateTop = 0;
+      if (v === "bottom" && fitsBelow) {
+        candidateTop = triggerRect.bottom + spacing + scrollY;
+      } else if (v === "top" && fitsAbove) {
+        candidateTop = triggerRect.top - dropdownHeight - spacing + scrollY;
+      } else {
+        continue;
+      }
+
+      let candidateLeft = 0;
+      if (h === "right") {
+        const right =
+          triggerRect.left + dropdownWidth <= viewportWidth - spacing;
+        if (!right) continue;
+        candidateLeft = triggerRect.left + scrollX;
+      } else if (h === "left") {
+        const leftFit = triggerRect.right - dropdownWidth >= spacing;
+        if (!leftFit) continue;
+        candidateLeft = triggerRect.right - dropdownWidth + scrollX;
+      } else if (h === "center") {
+        const centerX =
+          triggerRect.left + triggerRect.width / 2 - dropdownWidth / 2;
+        const fitsCenter =
+          centerX >= spacing &&
+          centerX + dropdownWidth <= viewportWidth - spacing;
+        if (!fitsCenter) continue;
+        candidateLeft = centerX + scrollX;
+      } else {
+        continue;
+      }
+
+      finalPlacement = place;
+      top = candidateTop;
+      left = candidateLeft;
+      break;
     }
 
-    let left, horizontalPlacement;
-    const fitsRight =
-      triggerRect.left + dropdownWidth <= viewportWidth - spacing;
-    const fitsLeft = triggerRect.right - dropdownWidth >= spacing;
-
-    if (fitsRight) {
-      left = triggerRect.left + scrollX;
-      horizontalPlacement = "left";
-    } else if (fitsLeft) {
-      left = triggerRect.right - dropdownWidth + scrollX;
-      horizontalPlacement = "right";
-    } else {
-      left = Math.max(
-        spacing,
-        Math.min(
-          triggerRect.left + scrollX,
-          viewportWidth - dropdownWidth - spacing
-        )
-      );
-      horizontalPlacement = "left";
-    }
-
-    setPlacement(`${verticalPlacement}-${horizontalPlacement}`);
+    setPlacement(finalPlacement);
     setDropdownWidth(triggerRect.width);
     setPosition({ top: Math.round(top), left: Math.round(left) });
   };
@@ -129,6 +165,12 @@ export default function Dropdown({
   useLayoutEffect(() => {
     if (measureReady) {
       updatePosition();
+      const update = () => {
+        let timeout;
+        timeout = setTimeout(() => updatePosition());
+        return () => clearTimeout(timeout);
+      };
+      update();
       requestAnimationFrame(() => {
         setShouldRender(true);
         requestAnimationFrame(() => setOpen(true));
@@ -139,18 +181,16 @@ export default function Dropdown({
 
   useEffect(() => {
     if (!open) return;
-    const handler = () => updatePosition();
+    const onScroll = () => updatePosition();
     const onResize = () => {
       let timeout;
-      timeout = setTimeout(() => {
-        requestAnimationFrame(updatePosition);
-      });
+      timeout = setTimeout(() => updatePosition());
       return () => clearTimeout(timeout);
     };
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onResize);
-    window.addEventListener("scroll", handler, true);
     return () => {
-      window.removeEventListener("scroll", onResize, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onResize);
     };
   }, [open]);
