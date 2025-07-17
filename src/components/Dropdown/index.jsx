@@ -222,8 +222,7 @@ export default function Dropdown({
             ref={dropdownRef}
             style={{
               background: "var(--hadesui-bg-color, white)",
-              border: "1px solid var(--hadesui-border-color, #ccc)",
-              boxShadow: "1px 1px 4px 1px var(--hadesui-boxshadow-color)",
+              boxShadow: "0 4px 16px var(--hadesui-boxshadow-color)",
               borderRadius: 8,
               width: dropdownWidth,
               ...popupStyle,

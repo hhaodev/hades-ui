@@ -6,3 +6,5 @@ export { default as Dropdown } from "./Dropdown";
 export { default as Tooltip } from "./Tooltip";
 export { default as EllipsisWithTooltip } from "./EllipsisWithTooltip";
 export { default as Modal } from "./Modal";
+export { default as Panel } from "./Panel";
+export { default as Divider } from "./Divider";

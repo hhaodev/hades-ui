@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
-import Stack from "../Stack";
-import { cn } from "../../utils";
+import { calculatePaddingR, cn, useDisableScroll } from "../../utils";
 import Button from "../Button";
+import Stack from "../Stack";
+import "./index.css";
 
 let mousePosition = null;
 
@@ -16,40 +16,21 @@ document.addEventListener(
   true
 );
 
-function getScrollbarWidth() {
-  const hasScrollbar =
-    document.documentElement.scrollHeight > window.innerHeight;
-  if (!hasScrollbar) return 0;
-  const scrollDiv = document.createElement("div");
-  scrollDiv.style.width = "100px";
-  scrollDiv.style.height = "100px";
-  scrollDiv.style.overflow = "scroll";
-  scrollDiv.style.position = "absolute";
-  scrollDiv.style.top = "-9999px";
-  document.body.appendChild(scrollDiv);
-  const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
-  document.body.removeChild(scrollDiv);
-  return scrollbarWidth;
-}
-
 export default function Modal({ title, buttons, open, onClose, children }) {
   const [active, setActive] = useState(false);
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
   const [origin, setOrigin] = useState("center center");
+  const [paddingRight, setPaddingRight] = useState(16);
   const modalRef = useRef(null);
+  const bodyRef = useRef(null);
+
+  useDisableScroll(open);
 
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
     if (open) {
       setActive(true);
       setClosing(false);
-      const scrollbarWidth = getScrollbarWidth();
-      if (scrollbarWidth > 0) {
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
-      }
-      document.body.style.overflow = "hidden";
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (mousePosition && modalRef.current) {
@@ -67,11 +48,6 @@ export default function Modal({ title, buttons, open, onClose, children }) {
       setVisible(false);
       setClosing(true);
     }
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
   }, [open]);
 
   const handleAnimationEnd = () => {
@@ -88,6 +64,13 @@ export default function Modal({ title, buttons, open, onClose, children }) {
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
+
+  useLayoutEffect(() => {
+    if (bodyRef.current) {
+      const pad = calculatePaddingR(16, bodyRef.current);
+      setPaddingRight(pad);
+    }
+  }, [active]);
 
   if (!active) return null;
 
@@ -124,7 +107,15 @@ export default function Modal({ title, buttons, open, onClose, children }) {
             </Button>
           </Stack>
         </Stack>
-        <Stack className="modal-body">{children}</Stack>
+        <Stack
+          ref={bodyRef}
+          className="modal-body"
+          style={{
+            paddingRight,
+          }}
+        >
+          <Stack>{children}</Stack>
+        </Stack>
         <Stack className="modal-footer">
           {(
             buttons ?? [

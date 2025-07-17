@@ -76,10 +76,12 @@ html.light {
     --hadesui-text-color: var(--hadesui-gray-10);
     --hadesui-bg-btn-text: var(--hadesui-gray-4);
     --hadesui-border-color: var(--hadesui-gray-5);
-    --hadesui-boxshadow-color: var(--hadesui-gray-5);
+    --hadesui-boxshadow-color: rgba(0, 0, 0, 0.4);
     --hadesui-tooltip-color: var(--hadesui-gray-8);
     --hadesui-tooltiptext-color: var(--hadesui-gray-3);
     --hadesui-bg-modal-color: var(--hadesui-gray-2);
+    --hadesui-bg-mark-color: rgba(0, 0, 0, 0.35);
+    --hadesui-divider-color: rgba(0, 0, 0, 0.45);
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -87,11 +89,13 @@ html.dark {
     --hadesui-bg-color: var(--hadesui-gray-9);
     --hadesui-text-color: var(--hadesui-gray-1);
     --hadesui-bg-btn-text: var(--hadesui-gray-8);
-    --hadesui-border-color: var(--hadesui-gray-7);
-    --hadesui-boxshadow-color: var(--hadesui-gray-8);
+    --hadesui-border-color: var(--hadesui-gray-8);
+    --hadesui-boxshadow-color: rgba(0, 0, 0, 0.6);
     --hadesui-tooltip-color: var(--hadesui-gray-5);
     --hadesui-tooltiptext-color: var(--hadesui-gray-10);
     --hadesui-bg-modal-color: var(--hadesui-gray-9);
+    --hadesui-bg-mark-color: rgba(0, 0, 0, 0.35);
+    --hadesui-divider-color: rgba(255, 255, 255, 0.45);
 }
 
 /* ===== Global Styles (using tokens) ===== */

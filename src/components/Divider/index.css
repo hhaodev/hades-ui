@@ -1,0 +1,47 @@
+.divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--hadesui-divider-color);
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--hadesui-divider-color);
+}
+
+.divider-dashed::before,
+.divider-dashed::after {
+    border-top-style: dashed;
+}
+
+.divider-with-text.align-left::before {
+    flex: 0 0 5%;
+}
+
+.divider-with-text.align-left::after {
+    flex: 1;
+}
+
+.divider-with-text.align-center::before,
+.divider-with-text.align-center::after {
+    flex: 1;
+}
+
+.divider-with-text.align-right::before {
+    flex: 1;
+}
+
+.divider-with-text.align-right::after {
+    flex: 0 0 5%;
+}
+
+.divider-text {
+    font-size: 12px;
+    padding: 0 1em;
+    white-space: nowrap;
+}

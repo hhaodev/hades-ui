@@ -9,6 +9,8 @@ import {
   Stack,
   Tooltip,
   Modal,
+  Panel,
+  Divider,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 
@@ -19,6 +21,8 @@ function App() {
   const [openModal, setOpenModal] = useState(false);
   const [openModal2, setOpenModal2] = useState(false);
   const [openModal3, setOpenModal3] = useState(false);
+  const [openPanel, setOpenPanel] = useState(false);
+  const [placementPanel, setPlacementPanel] = useState("right");
   return (
     <>
       <Stack
@@ -48,7 +52,13 @@ function App() {
           <Button onClick={() => setTheme("system")}>System</Button>
         </Stack>
         {/* end theme region */}
-
+        <Divider />
+        <Divider dashed />
+        <Divider>divider</Divider>
+        <Divider>divider center</Divider>
+        <Divider align="left">divider left</Divider>
+        <Divider align="right">divider right</Divider>
+        <Divider dashed>divider dashed</Divider>
         {/* button region */}
         <Stack>BUTTON</Stack>
         <Stack
@@ -68,6 +78,7 @@ function App() {
           </OverFlow>
         </Stack>
         {/* end button region */}
+        <Divider>BUTTON</Divider>
 
         {/* overflow region */}
         <Stack>VERTICAL OVERFLOW</Stack>
@@ -84,6 +95,8 @@ function App() {
             </OverFlow>
           </ResizableBox>
         </Stack>
+        <Divider>VERTICAL OVERFLOW</Divider>
+
         <Stack>HORIZONTAL OVERFLOW</Stack>
         <Stack>
           <ResizableBox width={500}>
@@ -99,6 +112,7 @@ function App() {
           </ResizableBox>
         </Stack>
         {/* end overflow region */}
+        <Divider>HORIZONTAL OVERFLOW</Divider>
 
         {/* dropdown region */}
         <Stack>DROPDOWN</Stack>
@@ -146,6 +160,7 @@ function App() {
           </Stack>
         </Stack>
         {/* end dropdown region */}
+        <Divider>DROPDOWN</Divider>
 
         {/* tooltip region */}
         <Stack>TOOLTIP</Stack>
@@ -163,9 +178,14 @@ function App() {
         <EllipsisWithTooltip style={{ maxWidth: 100 }}>
           Tooltip with ellipsis
         </EllipsisWithTooltip>
+        <EllipsisWithTooltip style={{ maxWidth: 200 }}>
+          Tooltip with ellipsis
+        </EllipsisWithTooltip>
         {/* end tooltip region */}
+        <Divider>TOOLTIP</Divider>
 
         {/* modal region */}
+        <Stack>MODAL</Stack>
         <Stack
           style={{
             display: "flex",
@@ -175,6 +195,45 @@ function App() {
           <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
           <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
         </Stack>
+
+        <Divider>MODAL</Divider>
+        {/* panel region */}
+        <Stack>PANEL</Stack>
+        <Stack style={{ display: "flex", gap: 10 }}>
+          <Button
+            onClick={() => {
+              setOpenPanel(true);
+              setPlacementPanel("right");
+            }}
+          >
+            Open Panel Right
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenPanel(true);
+              setPlacementPanel("left");
+            }}
+          >
+            Open Panel Left
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenPanel(true);
+              setPlacementPanel("top");
+            }}
+          >
+            Open Panel Top
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenPanel(true);
+              setPlacementPanel("bottom");
+            }}
+          >
+            Open Panel Bottom
+          </Button>
+        </Stack>
+        <Divider>PANEL</Divider>
       </Stack>
 
       <Modal
@@ -269,6 +328,60 @@ function App() {
         content next modal
         <Button onClick={() => setOpenModal2(true)}>Open next modal</Button>
       </Modal>
+
+      <Panel
+        open={openPanel}
+        onClose={() => setOpenPanel(false)}
+        placement={placementPanel}
+      >
+        <Stack
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+          <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        </Stack>
+        <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+        <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
+      </Panel>
     </>
   );
 }

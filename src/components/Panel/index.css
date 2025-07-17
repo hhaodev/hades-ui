@@ -1,0 +1,128 @@
+.panel-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    pointer-events: auto;
+}
+
+/* ========== MASK ========== */
+.panel-mask {
+    position: absolute;
+    inset: 0;
+    background: var(--hadesui-bg-mark-color);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.panel-mask.fade-in {
+    opacity: 1;
+}
+
+.panel-mask.fade-out {
+    opacity: 0;
+}
+
+/* ========== PANEL ========== */
+.panel {
+    position: absolute;
+    background: var(--hadesui-bg-color);
+    box-shadow: 0 4px 16px var(--hadesui-boxshadow-color);
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Default slide-out position */
+.panel-right {
+    top: 0;
+    right: 0;
+    height: 100%;
+    transform: translateX(100%);
+}
+
+.panel-left {
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+}
+
+.panel-top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    transform: translateY(-100%);
+}
+
+.panel-bottom {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform: translateY(100%);
+}
+
+/* Slide-in effect */
+.panel.slide-in.panel-right,
+.panel.slide-in.panel-left,
+.panel.slide-in.panel-top,
+.panel.slide-in.panel-bottom {
+    transform: translate(0, 0);
+    opacity: 1;
+}
+
+/* Slide-out effect */
+.panel.slide-out.panel-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.panel.slide-out.panel-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.panel.slide-out.panel-top {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.panel.slide-out.panel-bottom {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    flex-shrink: 0;
+    padding-bottom: 8px;
+    padding: 24px 16px;
+    border-bottom: 1px solid var(--hadesui-border-color);
+}
+
+.panel-title {
+    font-size: 16px;
+    font-weight: 550;
+}
+
+.panel-close-btn {
+    cursor: pointer;
+}
+
+.panel-footer {
+    display: flex;
+    gap: 4px;
+    justify-content: end;
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-top: 1px solid var(--hadesui-border-color);
+}
+
+.panel-body {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+}

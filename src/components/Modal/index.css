@@ -1,7 +1,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--hadesui-bg-mark-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,11 +27,10 @@
     flex-direction: column;
     background: var(--hadesui-bg-modal-color);
     border-radius: 8px;
-    padding: 16px;
     min-width: 450px;
-    animation-duration: 0.25s;
+    animation-duration: 0.2s;
     animation-fill-mode: both;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px var(--hadesui-boxshadow-color);
     min-height: 200px;
     max-height: 90vh;
     /* -webkit-user-select: auto;
@@ -46,7 +45,7 @@
     height: 30px;
     flex-shrink: 0;
     padding-bottom: 8px;
-
+    padding: 24px 16px;
 }
 
 .modal-title {
@@ -63,17 +62,18 @@
     gap: 4px;
     justify-content: end;
     flex-shrink: 0;
-    padding-top: 8px;
+    padding: 8px 16px;
 }
 
 .modal-body {
     flex: 1;
     overflow: auto;
+    padding: 16px;
 }
 
 @keyframes zoomIn {
     from {
-        transform: scale(0.7);
+        transform: scale(0.5);
         opacity: 0;
     }
 
@@ -90,7 +90,7 @@
     }
 
     to {
-        transform: scale(0.7);
+        transform: scale(0.5);
         opacity: 0;
     }
 }
