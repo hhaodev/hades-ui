@@ -1,10 +1,17 @@
-import React, { useRef, useState, forwardRef } from "react";
-import Tooltip from "../Tooltip";
+import {
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useRef,
+  useState,
+} from "react";
 import Stack from "../Stack";
+import Tooltip from "../Tooltip";
 
 const EllipsisWithTooltip = forwardRef(
   ({ children, style = {}, ...rest }, ref) => {
     const localRef = useRef(null);
+
     const combinedRef = (el) => {
       localRef.current = el;
       if (typeof ref === "function") ref(el);
@@ -12,7 +19,6 @@ const EllipsisWithTooltip = forwardRef(
     };
 
     const [isOverflowing, setIsOverflowing] = useState(false);
-    const [hovered, setHovered] = useState(false);
 
     const checkOverflow = () => {
       const el = localRef.current;
@@ -22,17 +28,21 @@ const EllipsisWithTooltip = forwardRef(
 
     const handleMouseEnter = () => {
       checkOverflow();
-      setHovered(true);
     };
 
-    const handleMouseLeave = () => {
-      setHovered(false);
-    };
-
-    const isPlainText = typeof children === "string";
+    let wrappedChild = children;
+    if (isValidElement(children)) {
+      const mergedStyle = {
+        display: "inline",
+        ...children.props.style,
+      };
+      wrappedChild = cloneElement(children, { style: mergedStyle });
+    } else {
+      wrappedChild = <span style={{ display: "inline" }}>{children}</span>;
+    }
 
     return (
-      <Tooltip tooltip={isPlainText && isOverflowing ? children : null}>
+      <Tooltip tooltip={isOverflowing ? localRef.current?.textContent : null}>
         {(tooltipRef, events) => (
           <Stack
             {...rest}
@@ -45,10 +55,7 @@ const EllipsisWithTooltip = forwardRef(
               handleMouseEnter();
               events.onMouseEnter?.(e);
             }}
-            onMouseLeave={(e) => {
-              handleMouseLeave();
-              events.onMouseLeave?.(e);
-            }}
+            onMouseLeave={events.onMouseLeave}
             onFocus={events.onFocus}
             onBlur={events.onBlur}
             style={{
@@ -59,7 +66,7 @@ const EllipsisWithTooltip = forwardRef(
               ...style,
             }}
           >
-            {children}
+            {wrappedChild}
           </Stack>
         )}
       </Tooltip>

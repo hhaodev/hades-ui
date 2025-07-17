@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import Stack from "../Stack";
 import { DropdownItem } from "./DropdownItem";
 import { DropdownMenu } from "./DropdownMenu";
+import EllipsisWithTooltip from "../EllipsisWithTooltip";
 
 function DropdownPortal({ children }) {
   const portalNodeRef = useRef(null);
@@ -72,6 +73,7 @@ export default function Dropdown({
   const hideTimeoutRef = useRef(null);
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
+  const lockRef = useRef(false);
 
   const show = () => {
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
@@ -224,7 +226,17 @@ export default function Dropdown({
           width: "fit-content",
           cursor: "pointer",
         }}
-        onClick={() => (open ? hide() : show())}
+        onClick={() => {
+          if (lockRef.current) return;
+
+          lockRef.current = true;
+          if (open) hide();
+          else show();
+
+          setTimeout(() => {
+            lockRef.current = false;
+          }, 300);
+        }}
       >
         {children}
       </Stack>
@@ -292,7 +304,7 @@ export default function Dropdown({
               <DropdownMenu>
                 {menu.map((i, idx) => (
                   <DropdownItem key={idx} onClick={i?.onClick}>
-                    {i?.text}
+                    <EllipsisWithTooltip>{i?.text}</EllipsisWithTooltip>
                   </DropdownItem>
                 ))}
               </DropdownMenu>

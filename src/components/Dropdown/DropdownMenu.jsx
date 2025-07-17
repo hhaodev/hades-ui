@@ -9,6 +9,8 @@ export const DropdownMenu = ({ children, style, ...rest }) => {
         flexDirection: "column",
         gap: 4,
         padding: 8,
+        width: "100%",
+        justifyContent: "centner",
         ...style,
       }}
       {...rest}

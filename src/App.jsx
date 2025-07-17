@@ -16,7 +16,7 @@ import { useTheme } from "./theme/useTheme";
 
 const menu = [
   {
-    text: <Stack>text1</Stack>,
+    text: <Stack>text111111111111111111</Stack>,
     onClick: () => console.log("text 1"),
   },
   {
@@ -31,7 +31,7 @@ const menu = [
     text: <Stack>text4</Stack>,
     onClick: () => console.log("text 4"),
   },
-  { text: "text5", onClick: () => console.log("text 5") },
+  { text: "text111111111111111111", onClick: () => console.log("text 5") },
 ];
 
 function App() {
@@ -144,19 +144,6 @@ function App() {
             }}
           >
             <Dropdown
-              open={open}
-              onOpenChange={setOpen}
-              popupRender={() => (
-                <Dropdown.Menu>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                  <Stack>content</Stack>
-                </Dropdown.Menu>
-              )}
-            >
-              <Button type="default">Open Custom Popup</Button>
-            </Dropdown>
-            <Dropdown
               placement={"top-left"}
               open={open2}
               onOpenChange={setOpen2}
@@ -179,6 +166,29 @@ function App() {
             <Dropdown placement={"bottom-right"} menu={menu}>
               <Button type="default">BOT R</Button>
             </Dropdown>
+            <Dropdown
+              open={open}
+              onOpenChange={setOpen}
+              popupRender={() => (
+                <Dropdown.Menu>
+                  <EllipsisWithTooltip>
+                    contentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                  </EllipsisWithTooltip>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                  <Stack>content</Stack>
+                </Dropdown.Menu>
+              )}
+            >
+              <Button type="default">Open Custom Popup</Button>
+            </Dropdown>
           </Stack>
         </Stack>
         {/* end dropdown region */}
@@ -198,7 +208,7 @@ function App() {
         </Tooltip>
         <Tooltip tooltip="Tooltip string">Tooltip string</Tooltip>
         <EllipsisWithTooltip style={{ maxWidth: 100 }}>
-          Tooltip with ellipsis
+          <div>Tooltip with ellipsis</div>
         </EllipsisWithTooltip>
         <EllipsisWithTooltip style={{ maxWidth: 200 }}>
           Tooltip with ellipsis

@@ -192,7 +192,9 @@ const Tooltip = forwardRef(
                 padding: "4px 8px",
                 fontSize: 12,
                 borderRadius: 4,
-                whiteSpace: "nowrap",
+                maxWidth: "calc(100vw - 20px)",
+                wordWrap: "break-word",
+                whiteSpace: "normal",
                 pointerEvents: "auto",
                 opacity: visible ? 1 : 0,
                 transform: visible
