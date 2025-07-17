@@ -221,7 +221,7 @@ function App() {
         <Tooltip tooltip="Tooltip string">auto có tooltip</Tooltip>
         <Divider />
 
-        <EllipsisWithTooltip placement="bottom" style={{ maxWidth: 100 }}>
+        <EllipsisWithTooltip placement="right" style={{ maxWidth: 100 }}>
           <div>Tooltip with ellipsis</div>
         </EllipsisWithTooltip>
         <Divider />

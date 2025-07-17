@@ -76,7 +76,7 @@ function getInitialTransform(placement) {
   if (placement.startsWith("top")) return "translateY(8px)";
   if (placement.startsWith("bottom")) return "translateY(-8px)";
   if (placement.startsWith("left")) return "translateX(8px)";
-  if (placement.startsWith("right")) return "translateX(8px)";
+  if (placement.startsWith("right")) return "translateX(-8px)";
   return "translate(0, 0)";
 }
 

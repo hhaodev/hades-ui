@@ -38,6 +38,14 @@ function TooltipPortal({ children }) {
   return createPortal(children, portalNodeRef.current);
 }
 
+function getInitialTransform(placement) {
+  if (placement.startsWith("top")) return "translateY(8px)";
+  if (placement.startsWith("bottom")) return "translateY(-8px)";
+  if (placement.startsWith("left")) return "translateX(8px)";
+  if (placement.startsWith("right")) return "translateX(-8px)";
+  return "translate(0, 0)";
+}
+
 const Tooltip = forwardRef(
   (
     {
@@ -172,9 +180,7 @@ const Tooltip = forwardRef(
                 opacity: visible ? 1 : 0,
                 transform: visible
                   ? "translateY(0)"
-                  : placement.includes("top")
-                  ? "translateY(4px)"
-                  : "translateY(-4px)",
+                  : getInitialTransform(placement),
                 transition: "opacity 0.2s ease, transform 0.2s ease",
                 ...style,
               }}
