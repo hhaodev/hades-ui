@@ -48,8 +48,8 @@ function getFallbackPlacements(basePlacement) {
   }
 
   const oppositeSides = {
-    top: ["bottom", "left", "right"],
-    bottom: ["top", "left", "right"],
+    top: ["bottom", "right", "left"],
+    bottom: ["top", "right", "left"],
     left: ["right", "top", "bottom"],
     right: ["left", "top", "bottom"],
   }[side];
@@ -88,6 +88,7 @@ export default function Dropdown({
   onOpenChange,
   popupRender,
   popupStyles,
+  fixedWidthPopup = true,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -120,9 +121,29 @@ export default function Dropdown({
             shift(),
           ],
         }).then(({ x, y, placement: resolvedPlacement }) => {
-          dropdownRef.current.style.left = `${x}px`;
-          dropdownRef.current.style.top = `${y}px`;
-          dropdownRef.current.style.position = "absolute";
+          const dropdownEl = dropdownRef.current;
+          const referenceEl = referenceRef.current;
+          const container = dropdownEl.offsetParent || document.body;
+          const containerRect = container.getBoundingClientRect();
+
+          dropdownEl.style.left = `${x}px`;
+          dropdownEl.style.top = `${y}px`;
+          dropdownEl.style.position = "absolute";
+
+          if (resolvedPlacement.startsWith("left")) {
+            const space =
+              referenceEl.getBoundingClientRect().left - containerRect.left - 8;
+            dropdownEl.style.maxWidth = `${space}px`;
+          } else if (resolvedPlacement.startsWith("right")) {
+            const space =
+              containerRect.right -
+              referenceEl.getBoundingClientRect().right -
+              8;
+            dropdownEl.style.maxWidth = `${space}px`;
+          } else {
+            dropdownEl.style.maxWidth = "100%";
+          }
+
           setActualPlacement(resolvedPlacement);
           setTimeout(() => setReady(true), 100);
         });
@@ -189,17 +210,21 @@ export default function Dropdown({
                 background: "var(--hadesui-bg-color)",
                 borderRadius: 8,
                 boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
-                minWidth: 120,
-                width: "fit-content",
-                maxWidth: "100%",
+                minWidth: 100,
+                width: fixedWidthPopup
+                  ? referenceRef?.current?.getBoundingClientRect()?.width
+                  : "fit-content",
+                ...(!popupRender ? { maxHeight: 400 } : {}),
                 ...popupStyles,
                 overflow: "hidden",
-                opacity: ready ? 1 : 0,
-                transform: ready
-                  ? "translate(0, 0)"
-                  : getInitialTransform(actualPlacement),
+                overflowY: "auto",
+                opacity: open && ready ? 1 : 0,
+                transform:
+                  open && ready
+                    ? "translate(0, 0)"
+                    : getInitialTransform(actualPlacement),
+                pointerEvents: open && ready ? "auto" : "none",
                 transition: "opacity 0.2s ease, transform 0.2s ease",
-                pointerEvents: ready ? "auto" : "none",
               }}
             >
               {popupRender ? (
@@ -215,6 +240,7 @@ export default function Dropdown({
                         i?.onClick();
                         setOpen(false);
                       }}
+                      checked={i.checked}
                     >
                       {i?.element}
                     </DropdownItem>

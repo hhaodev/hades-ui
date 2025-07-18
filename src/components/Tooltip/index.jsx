@@ -55,6 +55,7 @@ const Tooltip = forwardRef(
       offset: offsetValue = 8,
       className = "",
       style = {},
+      delay = 150,
     },
     ref
   ) => {
@@ -76,8 +77,10 @@ const Tooltip = forwardRef(
     const show = () => {
       clearTimeout(hideTimer.current);
       clearTimeout(hideTimer2.current);
-      setShouldRender(true);
-      setTimeout(() => setVisible(true), 50);
+      hideTimer.current = setTimeout(() => {
+        setShouldRender(true);
+        setTimeout(() => setVisible(true), 50);
+      }, delay);
     };
 
     const hide = () => {
@@ -86,6 +89,14 @@ const Tooltip = forwardRef(
       hideTimer.current = setTimeout(() => setShouldRender(false), 200);
       hideTimer2.current = setTimeout(() => setVisible(false), 100);
     };
+
+    useEffect(() => {
+      return () => {
+        clearTimeout(hideTimer.current);
+        clearTimeout(hideTimer2.current);
+        cleanupRef.current?.();
+      };
+    }, []);
 
     useEffect(() => {
       if (!shouldRender || !triggerRef.current || !tooltipRef.current) return;

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 function getElement(refOrEl) {
-  if (!refOrEl) return null;
+  if (!refOrEl) return document.documentElement;
   if (refOrEl instanceof Element) return refOrEl;
   return refOrEl?.current ?? null;
 }

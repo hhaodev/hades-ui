@@ -11,6 +11,7 @@ import {
   Modal,
   Panel,
   Divider,
+  Select,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 import { DropdownItem } from "./components/Dropdown/DropdownItem";
@@ -32,7 +33,54 @@ const menu = [
     element: <Stack>text4</Stack>,
     onClick: () => console.log("text 4"),
   },
-  { element: "text111111111111111111", onClick: () => console.log("text 5") },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
+  {
+    element: "aaa",
+    onClick: () => console.log("text 5"),
+  },
 ];
 
 function App() {
@@ -44,6 +92,7 @@ function App() {
   const [openModal3, setOpenModal3] = useState(false);
   const [openPanel, setOpenPanel] = useState(false);
   const [placementPanel, setPlacementPanel] = useState("right");
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <>
       <Stack
@@ -144,12 +193,7 @@ function App() {
               gap: 8,
             }}
           >
-            <Dropdown
-              placement="top-start"
-              open={open2}
-              onOpenChange={setOpen2}
-              menu={menu}
-            >
+            <Dropdown placement="top-start" menu={menu}>
               <Button type="default">TOP L</Button>
             </Dropdown>
             <Dropdown placement="top" menu={menu}>
@@ -167,10 +211,17 @@ function App() {
             <Dropdown placement="bottom-end" menu={menu}>
               <Button type="default">BOT R</Button>
             </Dropdown>
+            <Dropdown menu={menu}>
+              <Button type="default">NO</Button>
+            </Dropdown>
+            <Dropdown menu={menu} placement="right">
+              <Button type="default">RIGHT</Button>
+            </Dropdown>
+            <Dropdown menu={menu} placement="left">
+              <Button type="default">LEFT</Button>
+            </Dropdown>
             <Dropdown
-              popupStyles={{
-                maxWidth: "100%",
-              }}
+              fixedWidthPopup={false}
               open={open}
               onOpenChange={setOpen}
               popupRender={() => (
@@ -185,12 +236,34 @@ function App() {
                       ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
                     </Stack>
                   </DropdownItem>
+                  <DropdownItem row={2}>
+                    <Stack>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </Stack>
+                  </DropdownItem>
+                  <DropdownItem row={2}>
+                    <Stack>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </Stack>
+                  </DropdownItem>
+                  <DropdownItem row={2}>
+                    <Stack>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </Stack>
+                  </DropdownItem>
+                  <DropdownItem row={2}>
+                    <Stack>
+                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
+                    </Stack>
+                  </DropdownItem>
                 </Dropdown.Menu>
               )}
             >
               <Button type="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
+              open={open2}
+              onOpenChange={setOpen2}
               popupStyles={{
                 maxWidth: "100%",
               }}
@@ -205,6 +278,16 @@ function App() {
 
         {/* tooltip region */}
         <Stack>TOOLTIP</Stack>
+        <Select
+          value={selectedValue}
+          onChange={(v) => setSelectedValue(v)}
+          options={Array.from({ length: 50 }, (_, i) => {
+            const val = `${i + 1}0000000000000`.toString();
+            return { label: val, value: val };
+          })}
+          placeholder="Chọn 1 số nào hẹ hẹ"
+          onClear={() => setSelectedValue("")}
+        />
         <Stack>
           <Button>
             <Tooltip tooltip="Button Tooltip">Button Tooltip</Tooltip>
@@ -302,6 +385,9 @@ function App() {
         onClose={() => setOpenModal(false)}
       >
         content modal 1
+        <Dropdown menu={menu}>
+          <Button type="default">NO</Button>
+        </Dropdown>
         <Button onClick={() => setOpenModal3(true)}>Open next modal</Button>
       </Modal>
       <Modal

@@ -147,6 +147,9 @@ export default function OverFlow({ children, mode = "horizontal" }) {
 
         {overflowItems.length > 0 && (
           <Dropdown
+            popupStyles={{
+              width: "fit-content",
+            }}
             open={open}
             onOpenChange={setOpen}
             popupRender={() => (
@@ -155,6 +158,7 @@ export default function OverFlow({ children, mode = "horizontal" }) {
                   background: "var(--hadesui-bg-color)",
                   display: "flex",
                   flexDirection: "column",
+                  alignItems: "center",
                   gap,
                   padding: 8,
                 }}
@@ -162,11 +166,6 @@ export default function OverFlow({ children, mode = "horizontal" }) {
                 {overflowItems.map((item, i) =>
                   React.cloneElement(item, {
                     key: i,
-                    ...item.props,
-                    style: {
-                      ...item.props?.style,
-                      width: "100%",
-                    },
                     onClick: (...args) => {
                       item.props?.onClick?.(...args);
                       setOpen(false);

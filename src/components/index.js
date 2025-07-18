@@ -8,3 +8,4 @@ export { default as EllipsisWithTooltip } from "./EllipsisWithTooltip";
 export { default as Modal } from "./Modal";
 export { default as Panel } from "./Panel";
 export { default as Divider } from "./Divider";
+export { default as Select } from "./Select";
