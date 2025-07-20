@@ -5,13 +5,31 @@ import EllipsisWithTooltip from "../EllipsisWithTooltip";
 import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
 import "./index.css";
 
-const DragDropTable = ({ data, onChange }) => {
+const DragDropTable = ({ itemsChange, data, onChange }) => {
   const [active, setActive] = useState(false);
   const [dragType, setDragType] = useState(null);
   const cardRefs = useRef({});
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
   const dragEnterCounter = useRef(0);
+
+  useEffect(() => {
+    if (!itemsChange) return;
+    if (itemsChange.type === "cardMove") {
+      updateCardsWithAnimation({
+        card: itemsChange.data.card,
+        oldCol: itemsChange.data.oldCol,
+        targetCol: itemsChange.data.targetCol,
+        dropIndex: itemsChange.data.dropIndex,
+      });
+    }
+    if (itemsChange.type === "columnMove") {
+      handleMoveCol({
+        column: itemsChange.data.column,
+        newIndex: itemsChange.data.newIndex,
+      });
+    }
+  }, [JSON.stringify(itemsChange)]);
 
   const handleAddCol = (col) => {
     onChange((prev) => [...prev, col]);
@@ -54,27 +72,35 @@ const DragDropTable = ({ data, onChange }) => {
     onChange((prev) => prev.filter((c) => c.id !== col.id));
   };
 
-  const handleMoveCol = (column, newIndex) => {
+  const handleMoveCol = ({ column, newIndex }) => {
+    console.log("🚀 ~ handleMoveCol ~ column:", column);
+    console.log("🚀 ~ handleMoveCol ~ newIndex:", newIndex);
     const colEl = columnRefs.current[column.id];
     const prevRect = colEl?.getBoundingClientRect();
-    onChange((prev) => {
-      const next = structuredClone(prev);
-      const oldIndex = next.findIndex((col) => col.id === column.id);
+    onChange(
+      (prev) => {
+        const next = structuredClone(prev);
+        const oldIndex = next.findIndex((col) => col.id === column.id);
 
-      if (
-        oldIndex === -1 ||
-        oldIndex === newIndex ||
-        oldIndex === newIndex - 1
-      ) {
-        return prev;
+        if (
+          oldIndex === -1 ||
+          oldIndex === newIndex ||
+          oldIndex === newIndex - 1
+        ) {
+          return prev;
+        }
+
+        const [moved] = next.splice(oldIndex, 1);
+        const insertAt = oldIndex < newIndex ? newIndex - 1 : newIndex;
+        next.splice(insertAt, 0, moved);
+
+        return next;
+      },
+      {
+        type: "columnMove",
+        data: { column, newIndex },
       }
-
-      const [moved] = next.splice(oldIndex, 1);
-      const insertAt = oldIndex < newIndex ? newIndex - 1 : newIndex;
-      next.splice(insertAt, 0, moved);
-
-      return next;
-    });
+    );
     if (!colEl) return;
     requestAnimationFrame(() => {
       const newEl = columnRefs.current[column.id];
@@ -124,6 +150,7 @@ const DragDropTable = ({ data, onChange }) => {
   };
 
   const handleDragEnd = (e) => {
+    if (dragType !== "column") return;
     const newCol = JSON.parse(e.dataTransfer.getData("column") || "{}");
     setActive(false);
     clearHighlights();
@@ -133,7 +160,7 @@ const DragDropTable = ({ data, onChange }) => {
     const before = element.dataset.before || "-1";
     const dropIndex =
       before === "-1" ? data.length : data.findIndex((c) => c.id === before);
-    handleMoveCol(newCol, dropIndex);
+    handleMoveCol({ column: newCol, newIndex: dropIndex });
     setDragType(null);
   };
 
@@ -149,6 +176,7 @@ const DragDropTable = ({ data, onChange }) => {
     highlightIndicator(e);
     setActive(true);
   };
+
   const handleDragEnter = (e) => {
     if (dragType !== "column") return;
     e.preventDefault();
@@ -200,44 +228,50 @@ const DragDropTable = ({ data, onChange }) => {
     );
   };
 
-  const updateCardsWithAnimation = (card, oldCol, targetCol, dropIndex) => {
+  const updateCardsWithAnimation = ({ card, oldCol, targetCol, dropIndex }) => {
     const cardId = card.id;
     const cardEl = cardRefs.current[cardId];
     const oldColId = oldCol.id;
     const targetColId = targetCol.id;
     const prevRect = cardEl?.getBoundingClientRect();
-    onChange((prev) => {
-      const next = structuredClone(prev);
-      const oldCol = next.find((col) => col.id === oldColId);
-      const targetCol = next.find((col) => col.id === targetColId);
-      if (!targetCol) return prev;
+    onChange(
+      (prev) => {
+        const next = structuredClone(prev);
+        const oldCol = next.find((col) => col.id === oldColId);
+        const targetCol = next.find((col) => col.id === targetColId);
+        if (!targetCol) return prev;
 
-      let cardToMove = null;
+        let cardToMove = null;
 
-      if (oldCol) {
-        const index = oldCol.items.findIndex((c) => c.id === cardId);
-        if (index !== -1) {
-          [cardToMove] = oldCol.items.splice(index, 1);
+        if (oldCol) {
+          const index = oldCol.items.findIndex((c) => c.id === cardId);
+          if (index !== -1) {
+            [cardToMove] = oldCol.items.splice(index, 1);
 
-          const isSameCol = oldColId === targetColId;
-          let adjustedIndex = dropIndex;
-          if (isSameCol && index < dropIndex) adjustedIndex = dropIndex - 1;
+            const isSameCol = oldColId === targetColId;
+            let adjustedIndex = dropIndex;
+            if (isSameCol && index < dropIndex) adjustedIndex = dropIndex - 1;
 
-          if (isSameCol && adjustedIndex === index) return prev;
+            if (isSameCol && adjustedIndex === index) return prev;
 
-          targetCol.items.splice(adjustedIndex, 0, cardToMove);
+            targetCol.items.splice(adjustedIndex, 0, cardToMove);
+            return next;
+          }
+        }
+
+        const alreadyExists = targetCol.items.some((c) => c.id === cardId);
+        if (!alreadyExists) {
+          targetCol.items.splice(dropIndex, 0, card);
           return next;
         }
-      }
 
-      const alreadyExists = targetCol.items.some((c) => c.id === cardId);
-      if (!alreadyExists) {
-        targetCol.items.splice(dropIndex, 0, card);
-        return next;
+        return prev;
+      },
+      {
+        type: "cardMove",
+        data: { card, oldCol, targetCol, dropIndex },
       }
-
-      return prev;
-    });
+    );
 
     if (!cardEl) return;
     requestAnimationFrame(() => {
@@ -331,6 +365,7 @@ const Column = React.forwardRef(
     };
 
     const handleDragEnd = (e, targetColumn) => {
+      if (dragType !== "card") return;
       const card = JSON.parse(e.dataTransfer.getData("card") || "{}");
       const oldColumn = JSON.parse(e.dataTransfer.getData("oldColumn") || "{}");
       setActive(false);
@@ -347,7 +382,7 @@ const Column = React.forwardRef(
       if (!card?.id || !oldColumn?.id || !targetColumn || before === card?.id)
         return;
 
-      setCards(card, oldColumn, targetColumn, dropIndex);
+      setCards({ card, oldCol: oldColumn, targetCol: targetColumn, dropIndex });
       setDragType(null);
     };
 
