@@ -195,8 +195,8 @@ const Tooltip = forwardRef(
           <TooltipPortal>
             <Stack
               ref={tooltipRef}
-              onMouseEnter={trigger === "hover" && show}
-              onMouseLeave={trigger === "hover" && hide}
+              onMouseEnter={trigger === "hover" ? show : undefined}
+              onMouseLeave={trigger === "hover" ? hide : undefined}
               style={{
                 ...positionStyle,
                 background: "var(--hadesui-tooltip-color)",
