@@ -25,6 +25,10 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
+.dragdroptable-column:active {
+    cursor: grabbing;
+}
+
 .dragdroptable-column-header {
     display: flex;
     justify-content: space-between;

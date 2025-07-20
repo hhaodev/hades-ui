@@ -11,7 +11,6 @@ const DragDropTable = ({ data, onChange }) => {
   const cardRefs = useRef({});
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
-  const draggingColRef = useRef(null);
   const dragEnterCounter = useRef(0);
 
   const handleAddCol = (col) => {
@@ -101,7 +100,6 @@ const DragDropTable = ({ data, onChange }) => {
   };
 
   const handleColDragStart = (e, column) => {
-    draggingColRef.current = column;
     e.dataTransfer.setData("column", JSON.stringify(column));
     setDragType("column");
     e.dataTransfer.setDragImage(new Image(), 0, 0);
@@ -179,11 +177,6 @@ const DragDropTable = ({ data, onChange }) => {
     clearHighlights(indicators);
     const { element } = getNearestHorizontalIndicator(e, indicators);
     if (!element) return;
-    const beforeId = element.dataset.before;
-    const afterId = element.dataset.after;
-    const col = draggingColRef.current;
-    if (!col?.id) return;
-    if (beforeId === col.id || afterId === col.id) return;
     element.style.opacity = "1";
   };
 
@@ -330,10 +323,8 @@ const Column = React.forwardRef(
   ) => {
     const [active, setActive] = useState(false);
     const dragEnterCounter = useRef(0);
-    const draggingCardRef = useRef(null);
 
     const handleDragStart = (e, card, oldColumn) => {
-      draggingCardRef.current = card;
       e.dataTransfer.setData("card", JSON.stringify(card));
       e.dataTransfer.setData("oldColumn", JSON.stringify(oldColumn));
       setDragType("card");
@@ -401,11 +392,6 @@ const Column = React.forwardRef(
       clearHighlights(indicators);
       const { element } = getNearestIndicator(e, indicators);
       if (!element) return;
-      const beforeId = element.dataset.before;
-      const afterId = element.dataset.after;
-      const card = draggingCardRef.current;
-      if (!card?.id) return;
-      if (beforeId === card.id || afterId === card.id) return;
       element.style.opacity = "1";
     };
 
@@ -445,6 +431,7 @@ const Column = React.forwardRef(
             display: "flex",
             alignItems: "center",
             justifyContent: "end",
+            userSelect: "text",
           }}
         >
           <div className="dragdroptable-count">
@@ -532,6 +519,9 @@ const Card = React.forwardRef(
           handleDragStart(e, item, column);
         }}
         data-card-id={item.id}
+        style={{
+          userSelect: "text",
+        }}
       >
         <FieldEdit
           value={item.title}
@@ -750,7 +740,9 @@ const FieldEdit = ({ value, onEdit, menu = [], row = 5 }) => {
     </form>
   ) : (
     <div className="fieldedit-wrapper">
-      <EllipsisWithTooltip row={row}>{value}</EllipsisWithTooltip>
+      <EllipsisWithTooltip trigger={"click"} row={row}>
+        {value}
+      </EllipsisWithTooltip>
       {renderControl()}
     </div>
   );
