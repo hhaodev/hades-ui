@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import {
   Button,
@@ -36,6 +36,39 @@ const menu = [
   { element: "text111111111111111111", onClick: () => console.log("text 5") },
 ];
 
+const DEFAULT_CARDS = [
+  {
+    title: "col1",
+    id: "col1",
+    items: [
+      { title: "card1", id: "1" },
+      { title: "card2", id: "2" },
+      { title: "card3", id: "3" },
+      { title: "card4", id: "4" },
+    ],
+  },
+  {
+    title: "col2",
+    id: "col2",
+    items: [
+      { title: "card5", id: "5" },
+      { title: "card6", id: "6" },
+      { title: "card7", id: "7" },
+      { title: "card8", id: "8" },
+    ],
+  },
+  {
+    title: "col3",
+    id: "col3",
+    items: [
+      { title: "card9", id: "9" },
+      { title: "card10", id: "10" },
+      { title: "card11", id: "11" },
+      { title: "card12", id: "12" },
+    ],
+  },
+];
+
 function App() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -45,6 +78,44 @@ function App() {
   const [openModal3, setOpenModal3] = useState(false);
   const [openPanel, setOpenPanel] = useState(false);
   const [placementPanel, setPlacementPanel] = useState("right");
+  const [data, setData] = useState(DEFAULT_CARDS);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setData([
+        {
+          title: "col1",
+          id: "col1",
+          items: [
+            { title: "card1", id: "1" },
+            { title: "card2", id: "2" },
+            { title: "card3", id: "3" },
+            { title: "card4", id: "4" },
+            { title: "card5", id: "5" },
+          ],
+        },
+        {
+          title: "col2",
+          id: "col2",
+          items: [
+            { title: "card6", id: "6" },
+            { title: "card7", id: "7" },
+            { title: "card8", id: "8" },
+          ],
+        },
+        {
+          title: "col3",
+          id: "col3",
+          items: [
+            { title: "card9", id: "9" },
+            { title: "card10", id: "10" },
+            { title: "card11", id: "11" },
+            { title: "card12", id: "12" },
+          ],
+        },
+      ]);
+    }, [2000]);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <>
       <Stack
@@ -437,7 +508,7 @@ function App() {
         <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
         <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
       </Panel>
-      <DragDropTable />
+      <DragDropTable data={data} onChange={setData} />
     </>
   );
 }

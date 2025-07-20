@@ -1,50 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./index.css";
-import EllipsisWithTooltip from "../EllipsisWithTooltip";
 import Button from "../Button";
-import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
 import Dropdown from "../Dropdown";
+import EllipsisWithTooltip from "../EllipsisWithTooltip";
+import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
+import "./index.css";
 
-const useStorage = (key, data, setData) => {
-  useEffect(() => {
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      setData(JSON.parse(saved));
-    } else {
-      setData(DEFAULT_CARDS);
-    }
-  }, []);
-  useEffect(() => {
-    if (data) localStorage.setItem(key, JSON.stringify(data));
-  }, [data, key]);
-};
-
-const DragDropTable = () => {
-  return <Board />;
-};
-
-const Board = () => {
-  const [cards, setCards] = useState(DEFAULT_CARDS);
+const DragDropTable = ({ data, onChange }) => {
   const [active, setActive] = useState(false);
   const [dragType, setDragType] = useState(null);
   const cardRefs = useRef({});
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
-
-  useStorage("board", cards, setCards);
+  const draggingColRef = useRef(null);
+  const dragEnterCounter = useRef(0);
 
   const handleAddCol = (col) => {
-    setCards((prev) => [...prev, col]);
+    onChange((prev) => [...prev, col]);
   };
 
   const handleEditTitleCol = (val, col) => {
-    setCards((prev) =>
+    onChange((prev) =>
       prev.map((c) => (c.id === col.id ? { ...c, title: val } : c))
     );
   };
 
   const handelEditCardTitle = (val, col, card) => {
-    setCards((prev) =>
+    onChange((prev) =>
       prev.map((c) => {
         if (c.id !== col.id) return c;
         return {
@@ -58,7 +39,7 @@ const Board = () => {
   };
 
   const handleDeleteCard = (card, col) => {
-    setCards((prev) =>
+    onChange((prev) =>
       prev.map((column) =>
         column.title === col.title
           ? {
@@ -71,13 +52,13 @@ const Board = () => {
   };
 
   const handleDeleteCol = (col) => {
-    setCards((prev) => prev.filter((c) => c.id !== col.id));
+    onChange((prev) => prev.filter((c) => c.id !== col.id));
   };
 
   const handleMoveCol = (column, newIndex) => {
     const colEl = columnRefs.current[column.id];
     const prevRect = colEl?.getBoundingClientRect();
-    setCards((prev) => {
+    onChange((prev) => {
       const next = structuredClone(prev);
       const oldIndex = next.findIndex((col) => col.id === column.id);
 
@@ -120,8 +101,7 @@ const Board = () => {
   };
 
   const handleColDragStart = (e, column) => {
-    e.dataTransfer.setData("column", JSON.stringify(column));
-    setDragType("column");
+    draggingColRef.current = column;
     e.dataTransfer.setData("column", JSON.stringify(column));
     setDragType("column");
     e.dataTransfer.setDragImage(new Image(), 0, 0);
@@ -149,11 +129,12 @@ const Board = () => {
     const newCol = JSON.parse(e.dataTransfer.getData("column") || "{}");
     setActive(false);
     clearHighlights();
+    dragEnterCounter.current = 0;
     const indicators = getIndicators();
     const { element } = getNearestHorizontalIndicator(e, indicators);
     const before = element.dataset.before || "-1";
     const dropIndex =
-      before === "-1" ? cards.length : cards.findIndex((c) => c.id === before);
+      before === "-1" ? data.length : data.findIndex((c) => c.id === before);
     handleMoveCol(newCol, dropIndex);
     setDragType(null);
   };
@@ -170,10 +151,23 @@ const Board = () => {
     highlightIndicator(e);
     setActive(true);
   };
+  const handleDragEnter = (e) => {
+    if (dragType !== "column") return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragEnterCounter.current += 1;
+    if (dragEnterCounter.current === 1) {
+      setActive(true);
+    }
+  };
 
   const handleDragLeave = () => {
-    clearHighlights();
-    setActive(false);
+    if (dragType !== "column") return;
+    dragEnterCounter.current -= 1;
+    if (dragEnterCounter.current === 0) {
+      setActive(false);
+      clearHighlights();
+    }
   };
 
   const clearHighlights = (els = getIndicators()) => {
@@ -184,6 +178,12 @@ const Board = () => {
     const indicators = getIndicators();
     clearHighlights(indicators);
     const { element } = getNearestHorizontalIndicator(e, indicators);
+    if (!element) return;
+    const beforeId = element.dataset.before;
+    const afterId = element.dataset.after;
+    const col = draggingColRef.current;
+    if (!col?.id) return;
+    if (beforeId === col.id || afterId === col.id) return;
     element.style.opacity = "1";
   };
 
@@ -211,8 +211,7 @@ const Board = () => {
     const oldColId = oldCol.id;
     const targetColId = targetCol.id;
     const prevRect = cardEl?.getBoundingClientRect();
-
-    setCards((prev) => {
+    onChange((prev) => {
       const next = structuredClone(prev);
       const oldCol = next.find((col) => col.id === oldColId);
       const targetCol = next.find((col) => col.id === targetColId);
@@ -278,27 +277,34 @@ const Board = () => {
       }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
+      onDragEnter={handleDragEnter}
     >
-      {cards?.map((column) => (
-        <div style={{ display: "flex" }} key={column.id}>
-          <DropIndicatorCol beforeId={column.id} />
-          <Column
-            ref={columnRefs}
-            key={column.id}
-            column={column}
-            setCards={updateCardsWithAnimation}
-            cardRefs={cardRefs}
-            handleColDragStart={handleColDragStart}
-            dragType={dragType}
-            setDragType={setDragType}
-            handleEditTitleCol={handleEditTitleCol}
-            handelEditCardTitle={handelEditCardTitle}
-            handleDeleteCol={handleDeleteCol}
-            handleDeleteCard={handleDeleteCard}
-          />
-        </div>
-      ))}
-      <DropIndicatorCol beforeId={null} />
+      {data?.map((column, index) => {
+        const afterId = index > 0 ? data[index - 1].id : null;
+        return (
+          <div style={{ display: "flex" }} key={column.id}>
+            <DropIndicatorCol beforeId={column.id} afterId={afterId} />
+            <Column
+              ref={columnRefs}
+              key={column.id}
+              column={column}
+              setCards={updateCardsWithAnimation}
+              cardRefs={cardRefs}
+              handleColDragStart={handleColDragStart}
+              dragType={dragType}
+              setDragType={setDragType}
+              handleEditTitleCol={handleEditTitleCol}
+              handelEditCardTitle={handelEditCardTitle}
+              handleDeleteCol={handleDeleteCol}
+              handleDeleteCard={handleDeleteCard}
+            />
+          </div>
+        );
+      })}
+      <DropIndicatorCol
+        beforeId={null}
+        afterId={data[data.length - 1]?.id || null}
+      />
       <AddCol onAdd={handleAddCol} />
     </div>
   );
@@ -321,8 +327,11 @@ const Column = React.forwardRef(
     ref
   ) => {
     const [active, setActive] = useState(false);
+    const dragEnterCounter = useRef(0);
+    const draggingCardRef = useRef(null);
 
     const handleDragStart = (e, card, oldColumn) => {
+      draggingCardRef.current = card;
       e.dataTransfer.setData("card", JSON.stringify(card));
       e.dataTransfer.setData("oldColumn", JSON.stringify(oldColumn));
       setDragType("card");
@@ -333,6 +342,7 @@ const Column = React.forwardRef(
       const oldColumn = JSON.parse(e.dataTransfer.getData("oldColumn") || "{}");
       setActive(false);
       clearHighlights();
+      dragEnterCounter.current = 0;
       const indicators = getIndicators();
       const { element } = getNearestIndicator(e, indicators);
       const before = element?.dataset.before || "-1";
@@ -348,16 +358,30 @@ const Column = React.forwardRef(
       setDragType(null);
     };
 
+    const handleDragEnter = (e) => {
+      if (dragType !== "card") return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragEnterCounter.current += 1;
+      if (dragEnterCounter.current === 1) {
+        setActive(true);
+      }
+    };
+
+    const handleDragLeave = () => {
+      if (dragType !== "card") return;
+      dragEnterCounter.current -= 1;
+      if (dragEnterCounter.current === 0) {
+        setActive(false);
+        clearHighlights();
+      }
+    };
+
     const handleDragOver = (e) => {
       if (dragType !== "card") return;
       e.preventDefault();
       highlightIndicator(e);
       setActive(true);
-    };
-
-    const handleDragLeave = () => {
-      clearHighlights();
-      setActive(false);
     };
 
     const getIndicators = () => {
@@ -374,7 +398,13 @@ const Column = React.forwardRef(
       const indicators = getIndicators();
       clearHighlights(indicators);
       const { element } = getNearestIndicator(e, indicators);
-      if (element) element.style.opacity = "1";
+      if (!element) return;
+      const beforeId = element.dataset.before;
+      const afterId = element.dataset.after;
+      const card = draggingCardRef.current;
+      if (!card?.id) return;
+      if (beforeId === card.id || afterId === card.id) return;
+      element.style.opacity = "1";
     };
 
     const getNearestIndicator = (e, indicators) => {
@@ -396,13 +426,14 @@ const Column = React.forwardRef(
 
     return (
       <div
+        ref={(el) => (ref.current[column.id] = el)}
         className={`dragdroptable-column ${active ? "active" : ""}`}
         draggable
         onDragStart={(e) => handleColDragStart(e, column)}
         onDrop={(e) => handleDragEnd(e, column)}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        ref={(el) => (ref.current[column.id] = el)}
+        onDragEnter={handleDragEnter}
       >
         <div
           style={{
@@ -508,20 +539,36 @@ const Card = React.forwardRef(
 
 Card.displayName = "Card";
 
-const DropIndicator = ({ beforeId, column }) => (
-  <div
-    className="dragdroptable-indicator"
-    data-before={beforeId || "-1"}
-    data-column={column?.id}
-  />
-);
-const DropIndicatorCol = ({ beforeId }) => (
-  <div
-    className="dragdroptable-indicator-col"
-    data-before={beforeId || "-1"}
-    data-indicator-board={true}
-  />
-);
+const DropIndicator = ({ beforeId, column }) => {
+  const items = column.items;
+  let afterId = null;
+
+  if (beforeId === null) {
+    afterId = items.length > 0 ? items[items.length - 1].id : null;
+  } else {
+    const index = items.findIndex((c) => c.id === beforeId);
+    afterId = index > 0 ? items[index - 1]?.id : null;
+  }
+
+  return (
+    <div
+      className="dragdroptable-indicator"
+      data-before={beforeId ?? "-1"}
+      data-after={afterId ?? "-1"}
+      data-column={column.id}
+    />
+  );
+};
+const DropIndicatorCol = ({ beforeId, afterId }) => {
+  return (
+    <div
+      className="dragdroptable-indicator-col"
+      data-before={beforeId ?? "-1"}
+      data-after={afterId ?? "-1"}
+      data-indicator-board={true}
+    />
+  );
+};
 
 const AddCol = ({ onAdd }) => {
   const [text, setText] = useState("");
@@ -659,43 +706,21 @@ const FieldEdit = ({ value, onEdit, menu = [], row = 5 }) => {
   }, [editing]);
 
   const renderControl = () => {
-    if (menu.length === 1) {
-      return (
-        <Button
-          type="icon"
-          onClick={() => {
-            menu[0].onClick?.();
-            setEditing(true);
-          }}
-        >
-          {menu[0].element || <MoreIcon direction="vertical" />}
-        </Button>
-      );
-    }
-
-    if (menu.length > 1) {
-      return (
-        <Dropdown
-          menu={menu.map((m) => {
-            const obj = { ...m };
-            obj.element = m.element;
-            if (!m.onClick || m.type === "edit") {
-              obj.onClick = () => setEditing(true);
-            }
-            return obj;
-          })}
-        >
-          <Button type="icon">
-            <MoreIcon direction="vertical" />
-          </Button>
-        </Dropdown>
-      );
-    }
-
     return (
-      <Button type="icon" onClick={() => setEditing(true)}>
-        <MoreIcon direction="vertical" />
-      </Button>
+      <Dropdown
+        menu={menu.map((m) => {
+          const obj = { ...m };
+          obj.element = m.element;
+          if (!m.onClick || m.type === "edit") {
+            obj.onClick = () => setEditing(true);
+          }
+          return obj;
+        })}
+      >
+        <Button type="icon">
+          <MoreIcon direction="vertical" />
+        </Button>
+      </Dropdown>
     );
   };
 
@@ -724,38 +749,5 @@ const FieldEdit = ({ value, onEdit, menu = [], row = 5 }) => {
     </div>
   );
 };
-
-const DEFAULT_CARDS = [
-  {
-    title: "col1",
-    id: "col1",
-    items: [
-      { title: "card1", id: "1" },
-      { title: "card2", id: "2" },
-      { title: "card3", id: "3" },
-      { title: "card4", id: "4" },
-    ],
-  },
-  {
-    title: "col2",
-    id: "col2",
-    items: [
-      { title: "card5", id: "5" },
-      { title: "card6", id: "6" },
-      { title: "card7", id: "7" },
-      { title: "card8", id: "8" },
-    ],
-  },
-  {
-    title: "col3",
-    id: "col3",
-    items: [
-      { title: "card9", id: "9" },
-      { title: "card10", id: "10" },
-      { title: "card11", id: "11" },
-      { title: "card12", id: "12" },
-    ],
-  },
-];
 
 export default DragDropTable;
