@@ -11,6 +11,7 @@ import {
   Modal,
   Panel,
   Divider,
+  DragDropTable,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 import { DropdownItem } from "./components/Dropdown/DropdownItem";
@@ -436,6 +437,7 @@ function App() {
         <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
         <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
       </Panel>
+      <DragDropTable />
     </>
   );
 }

@@ -10,7 +10,7 @@ import Stack from "../Stack";
 import Tooltip from "../Tooltip";
 
 const EllipsisWithTooltip = forwardRef(
-  ({ children, style = {}, placement, row = 1, ...rest }, ref) => {
+  ({ children, style = {}, placement, row = 1, offset = 8, ...rest }, ref) => {
     const localRef = useRef(null);
 
     const combinedRef = (el) => {
@@ -71,6 +71,7 @@ const EllipsisWithTooltip = forwardRef(
 
     return (
       <Tooltip
+        offset={offset}
         placement={placement}
         tooltip={isOverflowing ? localRef.current?.textContent : null}
       >
@@ -91,6 +92,7 @@ const EllipsisWithTooltip = forwardRef(
             onBlur={events.onBlur}
             style={{
               display: "inline-block",
+              width: "100%",
               overflow: "hidden",
               textOverflow: "ellipsis",
               ...multiLineStyle,
