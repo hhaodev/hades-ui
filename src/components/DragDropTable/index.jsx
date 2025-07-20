@@ -188,7 +188,9 @@ const DragDropTable = ({ data, onChange }) => {
   };
 
   const getNearestHorizontalIndicator = (e, indicators) => {
-    const offsetLeft = 50;
+    const target = e.target;
+    const cardElement = target.closest("[data-column-id]");
+    const offsetLeft = cardElement?.getBoundingClientRect()?.width / 2 || 128;
     return indicators.reduce(
       (closest, el) => {
         const box = el.getBoundingClientRect();
@@ -408,7 +410,9 @@ const Column = React.forwardRef(
     };
 
     const getNearestIndicator = (e, indicators) => {
-      const offsetTop = 50;
+      const target = e.target;
+      const cardElement = target.closest("[data-card-id]");
+      const offsetTop = cardElement?.getBoundingClientRect()?.height / 2 || 24;
       return indicators.reduce(
         (closest, el) => {
           const box = el.getBoundingClientRect();
@@ -428,6 +432,7 @@ const Column = React.forwardRef(
       <div
         ref={(el) => (ref.current[column.id] = el)}
         className={`dragdroptable-column ${active ? "active" : ""}`}
+        data-column-id={column.id}
         draggable
         onDragStart={(e) => handleColDragStart(e, column)}
         onDrop={(e) => handleDragEnd(e, column)}
@@ -526,6 +531,7 @@ const Card = React.forwardRef(
           e.stopPropagation();
           handleDragStart(e, item, column);
         }}
+        data-card-id={item.id}
       >
         <FieldEdit
           value={item.title}
