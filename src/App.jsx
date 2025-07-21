@@ -105,16 +105,12 @@ function App() {
   };
 
   const [data, setData] = useState(() => fetchDataFromLocalStorage());
-  const [old, setOld] = useState(() => fetchDataFromLocalStorage());
-  const oldRef = useRef(fetchDataFromLocalStorage());
 
   useEffect(() => {
     const handleStorageChange = (event) => {
       if (event.key === "data") {
         const newData = JSON.parse(event.newValue || "[]");
-        setOld(oldRef.current);
         setData(newData);
-        oldRef.current = newData;
       }
     };
 
@@ -125,6 +121,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem("data", JSON.stringify(data));
   }, [data]);
+
   return (
     <>
       <Stack
@@ -154,15 +151,7 @@ function App() {
           <Button onClick={() => setTheme("system")}>System</Button>
         </Stack>
         {/* end theme region */}
-        <DragDropTable
-          old={old}
-          data={data}
-          onChange={(v) => {
-            oldRef.current = data;
-            setOld(v);
-            setData(v);
-          }}
-        />
+        <DragDropTable data={data} onChange={setData} />
         <Divider />
         <Divider dashed />
         <Divider>divider</Divider>

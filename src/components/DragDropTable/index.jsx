@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import React, { useEffect, useId, useRef, useState } from "react";
 import { cn } from "../../utils";
 import Button from "../Button";
@@ -6,96 +7,7 @@ import EllipsisWithTooltip from "../EllipsisWithTooltip";
 import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
 import "./index.css";
 
-function useOverlayOnce({ targetRef, duration = 1000 }) {
-  const timeoutRef = useRef(null);
-
-  function show() {
-    const el = targetRef?.current;
-    if (!el) return;
-
-    el.classList.add("overlay-active");
-
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      el.classList.remove("overlay-active");
-      timeoutRef.current = null;
-    }, duration);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      targetRef?.current?.classList.remove("overlay-active");
-    };
-  }, []);
-
-  return show;
-}
-
-function detectLastDragChange(oldData, newData) {
-  if (JSON.stringify(oldData) === JSON.stringify(newData)) return null;
-
-  const oldCardIds = oldData.flatMap((col) => col.items.map((c) => c.id));
-  const newCardIds = newData.flatMap((col) => col.items.map((c) => c.id));
-
-  const cardAdded = newCardIds.find((id) => !oldCardIds.includes(id));
-  const cardRemoved = oldCardIds.find((id) => !newCardIds.includes(id));
-
-  if (cardAdded || cardRemoved) return null;
-
-  const oldColIds = oldData.map((col) => col.id);
-  const newColIds = newData.map((col) => col.id);
-
-  const colAdded = newColIds.find((id) => !oldColIds.includes(id));
-  const colRemoved = oldColIds.find((id) => !newColIds.includes(id));
-
-  if (colAdded || colRemoved) return null;
-
-  const newColIndex = newData.findIndex((col) => col.isLastDrag);
-  if (newColIndex !== -1) {
-    const newCol = newData[newColIndex];
-    const oldColIndex = oldData.findIndex((col) => col.id === newCol.id);
-    if (oldColIndex !== -1 && oldColIndex !== newColIndex) {
-      return {
-        type: "columnMove",
-        data: {
-          column: newCol,
-          newIndex: newColIndex,
-        },
-      };
-    }
-  }
-
-  for (const newCol of newData) {
-    const cardIndex = newCol.items.findIndex((c) => c.isLastDrag);
-    if (cardIndex !== -1) {
-      const card = newCol.items[cardIndex];
-      const oldCol = oldData.find((col) =>
-        col.items.some((c) => c.id === card.id)
-      );
-      const oldIndex = oldCol?.items.findIndex((c) => c.id === card.id);
-
-      const oldColId = oldCol?.id;
-      const newColId = newCol.id;
-
-      if (oldCol && (oldColId !== newColId || oldIndex !== cardIndex)) {
-        return {
-          type: "cardMove",
-          data: {
-            card,
-            oldCol,
-            targetCol: newCol,
-            dropIndex: cardIndex,
-          },
-        };
-      }
-    }
-  }
-
-  return null;
-}
-
-const DragDropTable = ({ old = [], data = [], onChange }) => {
+const DragDropTable = ({ data = [], onChange }) => {
   const uuid = useId();
   const [active, setActive] = useState(false);
   const dragType = useRef(null);
@@ -104,32 +16,7 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
   const dragEnterCounter = useRef(0);
-  const showOverlayOnce = useOverlayOnce({
-    targetRef: boardRef,
-    duration: 1000,
-  });
-
-  (() => {
-    const diff = detectLastDragChange(old, data);
-    console.log("🚀 ~ DragDropTable ~ diff:", diff);
-    if (diff) {
-      showOverlayOnce();
-      if (diff.type === "cardMove") {
-        updateCardsWithAnimation({
-          card: diff.data.card,
-          oldCol: diff.data.oldCol,
-          targetCol: diff.data.targetCol,
-          dropIndex: diff.data.dropIndex,
-        });
-      }
-      if (diff.type === "columnMove") {
-        handleMoveCol({
-          column: diff.data.column,
-          newIndex: diff.data.newIndex,
-        });
-      }
-    }
-  })(old, data);
+  const dragColRef = useRef(null);
 
   function handleAddCol(col) {
     onChange((prev) => [...prev, col]);
@@ -172,57 +59,23 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
     onChange((prev) => prev.filter((c) => c.id !== col.id));
   }
 
-  function handleMoveCol({ column, newIndex }) {
-    const colEl = columnRefs.current[column.id];
-    const prevRect = colEl?.getBoundingClientRect();
+  function handleMoveCol({ newIndex }) {
+    const dragInfo = dragColRef.current;
+    if (!dragInfo) return;
 
-    onChange((prev) => {
-      const next = structuredClone(prev);
-      const oldIndex = next.findIndex((col) => col.id === column.id);
+    const { oldIndex } = dragInfo;
+    if (oldIndex === -1 || oldIndex === newIndex) return;
 
-      if (
-        oldIndex === -1 ||
-        oldIndex === newIndex ||
-        oldIndex === newIndex - 1
-      ) {
-        return prev;
-      }
+    const next = [...data];
 
-      for (const col of next) {
-        col.isLastDrag = false;
-      }
+    const [moved] = next.splice(oldIndex, 1);
 
-      const [moved] = next.splice(oldIndex, 1);
-      moved.isLastDrag = true;
+    const adjustedIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
 
-      const insertAt = newIndex;
-      next.splice(insertAt, 0, moved);
+    next.splice(adjustedIndex, 0, moved);
 
-      return next;
-    });
-
-    if (!colEl) return;
-    requestAnimationFrame(() => {
-      const newEl = columnRefs.current[column.id];
-      if (!newEl) return;
-      const newRect = newEl.getBoundingClientRect();
-      const dx = prevRect.left - newRect.left;
-      const dy = prevRect.top - newRect.top;
-      if (dx === 0 && dy === 0) return;
-      newEl.style.transform = `translate(${dx}px, ${dy}px)`;
-      newEl.style.transition = "transform 0s";
-      requestAnimationFrame(() => {
-        newEl.style.transition = "transform 300ms ease";
-        newEl.style.transform = "";
-      });
-      newEl.addEventListener(
-        "transitionend",
-        () => {
-          newEl.style.transition = "";
-        },
-        { once: true }
-      );
-    });
+    onChange(next);
+    dragColRef.current = null;
   }
 
   function handleColDragStart(e, column) {
@@ -231,6 +84,8 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
     e.dataTransfer.setData("column", JSON.stringify(column));
     e.dataTransfer.setData("text/plain", JSON.stringify(column));
     dragType.current = "column";
+    const oldIndex = data.findIndex((col) => col.id === column.id);
+    dragColRef.current = { column, oldIndex };
     e.dataTransfer.setDragImage(new Image(), 0, 0);
     const el = columnRefs.current[column.id];
     const ghost = el.cloneNode(true);
@@ -332,79 +187,45 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
     );
   }
 
-  function updateCardsWithAnimation({ card, oldCol, targetCol, dropIndex }) {
+  function updateCard({ card, oldCol, targetCol, dropIndex }) {
     const cardId = card.id;
-    const cardEl = cardRefs.current[cardId];
     const oldColId = oldCol.id;
     const targetColId = targetCol.id;
-    const prevRect = cardEl?.getBoundingClientRect();
 
-    onChange((prev) => {
-      const next = structuredClone(prev);
+    const next = structuredClone(data);
 
-      for (const col of next) {
-        col.items = col.items.map((item) => ({ ...item, isLastDrag: false }));
+    const fromCol = next.find((col) => col.id === oldColId);
+    const toCol = next.find((col) => col.id === targetColId);
+    if (!toCol) return;
+
+    let cardToMove = null;
+
+    if (fromCol) {
+      const oldIndex = fromCol.items.findIndex((c) => c.id === cardId);
+      if (oldIndex !== -1) {
+        [cardToMove] = fromCol.items.splice(oldIndex, 1);
+
+        const isSameCol = oldColId === targetColId;
+        let adjustedIndex = dropIndex;
+        if (isSameCol && oldIndex < dropIndex) adjustedIndex = dropIndex - 1;
+
+        if (isSameCol && adjustedIndex === oldIndex) return;
+
+        toCol.items.splice(adjustedIndex, 0, cardToMove);
+        onChange(next);
+        return;
       }
+    }
 
-      const oldCol = next.find((col) => col.id === oldColId);
-      const targetCol = next.find((col) => col.id === targetColId);
-      if (!targetCol) return prev;
-
-      let cardToMove = null;
-
-      if (oldCol) {
-        const index = oldCol.items.findIndex((c) => c.id === cardId);
-        if (index !== -1) {
-          [cardToMove] = oldCol.items.splice(index, 1);
-
-          const isSameCol = oldColId === targetColId;
-          let adjustedIndex = dropIndex;
-          if (isSameCol && index < dropIndex) adjustedIndex = dropIndex - 1;
-
-          if (isSameCol && adjustedIndex === index) return prev;
-
-          const cardWithFlag = { ...cardToMove, isLastDrag: true };
-          targetCol.items.splice(adjustedIndex, 0, cardWithFlag);
-          return next;
-        }
-      }
-
-      const alreadyExists = targetCol.items.some((c) => c.id === cardId);
-      if (!alreadyExists) {
-        const cardWithFlag = { ...card, isLastDrag: true };
-        targetCol.items.splice(dropIndex, 0, cardWithFlag);
-        return next;
-      }
-
-      return prev;
-    });
-
-    if (!cardEl) return;
-    requestAnimationFrame(() => {
-      const newEl = cardRefs.current[cardId];
-      if (!newEl) return;
-      const newRect = newEl.getBoundingClientRect();
-      const dx = prevRect.left - newRect.left;
-      const dy = prevRect.top - newRect.top;
-      if (dx === 0 && dy === 0) return;
-      newEl.style.transform = `translate(${dx}px, ${dy}px)`;
-      newEl.style.transition = "transform 0s";
-      requestAnimationFrame(() => {
-        newEl.style.transition = "transform 300ms ease";
-        newEl.style.transform = "";
-      });
-      newEl.addEventListener(
-        "transitionend",
-        () => {
-          newEl.style.transition = "";
-        },
-        { once: true }
-      );
-    });
+    const alreadyExists = toCol.items.some((c) => c.id === cardId);
+    if (!alreadyExists) {
+      toCol.items.splice(dropIndex, 0, card);
+      onChange(next);
+    }
   }
 
   return (
-    <div
+    <motion.div
       ref={(el) => (boardRef.current = el)}
       className={cn("dragdroptable-board", { active: active })}
       onDrop={(e) => {
@@ -434,7 +255,7 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
               }}
               key={column.id}
               column={column}
-              setCards={updateCardsWithAnimation}
+              setCards={updateCard}
               cardRefs={cardRefs}
               handleColDragStart={handleColDragStart}
               dragType={dragType}
@@ -453,7 +274,7 @@ const DragDropTable = ({ old = [], data = [], onChange }) => {
         uuid={uuid}
       />
       <AddCol onAdd={handleAddCol} />
-    </div>
+    </motion.div>
   );
 };
 
@@ -574,11 +395,13 @@ const Column = React.forwardRef(
     }
 
     return (
-      <div
+      <motion.div
+        layout
+        layoutId={column.id}
         ref={ref}
         className={cn("dragdroptable-column", { active: active })}
         data-column-id={column.id}
-        draggable
+        draggable="true"
         onDragStart={(e) => {
           e.stopPropagation();
           handleColDragStart(e, column);
@@ -647,7 +470,7 @@ const Column = React.forwardRef(
         ))}
         <DropIndicator beforeId={null} column={column} uuid={uuid} />
         <AddCard column={column} setCards={setCards} />
-      </div>
+      </motion.div>
     );
   }
 );
@@ -678,9 +501,12 @@ const Card = React.forwardRef(
     ];
 
     return (
-      <div
+      <motion.div
+        key={item.id}
+        layout
+        layoutId={item.id}
         className="dragdroptable-card"
-        draggable
+        draggable="true"
         ref={ref}
         onDragStart={(e) => {
           e.stopPropagation();
@@ -696,7 +522,7 @@ const Card = React.forwardRef(
           onEdit={(val) => handelEditCardTitle(val, column, item)}
           action={menuItems}
         />
-      </div>
+      </motion.div>
     );
   }
 );
@@ -749,7 +575,11 @@ const AddCol = ({ onAdd }) => {
     setAdding(false);
   };
   return adding ? (
-    <form className="dragdroptable-form addcol" onSubmit={handleSubmit}>
+    <motion.form
+      layout
+      className="dragdroptable-form addcol"
+      onSubmit={handleSubmit}
+    >
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -771,9 +601,10 @@ const AddCol = ({ onAdd }) => {
           Add
         </Button>
       </div>
-    </form>
+    </motion.form>
   ) : (
-    <div
+    <motion.div
+      layout
       style={{
         width: "16rem",
         flexShrink: 0,
@@ -789,7 +620,7 @@ const AddCol = ({ onAdd }) => {
         <PlusIcon />
         Add column
       </Button>
-    </div>
+    </motion.div>
   );
 };
 
@@ -809,7 +640,7 @@ const AddCard = ({ column, setCards }) => {
     setAdding(false);
   };
   return adding ? (
-    <form className="dragdroptable-form" onSubmit={handleSubmit}>
+    <motion.form layout className="dragdroptable-form" onSubmit={handleSubmit}>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -824,9 +655,10 @@ const AddCard = ({ column, setCards }) => {
           <PlusIcon /> Add
         </Button>
       </div>
-    </form>
+    </motion.form>
   ) : (
-    <div
+    <motion.div
+      layout
       style={{
         display: "flex",
         justifyContent: "end",
@@ -835,7 +667,7 @@ const AddCard = ({ column, setCards }) => {
       <Button type="text" onClick={() => setAdding(true)}>
         <PlusIcon /> Add card
       </Button>
-    </div>
+    </motion.div>
   );
 };
 
@@ -897,7 +729,12 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
   };
 
   return editing ? (
-    <form className="dragdroptable-form" onSubmit={handleSubmit} ref={formRef}>
+    <motion.form
+      layout
+      className="dragdroptable-form"
+      onSubmit={handleSubmit}
+      ref={formRef}
+    >
       <textarea
         ref={textareaRef}
         value={text}
@@ -912,14 +749,14 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
           <SaveIcon /> Save
         </Button>
       </div>
-    </form>
+    </motion.form>
   ) : (
-    <div className="fieldedit-wrapper">
+    <motion.div layout className="fieldedit-wrapper">
       <EllipsisWithTooltip trigger={"click"} row={row}>
         {value}
       </EllipsisWithTooltip>
       {renderControl()}
-    </div>
+    </motion.div>
   );
 };
 
