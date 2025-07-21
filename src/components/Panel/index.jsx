@@ -4,6 +4,7 @@ import { calculatePaddingR, cn, useDisableScroll } from "../../utils";
 import Button from "../Button";
 import Stack from "../Stack";
 import "./index.css";
+import { CloseIcon } from "../Icon";
 
 const SIZE_MAP_WIDTH = {
   small: 300,
@@ -100,15 +101,8 @@ export default function Panel({
         <Stack className="panel-header">
           <Stack className="panel-title">{title ?? "Panel"}</Stack>
           <Stack className="panel-close-btn">
-            <Button
-              type="text"
-              style={{
-                height: "30px",
-                width: "30px",
-              }}
-              onClick={onClose}
-            >
-              X
+            <Button type="icon" onClick={onClose}>
+              <CloseIcon />
             </Button>
           </Stack>
         </Stack>

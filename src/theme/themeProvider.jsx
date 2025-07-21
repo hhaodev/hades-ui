@@ -35,6 +35,18 @@ export const ThemeProvider = ({ children, defaultTheme = "system" }) => {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "theme") {
+        const newTheme = event.newValue || "system";
+        setTheme(newTheme);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}

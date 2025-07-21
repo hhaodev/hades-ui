@@ -4,6 +4,7 @@ import { calculatePaddingR, cn, useDisableScroll } from "../../utils";
 import Button from "../Button";
 import Stack from "../Stack";
 import "./index.css";
+import { CloseIcon } from "../Icon";
 
 let mousePosition = null;
 
@@ -95,15 +96,8 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         <Stack className="modal-header">
           <Stack className="modal-title">{title ?? "Modal"}</Stack>
           <Stack className="modal-close-btn">
-            <Button
-              type="text"
-              style={{
-                height: "30px",
-                width: "30px",
-              }}
-              onClick={onClose}
-            >
-              X
+            <Button type="icon" onClick={onClose}>
+              <CloseIcon />
             </Button>
           </Stack>
         </Stack>

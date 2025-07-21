@@ -1,55 +1,10 @@
-import { useRef, useState, useLayoutEffect, useEffect } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Dropdown from "../Dropdown";
-import Button from "../Button";
 import { DropdownItem } from "../Dropdown/DropdownItem";
 import { DropdownMenu } from "../Dropdown/DropdownMenu";
-import Stack from "../Stack";
 import EllipsisWithTooltip from "../EllipsisWithTooltip";
-const DownIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-
-const UpIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="6 15 12 9 18 15" />
-  </svg>
-);
-
-const XIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+import { DownIcon, UpIcon, XIcon } from "../Icon";
+import Stack from "../Stack";
 
 export default function Select({
   value,
@@ -60,6 +15,7 @@ export default function Select({
   style,
   onClear,
 }) {
+  const [placement, setPlacement] = useState("");
   const selected = options.find((opt) => opt.value === value);
   const menuRef = useRef(null);
   const itemRefs = useRef({});
@@ -89,6 +45,7 @@ export default function Select({
       placement="bottom"
       open={open}
       onOpenChange={setOpen}
+      getPlacement={setPlacement}
       popupRender={() => (
         <DropdownMenu
           ref={(el) => {
@@ -158,7 +115,13 @@ export default function Select({
             color: "var(--hadesui-placeholder-color)",
           }}
         >
-          {selected ? <XIcon /> : open ? <UpIcon /> : <DownIcon />}
+          {selected ? (
+            <XIcon />
+          ) : open && !placement.startsWith("top") ? (
+            <UpIcon />
+          ) : (
+            <DownIcon />
+          )}
         </Stack>
       </Stack>
     </Dropdown>

@@ -89,6 +89,7 @@ export default function Dropdown({
   popupRender,
   popupStyles,
   fixedWidthPopup = true,
+  getPlacement,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -143,7 +144,7 @@ export default function Dropdown({
           } else {
             dropdownEl.style.maxWidth = "100%";
           }
-
+          getPlacement?.(resolvedPlacement);
           setActualPlacement(resolvedPlacement);
           setTimeout(() => setReady(true), 100);
         });

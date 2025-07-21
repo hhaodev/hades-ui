@@ -1,33 +1,39 @@
-.board-wrapper {
-    position: relative;
-}
-
-.board-overlay {
+.overlay-active::after {
+    content: "loading...";
     position: absolute;
     inset: 0;
     background: var(--hadesui-bg-mark-color);
-    z-index: 10;
-    pointer-events: all;
     cursor: wait;
-    transition: opacity 0.3s ease;
+    pointer-events: all;
+    z-index: 9999;
+    font-size: 20px;
+    font-weight: bold;
+    color: #d4d4d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .dragdroptable-board {
+    position: relative;
     display: flex;
-    padding: 16px 32px;
+    padding: 30px 10px;
     width: 100%;
     overflow-x: auto;
+    border: 1px solid transparent;
 }
 
 .dragdroptable-board.active {
     background: var(--hadesui-bg-board-active-color);
+    border-color: var(--hadesui-border-color);
+    border-style: dashed;
 }
 
 .dragdroptable-column {
     background-color: var(--hadesui-bg-color);
     box-shadow: 0 4px 12px var(--hadesui-boxshadow-color);
     cursor: grab;
-    margin-right: 8px;
     width: 16rem;
     flex-shrink: 0;
     transition: background-color 0.2s ease;
@@ -47,7 +53,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
     gap: 8px;
     margin-top: 10px;
 }
@@ -74,7 +79,6 @@
 .dragdroptable-card {
     background-color: var(--hadesui-card-bg-color);
     padding: 0.75rem;
-    margin-bottom: 0.5rem;
     border-radius: 0.25rem;
     cursor: grab;
     display: flex;
@@ -96,15 +100,17 @@
 }
 
 .dragdroptable-indicator {
-    height: 5px;
+    border-radius: 2px;
+    height: 10px;
     background: var(--hadesui-blue-6);
     opacity: 0;
     transition: opacity 0.1s;
 }
 
 .dragdroptable-indicator-col {
-    width: 10px;
-    min-width: 10px;
+    border-radius: 6px;
+    width: 18px;
+    min-width: 18px;
     background: var(--hadesui-blue-6);
     opacity: 0;
     transition: opacity 0.1s;

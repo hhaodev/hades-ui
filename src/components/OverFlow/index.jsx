@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useRef, useState, useMemo } from "react";
 import Button from "../Button";
 import Dropdown from "../Dropdown";
 import Stack from "../Stack";
+import { PlusIcon } from "../Icon";
 
 export const GAP = 10;
 
@@ -175,7 +176,9 @@ export default function OverFlow({ children, mode = "horizontal" }) {
               </Stack>
             )}
           >
-            <Button type="default">+ {overflowItems.length}</Button>
+            <Button type="default">
+              <PlusIcon /> {overflowItems.length}
+            </Button>
           </Dropdown>
         )}
       </div>
