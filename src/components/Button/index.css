@@ -70,6 +70,17 @@
     cursor: not-allowed;
 }
 
+.hds-btn-icon {
+    padding: 4px;
+    background-color: transparent;
+    color: var(--text-color);
+    height: fit-content;
+}
+
+.hds-btn-icon:hover:not(.hds-btn-disabled) {
+    background-color: var(--hadesui-bg-btn-text, #d9d9d9);
+}
+
 .hds-btn-spinner {
     width: 16px;
     height: 16px;

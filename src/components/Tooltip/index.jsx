@@ -56,6 +56,7 @@ const Tooltip = forwardRef(
       className = "",
       style = {},
       delay = 150,
+      trigger = "hover",
     },
     ref
   ) => {
@@ -67,6 +68,24 @@ const Tooltip = forwardRef(
     const cleanupRef = useRef(null);
     const hideTimer = useRef(null);
     const hideTimer2 = useRef(null);
+
+    useEffect(() => {
+      if (!trigger.includes("click") || !visible) return;
+
+      const handleClickOutside = (e) => {
+        if (
+          !tooltipRef.current?.contains(e.target) &&
+          !triggerRef.current?.contains(e.target)
+        ) {
+          hide();
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [visible, trigger]);
 
     const mergedRef = (el) => {
       triggerRef.current = el;
@@ -120,12 +139,25 @@ const Tooltip = forwardRef(
       return () => cleanup();
     }, [shouldRender, placement, offsetValue]);
 
-    const triggerEvents = {
-      onMouseEnter: show,
-      onMouseLeave: hide,
-      onFocus: show,
-      onBlur: hide,
-    };
+    const triggerEvents = {};
+
+    if (trigger.includes("hover")) {
+      triggerEvents.onMouseEnter = show;
+      triggerEvents.onMouseLeave = hide;
+      triggerEvents.onFocus = show;
+      triggerEvents.onBlur = hide;
+    }
+
+    if (trigger.includes("click")) {
+      triggerEvents.onClick = (e) => {
+        e.stopPropagation();
+        if (visible) {
+          hide();
+        } else {
+          show();
+        }
+      };
+    }
 
     let triggerNode = null;
 
@@ -174,8 +206,8 @@ const Tooltip = forwardRef(
           <TooltipPortal>
             <Stack
               ref={tooltipRef}
-              onMouseEnter={show}
-              onMouseLeave={hide}
+              onMouseEnter={trigger === "hover" ? show : undefined}
+              onMouseLeave={trigger === "hover" ? hide : undefined}
               style={{
                 ...positionStyle,
                 background: "var(--hadesui-tooltip-color)",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   Modal,
   Panel,
   Divider,
+  DragDropTable,
   Select,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
@@ -83,6 +84,39 @@ const menu = [
   },
 ];
 
+const DEFAULT_CARDS = [
+  {
+    title: "col1",
+    id: "col1",
+    items: [
+      { title: "card1", id: "1" },
+      { title: "card2", id: "2" },
+      { title: "card3", id: "3" },
+      { title: "card4", id: "4" },
+    ],
+  },
+  {
+    title: "col2",
+    id: "col2",
+    items: [
+      { title: "card5", id: "5" },
+      { title: "card6", id: "6" },
+      { title: "card7", id: "7" },
+      { title: "card8", id: "8" },
+    ],
+  },
+  {
+    title: "col3",
+    id: "col3",
+    items: [
+      { title: "card9", id: "9" },
+      { title: "card10", id: "10" },
+      { title: "card11", id: "11" },
+      { title: "card12", id: "12" },
+    ],
+  },
+];
+
 function App() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -93,6 +127,78 @@ function App() {
   const [openPanel, setOpenPanel] = useState(false);
   const [placementPanel, setPlacementPanel] = useState("right");
   const [selectedValue, setSelectedValue] = useState("");
+  const [data, setData] = useState(DEFAULT_CARDS);
+  const [itemsChange, setItemsChange] = useState({});
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setItemsChange({
+        type: "cardMove",
+        data: {
+          card: { title: "card5", id: "5" },
+          oldCol: {
+            title: "col2",
+            id: "col2",
+            items: [
+              { title: "card5", id: "5" },
+              { title: "card6", id: "6" },
+              { title: "card7", id: "7" },
+              { title: "card8", id: "8" },
+            ],
+          },
+          targetCol: {
+            title: "col1",
+            id: "col1",
+            items: [
+              { title: "card1", id: "1" },
+              { title: "card2", id: "2" },
+              { title: "card3", id: "3" },
+              { title: "card4", id: "4" },
+            ],
+          },
+          dropIndex: 4,
+        },
+      });
+    }, [2000]);
+    const timer2 = setTimeout(() => {
+      setItemsChange({
+        type: "columnMove",
+        data: {
+          column: {
+            title: "col1",
+            id: "col1",
+            items: [
+              {
+                title: "card1",
+                id: "1",
+              },
+              {
+                title: "card2",
+                id: "2",
+              },
+              {
+                title: "card3",
+                id: "3",
+              },
+              {
+                title: "card4",
+                id: "4",
+              },
+              {
+                title: "card5",
+                id: "5",
+              },
+            ],
+          },
+          newIndex: 3,
+        },
+      });
+    }, [4000]);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
+  }, []);
   return (
     <>
       <Stack
@@ -122,6 +228,14 @@ function App() {
           <Button onClick={() => setTheme("system")}>System</Button>
         </Stack>
         {/* end theme region */}
+        <DragDropTable
+          itemsChange={itemsChange}
+          data={data}
+          onChange={(newData, itemsChange) => {
+            console.log("🚀 ~ App ~ itemsChange:", itemsChange);
+            setData(newData);
+          }}
+        />
         <Divider />
         <Divider dashed />
         <Divider>divider</Divider>

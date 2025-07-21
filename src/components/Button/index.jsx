@@ -6,7 +6,7 @@ const Button = forwardRef(
   (
     {
       children,
-      type = "primary", // 'primary' | 'default' | 'link' | 'text' | 'dashed'
+      type = "primary", // 'primary' | 'default' | 'link' | 'text' | 'dashed' | 'icon'
       disabled = false,
       loading = false,
       onClick,

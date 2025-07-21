@@ -1,0 +1,151 @@
+.dragdroptable-board {
+    display: flex;
+    padding: 16px 32px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dragdroptable-board.active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dragdroptable-column {
+    background-color: var(--hadesui-bg-color);
+    box-shadow: 0 4px 12px var(--hadesui-boxshadow-color);
+    cursor: grab;
+    margin-right: 8px;
+    width: 16rem;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.dragdroptable-column.active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dragdroptable-column:active {
+    cursor: grabbing;
+}
+
+.dragdroptable-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.fieldedit-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.dragdroptable-title {
+    font-weight: bold;
+    width: 100%;
+}
+
+.dragdroptable-count {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.dragdroptable-card {
+    background-color: var(--hadesui-card-bg-color);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.25rem;
+    cursor: grab;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.dragdroptable-card.editing {
+    width: 100%;
+}
+
+.dragdroptable-card.title {
+    width: 100%;
+}
+
+.dragdroptable-card:active {
+    cursor: grabbing;
+}
+
+.dragdroptable-indicator {
+    height: 5px;
+    background: var(--hadesui-blue-6);
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.dragdroptable-indicator-col {
+    width: 10px;
+    min-width: 10px;
+    background: var(--hadesui-blue-6);
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+
+.dragdroptable-form.addcol {
+    width: 16rem;
+    flex-shrink: 0;
+}
+
+.dragdroptable-form {
+    width: 100%;
+}
+
+.dragdroptable-form textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--hadesui-bg-color);
+    border: 1px solid #a78bfa;
+    color: var(--hadesui-text-color);
+    resize: none;
+    border-radius: 0.25rem;
+    min-height: 50px;
+}
+
+.dragdroptable-form-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+
+.dragdroptable-add-button {
+    margin-top: 0.5rem;
+    color: #aaa;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dragdroptable-column.drag-over {
+    outline: 2px dashed #4096ff;
+    outline-offset: -4px;
+}
+
+.drag-ghost-column {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+    transform: scale(1.05);
+    transition: none;
+}

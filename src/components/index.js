@@ -9,3 +9,5 @@ export { default as Modal } from "./Modal";
 export { default as Panel } from "./Panel";
 export { default as Divider } from "./Divider";
 export { default as Select } from "./Select";
+export { default as DragDropTable } from "./DragDropTable";
+export * from "./Icon";

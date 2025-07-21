@@ -10,7 +10,18 @@ import Stack from "../Stack";
 import Tooltip from "../Tooltip";
 
 const EllipsisWithTooltip = forwardRef(
-  ({ children, style = {}, placement, row = 1, ...rest }, ref) => {
+  (
+    {
+      children,
+      style = {},
+      placement,
+      row = 1,
+      offset = 8,
+      trigger = "hover",
+      ...rest
+    },
+    ref
+  ) => {
     const localRef = useRef(null);
 
     const combinedRef = (el) => {
@@ -48,11 +59,21 @@ const EllipsisWithTooltip = forwardRef(
     if (isValidElement(children)) {
       const mergedStyle = {
         display: "inline",
+        cursor: trigger === "click" ? "pointer" : "auto",
         ...children.props.style,
       };
       wrappedChild = cloneElement(children, { style: mergedStyle });
     } else {
-      wrappedChild = <span style={{ display: "inline" }}>{children}</span>;
+      wrappedChild = (
+        <span
+          style={{
+            display: "inline",
+            cursor: trigger === "click" ? "pointer" : "auto",
+          }}
+        >
+          {children}
+        </span>
+      );
     }
 
     const multiLineStyle =
@@ -71,7 +92,9 @@ const EllipsisWithTooltip = forwardRef(
 
     return (
       <Tooltip
+        offset={offset}
         placement={placement}
+        trigger={trigger}
         tooltip={isOverflowing ? localRef.current?.textContent : null}
       >
         {(tooltipRef, events) => (
@@ -86,11 +109,13 @@ const EllipsisWithTooltip = forwardRef(
               handleMouseEnter();
               events.onMouseEnter?.(e);
             }}
+            onClick={events.onClick}
             onMouseLeave={events.onMouseLeave}
             onFocus={events.onFocus}
             onBlur={events.onBlur}
             style={{
               display: "inline-block",
+              width: "100%",
               overflow: "hidden",
               textOverflow: "ellipsis",
               ...multiLineStyle,
