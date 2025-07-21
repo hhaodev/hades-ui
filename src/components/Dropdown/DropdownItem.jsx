@@ -28,13 +28,13 @@ export const DropdownItem = forwardRef(
         style={{
           width: "100%",
           padding: "8px 12px",
-          cursor: "pointer",
           transition: "background 0.2s",
           borderRadius: 8,
           display: "flex",
           alignItems: "center",
           background: checked ? hoverBg : defaultBg,
           height: "50px",
+          cursor: onClick ? "pointer" : "auto",
           ...style,
         }}
         onMouseEnter={handleMouseEnter}

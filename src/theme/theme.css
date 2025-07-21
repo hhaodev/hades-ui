@@ -84,6 +84,7 @@ html.light {
     --hadesui-divider-color: rgba(0, 0, 0, 0.45);
     --hadesui-placeholder-color: var(--hadesui-gray-6);
     --hadesui-card-bg-color: var(--hadesui-gray-5);
+    --hadesui-bg-board-active-color: rgba(20, 20, 20, 0.05);
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -100,6 +101,7 @@ html.dark {
     --hadesui-divider-color: rgba(255, 255, 255, 0.45);
     --hadesui-placeholder-color: var(--hadesui-gray-7);
     --hadesui-card-bg-color: #3f3f3f;
+    --hadesui-bg-board-active-color: rgba(255, 255, 255, 0.05);
 }
 
 /* ===== Global Styles (using tokens) ===== */

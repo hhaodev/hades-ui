@@ -1,3 +1,17 @@
+.board-wrapper {
+    position: relative;
+}
+
+.board-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--hadesui-bg-mark-color);
+    z-index: 10;
+    pointer-events: all;
+    cursor: wait;
+    transition: opacity 0.3s ease;
+}
+
 .dragdroptable-board {
     display: flex;
     padding: 16px 32px;
@@ -6,7 +20,7 @@
 }
 
 .dragdroptable-board.active {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--hadesui-bg-board-active-color);
 }
 
 .dragdroptable-column {
@@ -22,7 +36,7 @@
 }
 
 .dragdroptable-column.active {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--hadesui-bg-board-active-color);
 }
 
 .dragdroptable-column:active {
@@ -47,6 +61,7 @@
 }
 
 .dragdroptable-title {
+    font-size: 20px;
     font-weight: bold;
     width: 100%;
 }

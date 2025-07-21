@@ -66,7 +66,7 @@ export const MoreIcon = ({
 export const TrashIcon = ({
   size = 14,
   color = "currentColor",
-  strokeWidth = 1,
+  strokeWidth = 1.5,
   ...props
 }) => {
   return (

@@ -1,47 +1,174 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
+import { cn } from "../../utils";
 import Button from "../Button";
 import Dropdown from "../Dropdown";
 import EllipsisWithTooltip from "../EllipsisWithTooltip";
 import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
 import "./index.css";
 
-const DragDropTable = ({ itemsChange, data, onChange }) => {
+function useOverlayOnce({ targetRef, duration = 1000 }) {
+  const overlayRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  function show() {
+    const target = targetRef?.current;
+    if (!target) return;
+
+    if (overlayRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        overlayRef.current?.remove();
+        overlayRef.current = null;
+        timeoutRef.current = null;
+      }, duration);
+      return;
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "custom-overlay";
+    Object.assign(overlay.style, {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "var(--hadesui-bg-mark-color)",
+      zIndex: 9999,
+      pointerEvents: "all",
+      cursor: "wait",
+      transition: "opacity 0.3s ease",
+    });
+
+    target.appendChild(overlay);
+    overlayRef.current = overlay;
+
+    timeoutRef.current = setTimeout(() => {
+      overlay.remove();
+      overlayRef.current = null;
+      timeoutRef.current = null;
+      target.style.cursor = "auto";
+    }, duration);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (overlayRef.current) overlayRef.current.remove();
+    };
+  }, []);
+
+  return show;
+}
+
+function detectLastDragChange(oldData, newData) {
+  if (JSON.stringify(oldData) === JSON.stringify(newData)) return null;
+
+  const oldCardIds = oldData.flatMap((col) => col.items.map((c) => c.id));
+  const newCardIds = newData.flatMap((col) => col.items.map((c) => c.id));
+
+  const cardAdded = newCardIds.find((id) => !oldCardIds.includes(id));
+  const cardRemoved = oldCardIds.find((id) => !newCardIds.includes(id));
+
+  if (cardAdded || cardRemoved) return null;
+
+  const oldColIds = oldData.map((col) => col.id);
+  const newColIds = newData.map((col) => col.id);
+
+  const colAdded = newColIds.find((id) => !oldColIds.includes(id));
+  const colRemoved = oldColIds.find((id) => !newColIds.includes(id));
+
+  if (colAdded || colRemoved) return null;
+
+  const newColIndex = newData.findIndex((col) => col.isLastDrag);
+  if (newColIndex !== -1) {
+    const newCol = newData[newColIndex];
+    const oldColIndex = oldData.findIndex((col) => col.id === newCol.id);
+    if (oldColIndex !== -1 && oldColIndex !== newColIndex) {
+      return {
+        type: "columnMove",
+        data: {
+          column: newCol,
+          newIndex: newColIndex,
+        },
+      };
+    }
+  }
+
+  for (const newCol of newData) {
+    const cardIndex = newCol.items.findIndex((c) => c.isLastDrag);
+    if (cardIndex !== -1) {
+      const card = newCol.items[cardIndex];
+      const oldCol = oldData.find((col) =>
+        col.items.some((c) => c.id === card.id)
+      );
+      const oldIndex = oldCol?.items.findIndex((c) => c.id === card.id);
+
+      const oldColId = oldCol?.id;
+      const newColId = newCol.id;
+
+      if (oldCol && (oldColId !== newColId || oldIndex !== cardIndex)) {
+        return {
+          type: "cardMove",
+          data: {
+            card,
+            oldCol,
+            targetCol: newCol,
+            dropIndex: cardIndex,
+          },
+        };
+      }
+    }
+  }
+
+  return null;
+}
+const DragDropTable = ({ old, data, onChange }) => {
+  const uuid = useId();
   const [active, setActive] = useState(false);
   const [dragType, setDragType] = useState(null);
+  const boardRef = useRef();
   const cardRefs = useRef({});
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
   const dragEnterCounter = useRef(0);
 
-  useEffect(() => {
-    if (!itemsChange) return;
-    if (itemsChange.type === "cardMove") {
+  const showOverlayOnce = useOverlayOnce({
+    targetRef: boardRef,
+    duration: 1000,
+  });
+
+  const diff = detectLastDragChange(old, data);
+  console.log("🚀 ~ DragDropTable ~ diff:", diff);
+
+  if (diff) {
+    showOverlayOnce();
+    if (diff.type === "cardMove") {
       updateCardsWithAnimation({
-        card: itemsChange.data.card,
-        oldCol: itemsChange.data.oldCol,
-        targetCol: itemsChange.data.targetCol,
-        dropIndex: itemsChange.data.dropIndex,
+        card: diff.data.card,
+        oldCol: diff.data.oldCol,
+        targetCol: diff.data.targetCol,
+        dropIndex: diff.data.dropIndex,
       });
     }
-    if (itemsChange.type === "columnMove") {
+    if (diff.type === "columnMove") {
       handleMoveCol({
-        column: itemsChange.data.column,
-        newIndex: itemsChange.data.newIndex,
+        column: diff.data.column,
+        newIndex: diff.data.newIndex,
       });
     }
-  }, [JSON.stringify(itemsChange)]);
+  }
 
-  const handleAddCol = (col) => {
+  function handleAddCol(col) {
     onChange((prev) => [...prev, col]);
-  };
+  }
 
-  const handleEditTitleCol = (val, col) => {
+  function handleEditTitleCol(val, col) {
     onChange((prev) =>
       prev.map((c) => (c.id === col.id ? { ...c, title: val } : c))
     );
-  };
+  }
 
-  const handelEditCardTitle = (val, col, card) => {
+  function handelEditCardTitle(val, col, card) {
     onChange((prev) =>
       prev.map((c) => {
         if (c.id !== col.id) return c;
@@ -53,9 +180,9 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
         };
       })
     );
-  };
+  }
 
-  const handleDeleteCard = (card, col) => {
+  function handleDeleteCard(card, col) {
     onChange((prev) =>
       prev.map((column) =>
         column.title === col.title
@@ -66,41 +193,41 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
           : column
       )
     );
-  };
+  }
 
-  const handleDeleteCol = (col) => {
+  function handleDeleteCol(col) {
     onChange((prev) => prev.filter((c) => c.id !== col.id));
-  };
+  }
 
-  const handleMoveCol = ({ column, newIndex }) => {
-    console.log("🚀 ~ handleMoveCol ~ column:", column);
-    console.log("🚀 ~ handleMoveCol ~ newIndex:", newIndex);
+  function handleMoveCol({ column, newIndex }) {
     const colEl = columnRefs.current[column.id];
     const prevRect = colEl?.getBoundingClientRect();
-    onChange(
-      (prev) => {
-        const next = structuredClone(prev);
-        const oldIndex = next.findIndex((col) => col.id === column.id);
 
-        if (
-          oldIndex === -1 ||
-          oldIndex === newIndex ||
-          oldIndex === newIndex - 1
-        ) {
-          return prev;
-        }
+    onChange((prev) => {
+      const next = structuredClone(prev);
+      const oldIndex = next.findIndex((col) => col.id === column.id);
 
-        const [moved] = next.splice(oldIndex, 1);
-        const insertAt = oldIndex < newIndex ? newIndex - 1 : newIndex;
-        next.splice(insertAt, 0, moved);
-
-        return next;
-      },
-      {
-        type: "columnMove",
-        data: { column, newIndex },
+      if (
+        oldIndex === -1 ||
+        oldIndex === newIndex ||
+        oldIndex === newIndex - 1
+      ) {
+        return prev;
       }
-    );
+
+      for (const col of next) {
+        col.isLastDrag = false;
+      }
+
+      const [moved] = next.splice(oldIndex, 1);
+      moved.isLastDrag = true;
+
+      const insertAt = oldIndex < newIndex ? newIndex - 1 : newIndex;
+      next.splice(insertAt, 0, moved);
+
+      return next;
+    });
+
     if (!colEl) return;
     requestAnimationFrame(() => {
       const newEl = columnRefs.current[column.id];
@@ -123,10 +250,12 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
         { once: true }
       );
     });
-  };
+  }
 
-  const handleColDragStart = (e, column) => {
+  function handleColDragStart(e, column) {
+    e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("column", JSON.stringify(column));
+    e.dataTransfer.setData("text/plain", JSON.stringify(column));
     setDragType("column");
     e.dataTransfer.setDragImage(new Image(), 0, 0);
     const el = columnRefs.current[column.id];
@@ -147,10 +276,10 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
       }
     };
     document.addEventListener("dragend", cleanup, { once: true });
-  };
+  }
 
-  const handleDragEnd = (e) => {
-    if (dragType !== "column") return;
+  function handleDragEnd(e) {
+    if (dragType !== "column" || dragType === null) return;
     const newCol = JSON.parse(e.dataTransfer.getData("column") || "{}");
     setActive(false);
     clearHighlights();
@@ -162,53 +291,54 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
       before === "-1" ? data.length : data.findIndex((c) => c.id === before);
     handleMoveCol({ column: newCol, newIndex: dropIndex });
     setDragType(null);
-  };
+    e.dataTransfer.clearData();
+  }
 
-  const getIndicators = () => {
+  function getIndicators() {
     return Array.from(
-      document.querySelectorAll(`[data-indicator-board="true"]`)
+      document.querySelectorAll(`[data-indicator-board="${uuid}"]`)
     );
-  };
+  }
 
-  const handleDragOver = (e) => {
-    if (dragType !== "column") return;
+  function handleDragOver(e) {
+    if (dragType !== "column" || dragType === null) return;
     e.preventDefault();
     highlightIndicator(e);
     setActive(true);
-  };
+  }
 
-  const handleDragEnter = (e) => {
-    if (dragType !== "column") return;
+  function handleDragEnter(e) {
+    if (dragType !== "column" || dragType === null) return;
     e.preventDefault();
     e.stopPropagation();
     dragEnterCounter.current += 1;
     if (dragEnterCounter.current === 1) {
       setActive(true);
     }
-  };
+  }
 
-  const handleDragLeave = () => {
-    if (dragType !== "column") return;
+  function handleDragLeave() {
+    if (dragType !== "column" || dragType === null) return;
     dragEnterCounter.current -= 1;
     if (dragEnterCounter.current === 0) {
       setActive(false);
       clearHighlights();
     }
-  };
+  }
 
-  const clearHighlights = (els = getIndicators()) => {
+  function clearHighlights(els = getIndicators()) {
     return els.forEach((i) => (i.style.opacity = "0"));
-  };
+  }
 
-  const highlightIndicator = (e) => {
+  function highlightIndicator(e) {
     const indicators = getIndicators();
     clearHighlights(indicators);
     const { element } = getNearestHorizontalIndicator(e, indicators);
     if (!element) return;
     element.style.opacity = "1";
-  };
+  }
 
-  const getNearestHorizontalIndicator = (e, indicators) => {
+  function getNearestHorizontalIndicator(e, indicators) {
     const target = e.target;
     const cardElement = target.closest("[data-column-id]");
     const offsetLeft = cardElement?.getBoundingClientRect()?.width / 2 || 128;
@@ -226,52 +356,54 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
         element: indicators[indicators.length - 1],
       }
     );
-  };
+  }
 
-  const updateCardsWithAnimation = ({ card, oldCol, targetCol, dropIndex }) => {
+  function updateCardsWithAnimation({ card, oldCol, targetCol, dropIndex }) {
     const cardId = card.id;
     const cardEl = cardRefs.current[cardId];
     const oldColId = oldCol.id;
     const targetColId = targetCol.id;
     const prevRect = cardEl?.getBoundingClientRect();
-    onChange(
-      (prev) => {
-        const next = structuredClone(prev);
-        const oldCol = next.find((col) => col.id === oldColId);
-        const targetCol = next.find((col) => col.id === targetColId);
-        if (!targetCol) return prev;
 
-        let cardToMove = null;
+    onChange((prev) => {
+      const next = structuredClone(prev);
 
-        if (oldCol) {
-          const index = oldCol.items.findIndex((c) => c.id === cardId);
-          if (index !== -1) {
-            [cardToMove] = oldCol.items.splice(index, 1);
+      for (const col of next) {
+        col.items = col.items.map((item) => ({ ...item, isLastDrag: false }));
+      }
 
-            const isSameCol = oldColId === targetColId;
-            let adjustedIndex = dropIndex;
-            if (isSameCol && index < dropIndex) adjustedIndex = dropIndex - 1;
+      const oldCol = next.find((col) => col.id === oldColId);
+      const targetCol = next.find((col) => col.id === targetColId);
+      if (!targetCol) return prev;
 
-            if (isSameCol && adjustedIndex === index) return prev;
+      let cardToMove = null;
 
-            targetCol.items.splice(adjustedIndex, 0, cardToMove);
-            return next;
-          }
-        }
+      if (oldCol) {
+        const index = oldCol.items.findIndex((c) => c.id === cardId);
+        if (index !== -1) {
+          [cardToMove] = oldCol.items.splice(index, 1);
 
-        const alreadyExists = targetCol.items.some((c) => c.id === cardId);
-        if (!alreadyExists) {
-          targetCol.items.splice(dropIndex, 0, card);
+          const isSameCol = oldColId === targetColId;
+          let adjustedIndex = dropIndex;
+          if (isSameCol && index < dropIndex) adjustedIndex = dropIndex - 1;
+
+          if (isSameCol && adjustedIndex === index) return prev;
+
+          const cardWithFlag = { ...cardToMove, isLastDrag: true };
+          targetCol.items.splice(adjustedIndex, 0, cardWithFlag);
           return next;
         }
-
-        return prev;
-      },
-      {
-        type: "cardMove",
-        data: { card, oldCol, targetCol, dropIndex },
       }
-    );
+
+      const alreadyExists = targetCol.items.some((c) => c.id === cardId);
+      if (!alreadyExists) {
+        const cardWithFlag = { ...card, isLastDrag: true };
+        targetCol.items.splice(dropIndex, 0, cardWithFlag);
+        return next;
+      }
+
+      return prev;
+    });
 
     if (!cardEl) return;
     requestAnimationFrame(() => {
@@ -295,46 +427,61 @@ const DragDropTable = ({ itemsChange, data, onChange }) => {
         { once: true }
       );
     });
-  };
+  }
 
   return (
-    <div
-      className={`dragdroptable-board ${active ? "active" : ""}`}
-      onDrop={(e) => {
-        e.stopPropagation();
-        handleDragEnd(e);
-      }}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDragEnter={handleDragEnter}
-    >
-      {data?.map((column, index) => {
-        const afterId = index > 0 ? data[index - 1].id : null;
-        return (
-          <div style={{ display: "flex" }} key={column.id}>
-            <DropIndicatorCol beforeId={column.id} afterId={afterId} />
-            <Column
-              ref={columnRefs}
-              key={column.id}
-              column={column}
-              setCards={updateCardsWithAnimation}
-              cardRefs={cardRefs}
-              handleColDragStart={handleColDragStart}
-              dragType={dragType}
-              setDragType={setDragType}
-              handleEditTitleCol={handleEditTitleCol}
-              handelEditCardTitle={handelEditCardTitle}
-              handleDeleteCol={handleDeleteCol}
-              handleDeleteCard={handleDeleteCard}
-            />
-          </div>
-        );
-      })}
-      <DropIndicatorCol
-        beforeId={null}
-        afterId={data[data.length - 1]?.id || null}
-      />
-      <AddCol onAdd={handleAddCol} />
+    <div className="board-wrapper">
+      <div
+        ref={(el) => (boardRef.current = el)}
+        className={cn("dragdroptable-board", { active: active })}
+        onDrop={(e) => {
+          e.stopPropagation();
+          handleDragEnd(e);
+        }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDragEnter={handleDragEnter}
+      >
+        {data?.map((column, index) => {
+          const afterId = index > 0 ? data[index - 1].id : null;
+          return (
+            <div style={{ display: "flex" }} key={column.id}>
+              <DropIndicatorCol
+                beforeId={column.id}
+                afterId={afterId}
+                uuid={uuid}
+              />
+              <Column
+                ref={(el) => {
+                  if (el) {
+                    columnRefs.current[column.id] = el;
+                  } else {
+                    delete columnRefs.current[column.id];
+                  }
+                }}
+                key={column.id}
+                column={column}
+                setCards={updateCardsWithAnimation}
+                cardRefs={cardRefs}
+                handleColDragStart={handleColDragStart}
+                dragType={dragType}
+                setDragType={setDragType}
+                handleEditTitleCol={handleEditTitleCol}
+                handelEditCardTitle={handelEditCardTitle}
+                handleDeleteCol={handleDeleteCol}
+                handleDeleteCard={handleDeleteCard}
+                uuid={uuid}
+              />
+            </div>
+          );
+        })}
+        <DropIndicatorCol
+          beforeId={null}
+          afterId={data[data.length - 1]?.id || null}
+          uuid={uuid}
+        />
+        <AddCol onAdd={handleAddCol} />
+      </div>
     </div>
   );
 };
@@ -352,20 +499,26 @@ const Column = React.forwardRef(
       handelEditCardTitle,
       handleDeleteCol,
       handleDeleteCard,
+      uuid,
     },
     ref
   ) => {
     const [active, setActive] = useState(false);
     const dragEnterCounter = useRef(0);
 
-    const handleDragStart = (e, card, oldColumn) => {
+    function handleDragStart(e, card, oldColumn) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData(
+        "text/plain",
+        JSON.stringify({ card: card, oldColumn: oldColumn })
+      );
       e.dataTransfer.setData("card", JSON.stringify(card));
       e.dataTransfer.setData("oldColumn", JSON.stringify(oldColumn));
       setDragType("card");
-    };
+    }
 
-    const handleDragEnd = (e, targetColumn) => {
-      if (dragType !== "card") return;
+    function handleDragEnd(e, targetColumn) {
+      if (dragType !== "card" || dragType === null) return;
       const card = JSON.parse(e.dataTransfer.getData("card") || "{}");
       const oldColumn = JSON.parse(e.dataTransfer.getData("oldColumn") || "{}");
       setActive(false);
@@ -384,53 +537,54 @@ const Column = React.forwardRef(
 
       setCards({ card, oldCol: oldColumn, targetCol: targetColumn, dropIndex });
       setDragType(null);
-    };
+      e.dataTransfer.clearData();
+    }
 
-    const handleDragEnter = (e) => {
-      if (dragType !== "card") return;
+    function handleDragEnter(e) {
+      if (dragType !== "card" || dragType === null) return;
       e.preventDefault();
       e.stopPropagation();
       dragEnterCounter.current += 1;
       if (dragEnterCounter.current === 1) {
         setActive(true);
       }
-    };
+    }
 
-    const handleDragLeave = () => {
-      if (dragType !== "card") return;
+    function handleDragLeave() {
+      if (dragType !== "card" || dragType === null) return;
       dragEnterCounter.current -= 1;
       if (dragEnterCounter.current === 0) {
         setActive(false);
         clearHighlights();
       }
-    };
+    }
 
-    const handleDragOver = (e) => {
-      if (dragType !== "card") return;
+    function handleDragOver(e) {
+      if (dragType !== "card" || dragType === null) return;
       e.preventDefault();
       highlightIndicator(e);
       setActive(true);
-    };
+    }
 
-    const getIndicators = () => {
+    function getIndicators() {
       return Array.from(
-        document.querySelectorAll(`[data-column="${column?.id}"]`)
+        document.querySelectorAll(`[data-column="${column?.id}-${uuid}"]`)
       );
-    };
+    }
 
-    const clearHighlights = (els = getIndicators()) => {
+    function clearHighlights(els = getIndicators()) {
       els.forEach((i) => (i.style.opacity = "0"));
-    };
+    }
 
-    const highlightIndicator = (e) => {
+    function highlightIndicator(e) {
       const indicators = getIndicators();
       clearHighlights(indicators);
       const { element } = getNearestIndicator(e, indicators);
       if (!element) return;
       element.style.opacity = "1";
-    };
+    }
 
-    const getNearestIndicator = (e, indicators) => {
+    function getNearestIndicator(e, indicators) {
       const target = e.target;
       const cardElement = target.closest("[data-card-id]");
       const offsetTop = cardElement?.getBoundingClientRect()?.height / 2 || 24;
@@ -447,12 +601,12 @@ const Column = React.forwardRef(
           element: indicators[indicators.length - 1],
         }
       );
-    };
+    }
 
     return (
       <div
-        ref={(el) => (ref.current[column.id] = el)}
-        className={`dragdroptable-column ${active ? "active" : ""}`}
+        ref={ref}
+        className={cn("dragdroptable-column", { active: active })}
         data-column-id={column.id}
         draggable
         onDragStart={(e) => handleColDragStart(e, column)}
@@ -482,16 +636,16 @@ const Column = React.forwardRef(
               menu={[
                 {
                   element: (
-                    <div>
+                    <>
                       <PenIcon /> <span>Edit title</span>
-                    </div>
+                    </>
                   ),
                 },
                 {
                   element: (
-                    <div>
+                    <>
                       <TrashIcon /> <span>Delete column</span>
-                    </div>
+                    </>
                   ),
                   onClick: () => handleDeleteCol(column),
                 },
@@ -501,18 +655,24 @@ const Column = React.forwardRef(
         </div>
         {column?.items?.map((item) => (
           <React.Fragment key={item.id}>
-            <DropIndicator beforeId={item.id} column={column} />
+            <DropIndicator beforeId={item.id} column={column} uuid={uuid} />
             <Card
               item={item}
               column={column}
               handleDragStart={handleDragStart}
-              ref={(el) => (cardRefs.current[item.id] = el)}
+              ref={(el) => {
+                if (el) {
+                  cardRefs.current[item.id] = el;
+                } else {
+                  delete cardRefs.current[item.id];
+                }
+              }}
               handelEditCardTitle={handelEditCardTitle}
               handleDeleteCard={handleDeleteCard}
             />
           </React.Fragment>
         ))}
-        <DropIndicator beforeId={null} column={column} />
+        <DropIndicator beforeId={null} column={column} uuid={uuid} />
         <AddCard column={column} setCards={setCards} />
       </div>
     );
@@ -529,16 +689,16 @@ const Card = React.forwardRef(
     const menuItems = [
       {
         element: (
-          <div>
+          <>
             <PenIcon /> <span>Edit card</span>
-          </div>
+          </>
         ),
       },
       {
         element: (
-          <div>
+          <>
             <TrashIcon /> <span>Delete card</span>
-          </div>
+          </>
         ),
         onClick: () => handleDeleteCard(item, column),
       },
@@ -570,7 +730,7 @@ const Card = React.forwardRef(
 
 Card.displayName = "Card";
 
-const DropIndicator = ({ beforeId, column }) => {
+const DropIndicator = ({ beforeId, column, uuid }) => {
   const items = column.items;
   let afterId = null;
 
@@ -586,17 +746,17 @@ const DropIndicator = ({ beforeId, column }) => {
       className="dragdroptable-indicator"
       data-before={beforeId ?? "-1"}
       data-after={afterId ?? "-1"}
-      data-column={column.id}
+      data-column={`${column.id}-${uuid}`}
     />
   );
 };
-const DropIndicatorCol = ({ beforeId, afterId }) => {
+const DropIndicatorCol = ({ beforeId, afterId, uuid }) => {
   return (
     <div
       className="dragdroptable-indicator-col"
       data-before={beforeId ?? "-1"}
       data-after={afterId ?? "-1"}
-      data-indicator-board={true}
+      data-indicator-board={uuid}
     />
   );
 };
@@ -659,12 +819,12 @@ const AddCard = ({ column, setCards }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    setCards(
-      { id: Math.random().toString(), title: text.trim() },
-      column,
-      column,
-      column.items.length
-    );
+    setCards({
+      card: { id: Math.random().toString(), title: text.trim() },
+      oldCol: column,
+      targetCol: column,
+      dropIndex: column.items.length,
+    });
     setText("");
     setAdding(false);
   };
@@ -739,6 +899,7 @@ const FieldEdit = ({ value, onEdit, menu = [], row = 5 }) => {
   const renderControl = () => {
     return (
       <Dropdown
+        fixedWidthPopup={false}
         menu={menu.map((m) => {
           const obj = { ...m };
           obj.element = m.element;
@@ -762,7 +923,6 @@ const FieldEdit = ({ value, onEdit, menu = [], row = 5 }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        rows={row}
       />
       <div className="dragdroptable-form-actions">
         <Button type="default" onClick={handleCancel}>
