@@ -9,7 +9,7 @@ import {
 import Stack from "../Stack";
 import Tooltip from "../Tooltip";
 
-const EllipsisWithTooltip = forwardRef(
+const Ellipsis = forwardRef(
   (
     {
       children,
@@ -46,10 +46,6 @@ const EllipsisWithTooltip = forwardRef(
         setIsOverflowing(el.scrollHeight > maxHeight + 1);
       }
     };
-
-    useEffect(() => {
-      checkOverflow();
-    }, [children, row]);
 
     const handleMouseEnter = () => {
       checkOverflow();
@@ -130,5 +126,5 @@ const EllipsisWithTooltip = forwardRef(
   }
 );
 
-EllipsisWithTooltip.displayName = "EllipsisWithTooltip";
-export default EllipsisWithTooltip;
+Ellipsis.displayName = "Ellipsis";
+export default Ellipsis;

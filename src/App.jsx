@@ -3,7 +3,7 @@ import "./App.css";
 import {
   Button,
   Dropdown,
-  EllipsisWithTooltip,
+  Ellipsis,
   OverFlow,
   ResizableBox,
   Stack,
@@ -13,6 +13,9 @@ import {
   Divider,
   DragDropTable,
   Select,
+  Input,
+  Form,
+  UploadFile,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 import { DropdownItem } from "./components/Dropdown/DropdownItem";
@@ -84,6 +87,7 @@ const menu = [
   },
 ];
 function App() {
+  const [form] = Form.useForm();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [open2, setOpen2] = useState(false);
@@ -122,36 +126,169 @@ function App() {
     localStorage.setItem("data", JSON.stringify(data));
   }, [data]);
 
+  let queue = [];
+  let isRunning = false;
+
+  function handleMove(newData, diffInfo) {
+    queue.push({ newData, diffInfo });
+    processQueue();
+  }
+
+  async function processQueue() {
+    if (isRunning || queue.length === 0) return;
+    isRunning = true;
+
+    const { newData, diffInfo } = queue.shift();
+    setData(newData);
+
+    try {
+      await fakeApiCall({ shouldFail: false });
+    } catch {
+      setData((prev) => rollbackMoveCard(prev, diffInfo));
+    } finally {
+      isRunning = false;
+      processQueue();
+    }
+  }
+  function rollbackMoveCard(board, diff, useOriginalIndex = false) {
+    const { cardId, fromColId, toColId, fromIndex } = diff;
+    const next = structuredClone(board);
+
+    const fromCol = next.find((col) => col.id === fromColId);
+    const toCol = next.find((col) => col.id === toColId);
+    if (!fromCol || !toCol) return board;
+
+    const idx = toCol.items.findIndex((item) => item.id === cardId);
+    if (idx === -1) return board;
+
+    const [moved] = toCol.items.splice(idx, 1);
+
+    if (useOriginalIndex && fromIndex !== -1) {
+      fromCol.items.splice(fromIndex, 0, moved);
+    } else {
+      fromCol.items.push(moved);
+    }
+
+    return next;
+  }
+  function fakeApiCall({ shouldFail = false, delay = 3000 } = {}) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (shouldFail || Math.random() < 1) {
+          reject(new Error("Lỗi gọi API (giả lập)"));
+        } else {
+          resolve({ data: "Dữ liệu trả về từ API" });
+        }
+      }, delay);
+    });
+  }
+
   return (
     <>
       <Stack
         style={{
           padding: "10px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
         }}
+        flexCol
+        gap={8}
       >
         {/* theme region */}
-        <Stack direction="row">
+        <Stack flex>
           <span>THEME</span>: {theme.toUpperCase()}
         </Stack>
-        <Stack
-          style={{
-            display: "flex",
-            gap: 8,
-          }}
-        >
-          <Button type="default" onClick={() => setTheme("light")}>
+        <Stack flex gap={8}>
+          <Button theme="default" onClick={() => setTheme("light")}>
             Light
           </Button>
-          <Button type="default" onClick={() => setTheme("dark")}>
+          <Button theme="default" onClick={() => setTheme("dark")}>
             Dark
           </Button>
           <Button onClick={() => setTheme("system")}>System</Button>
         </Stack>
         {/* end theme region */}
-        <DragDropTable data={data} onChange={setData} />
+        <DragDropTable data={data} onChange={handleMove} />
+        <Input type="date" onChange={(v) => console.log(v)} />
+        <Select
+          value={selectedValue}
+          onChange={(v) => setSelectedValue(v)}
+          options={Array.from({ length: 50 }, (_, i) => {
+            const val = `${i + 1}0000000000000`.toString();
+            return { label: val, value: val };
+          })}
+          placeholder="Chọn 1 số nào hẹ hẹ"
+          onClear={() => setSelectedValue("")}
+        />
+        <Form
+          form={form}
+          onFinish={(values) => {
+            console.log("Submit:", values);
+          }}
+        >
+          <Form.Item
+            label="Email"
+            name="email"
+            validateTrigger="onChange"
+            rules={[
+              { required: true, message: "Email là bắt buộc" },
+              { pattern: /^\S+@\S+\.\S+$/, message: "Email không hợp lệ" },
+            ]}
+          >
+            <Input placeholder="Nhập email" />
+          </Form.Item>
+          <Form.Item
+            label="Age"
+            name="age"
+            validateTrigger={["onBlur"]}
+            rules={[
+              { required: true, message: "Tuổi là bắt buộc" },
+              {
+                validate: {
+                  positive: (v) => v > 0 || "Phải lớn hơn 0",
+                  lessThan100: (v) => v < 100 || "Phải nhỏ hơn 100",
+                },
+              },
+            ]}
+          >
+            <Input type="number" />
+          </Form.Item>
+
+          <Form.Item label="Chọn file" name="file" rules={[{ required: true }]}>
+            <UploadFile />
+          </Form.Item>
+
+          <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
+            <Select
+              options={Array.from({ length: 50 }, (_, i) => {
+                const val = `${i + 1}0000000000000`.toString();
+                return { label: val, value: val };
+              })}
+              placeholder="Chọn 1 số nào hẹ hẹ"
+            />
+          </Form.Item>
+
+          <Button type="submit">Submit</Button>
+        </Form>
+        <Stack flexCol gap={8}>
+          <Button
+            onClick={() => form.setFieldsValue({ email: "hehe@gmail.com" })}
+          >
+            Set email to hehe@gmail.com
+          </Button>
+          <Button
+            onClick={() =>
+              form.setError("email", {
+                type: "manual",
+                message: "Nội dung email lỗi",
+              })
+            }
+          >
+            Set error email
+          </Button>
+          <Button onClick={() => form.clearErrors("email")}>
+            Clear email error
+          </Button>
+          <Button onClick={() => form.clearErrors()}>Clear all error</Button>
+        </Stack>
         <Divider />
         <Divider dashed />
         <Divider>divider</Divider>
@@ -161,18 +298,13 @@ function App() {
         <Divider dashed>divider dashed</Divider>
         {/* button region */}
         <Stack>BUTTON</Stack>
-        <Stack
-          style={{
-            display: "flex",
-            gap: 8,
-          }}
-        >
+        <Stack flex gap={8}>
           <OverFlow>
-            <Button type="default">default</Button>
-            <Button type="primary">primary</Button>
-            <Button type="link">link</Button>
-            <Button type="text">text</Button>
-            <Button type="dashed">dashed</Button>
+            <Button theme="default">default</Button>
+            <Button theme="primary">primary</Button>
+            <Button theme="link">link</Button>
+            <Button theme="text">text</Button>
+            <Button theme="dashed">dashed</Button>
             <Button loading>loading</Button>
             <Button disabled>disabled</Button>
           </OverFlow>
@@ -185,11 +317,11 @@ function App() {
         <Stack>
           <ResizableBox width={50}>
             <OverFlow mode="vertical">
-              <Button type="default">default</Button>
-              <Button type="primary">primary</Button>
-              <Button type="link">link</Button>
-              <Button type="text">text</Button>
-              <Button type="dashed">dashed</Button>
+              <Button theme="default">default</Button>
+              <Button theme="primary">primary</Button>
+              <Button theme="link">link</Button>
+              <Button theme="text">text</Button>
+              <Button theme="dashed">dashed</Button>
               <Button loading>loading</Button>
               <Button disabled>disabled</Button>
             </OverFlow>
@@ -201,11 +333,11 @@ function App() {
         <Stack>
           <ResizableBox width={500}>
             <OverFlow>
-              <Button type="default">default</Button>
-              <Button type="primary">primary</Button>
-              <Button type="link">link</Button>
-              <Button type="text">text</Button>
-              <Button type="dashed">dashed</Button>
+              <Button theme="default">default</Button>
+              <Button theme="primary">primary</Button>
+              <Button theme="link">link</Button>
+              <Button theme="text">text</Button>
+              <Button theme="dashed">dashed</Button>
               <Button loading>loading</Button>
               <Button disabled>disabled</Button>
             </OverFlow>
@@ -217,38 +349,33 @@ function App() {
         {/* dropdown region */}
         <Stack>DROPDOWN</Stack>
         <Stack>
-          <Stack
-            style={{
-              display: "flex",
-              gap: 8,
-            }}
-          >
+          <Stack flex gap={8}>
             <Dropdown placement="top-start" menu={menu}>
-              <Button type="default">TOP L</Button>
+              <Button theme="default">TOP L</Button>
             </Dropdown>
             <Dropdown placement="top" menu={menu}>
-              <Button type="default">TOP CENTER</Button>
+              <Button theme="default">TOP CENTER</Button>
             </Dropdown>
             <Dropdown placement="top-end" menu={menu}>
-              <Button type="default">TOP R</Button>
+              <Button theme="default">TOP R</Button>
             </Dropdown>
             <Dropdown placement="bottom-start" menu={menu}>
-              <Button type="default">BOT L</Button>
+              <Button theme="default">BOT L</Button>
             </Dropdown>
             <Dropdown placement="bottom" menu={menu}>
-              <Button type="default">BOT CENTER</Button>
+              <Button theme="default">BOT CENTER</Button>
             </Dropdown>
             <Dropdown placement="bottom-end" menu={menu}>
-              <Button type="default">BOT R</Button>
+              <Button theme="default">BOT R</Button>
             </Dropdown>
             <Dropdown menu={menu}>
-              <Button type="default">NO</Button>
+              <Button theme="default">NO</Button>
             </Dropdown>
             <Dropdown menu={menu} placement="right">
-              <Button type="default">RIGHT</Button>
+              <Button theme="default">RIGHT</Button>
             </Dropdown>
             <Dropdown menu={menu} placement="left">
-              <Button type="default">LEFT</Button>
+              <Button theme="default">LEFT</Button>
             </Dropdown>
             <Dropdown
               fixedWidthPopup={false}
@@ -257,9 +384,9 @@ function App() {
               popupRender={() => (
                 <Dropdown.Menu>
                   <DropdownItem>
-                    <EllipsisWithTooltip>
+                    <Ellipsis>
                       ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </EllipsisWithTooltip>
+                    </Ellipsis>
                   </DropdownItem>
                   <DropdownItem row={2}>
                     <Stack>
@@ -289,7 +416,7 @@ function App() {
                 </Dropdown.Menu>
               )}
             >
-              <Button type="default">Open Custom Popup</Button>
+              <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
               open={open2}
@@ -299,7 +426,7 @@ function App() {
               }}
               menu={<>hehehehehehe</>}
             >
-              <Button type="default">Open Custom Popup</Button>
+              <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
           </Stack>
         </Stack>
@@ -308,16 +435,7 @@ function App() {
 
         {/* tooltip region */}
         <Stack>TOOLTIP</Stack>
-        <Select
-          value={selectedValue}
-          onChange={(v) => setSelectedValue(v)}
-          options={Array.from({ length: 50 }, (_, i) => {
-            const val = `${i + 1}0000000000000`.toString();
-            return { label: val, value: val };
-          })}
-          placeholder="Chọn 1 số nào hẹ hẹ"
-          onClear={() => setSelectedValue("")}
-        />
+
         <Stack>
           <Button>
             <Tooltip tooltip="Button Tooltip">Button Tooltip</Tooltip>
@@ -334,31 +452,26 @@ function App() {
         <Tooltip tooltip="Tooltip string">auto có tooltip</Tooltip>
         <Divider />
 
-        <EllipsisWithTooltip placement="right" style={{ maxWidth: 100 }}>
+        <Ellipsis placement="right" style={{ maxWidth: 100 }}>
           <div>Tooltip with ellipsis</div>
-        </EllipsisWithTooltip>
+        </Ellipsis>
         <Divider />
 
-        <EllipsisWithTooltip style={{ maxWidth: 2000 }}>
+        <Ellipsis style={{ maxWidth: 2000 }}>
           Đủ chiều rộng. nên sẽ k có tooltip
-        </EllipsisWithTooltip>
+        </Ellipsis>
         <Divider />
 
-        <EllipsisWithTooltip row={3}>
+        <Ellipsis row={3}>
           ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-        </EllipsisWithTooltip>
+        </Ellipsis>
         {/* end tooltip region */}
         <Divider>TOOLTIP</Divider>
 
         {/* modal region */}
         <Stack>MODAL</Stack>
 
-        <Stack
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
+        <Stack flex justify="space-between">
           <Button onClick={() => setOpenModal(true)}>Open Modal</Button>
           <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
         </Stack>
@@ -406,7 +519,7 @@ function App() {
       <Modal
         title={"Modal 1"}
         buttons={[
-          <Button type="default" key="ok">
+          <Button theme="default" key="ok">
             Custom btn
           </Button>,
           <Button key="close">Custom btn</Button>,
@@ -416,7 +529,7 @@ function App() {
       >
         content modal 1
         <Dropdown menu={menu}>
-          <Button type="default">NO</Button>
+          <Button theme="default">NO</Button>
         </Dropdown>
         <Button onClick={() => setOpenModal3(true)}>Open next modal</Button>
       </Modal>

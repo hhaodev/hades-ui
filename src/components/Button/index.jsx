@@ -6,7 +6,7 @@ const Button = forwardRef(
   (
     {
       children,
-      type = "primary", // 'primary' | 'default' | 'link' | 'text' | 'dashed' | 'icon'
+      theme = "primary", // 'primary' | 'default' | 'link' | 'text' | 'dashed' | 'icon'
       disabled = false,
       loading = false,
       onClick,
@@ -23,7 +23,7 @@ const Button = forwardRef(
     const handleClick = (e) => {
       const btn = innerRef.current;
       if (!btn) return;
-      if (type !== "link" && type !== "text") {
+      if (theme !== "link" && theme !== "text") {
         btn.classList.remove("hds-btn-wave-effect");
         void btn.offsetWidth;
         btn.classList.add("hds-btn-wave-effect");
@@ -44,7 +44,7 @@ const Button = forwardRef(
         ref={innerRef}
         className={cn(
           "hds-btn",
-          `hds-btn-${type}`,
+          `hds-btn-${theme}`,
           { "hds-btn-disabled": isDisabled },
           { "hds-btn-loading": loading },
           className

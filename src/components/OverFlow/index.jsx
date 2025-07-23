@@ -176,7 +176,7 @@ export default function OverFlow({ children, mode = "horizontal" }) {
               </Stack>
             )}
           >
-            <Button type="default">
+            <Button theme="default">
               <PlusIcon /> {overflowItems.length}
             </Button>
           </Dropdown>

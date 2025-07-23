@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import Stack from "../Stack";
-import EllipsisWithTooltip from "../EllipsisWithTooltip";
+import Ellipsis from "../Ellipsis";
 
 export const DropdownItem = forwardRef(
   ({ children, onClick, row = 1, style, checked = false, ...rest }, ref) => {
@@ -41,7 +41,7 @@ export const DropdownItem = forwardRef(
         onMouseLeave={handleMouseLeave}
         {...rest}
       >
-        <EllipsisWithTooltip row={row}>{children}</EllipsisWithTooltip>
+        <Ellipsis row={row}>{children}</Ellipsis>
       </Stack>
     );
   }

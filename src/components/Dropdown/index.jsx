@@ -90,6 +90,7 @@ export default function Dropdown({
   popupStyles,
   fixedWidthPopup = true,
   getPlacement,
+  onClickOutSide,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -172,6 +173,7 @@ export default function Dropdown({
         !referenceRef.current?.contains(e.target) &&
         !dropdownRef.current?.contains(e.target)
       ) {
+        onClickOutSide(e);
         setOpen(false);
       }
     };
@@ -184,6 +186,7 @@ export default function Dropdown({
     const triggerProps = {
       onClick: (e) => {
         if (!acquireClickLock()) return;
+        e.stopPropagation();
         children.props.onClick?.(e);
         setOpen((prev) => !prev);
       },
@@ -199,7 +202,9 @@ export default function Dropdown({
 
   return (
     <>
-      <Stack style={{ display: "inline-block", cursor: "pointer" }}>
+      <Stack
+        style={{ display: "inline-block", cursor: "pointer", width: "100%" }}
+      >
         {triggerNode}
       </Stack>
       {shouldRender &&
@@ -211,7 +216,7 @@ export default function Dropdown({
                 background: "var(--hadesui-bg-color)",
                 borderRadius: 8,
                 boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
-                minWidth: 100,
+                minWidth: 150,
                 width: fixedWidthPopup
                   ? referenceRef?.current?.getBoundingClientRect()?.width
                   : "fit-content",
@@ -237,8 +242,9 @@ export default function Dropdown({
                   {menu.map((i, idx) => (
                     <DropdownItem
                       key={idx}
-                      onClick={() => {
-                        i?.onClick();
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        i?.onClick(e);
                         setOpen(false);
                       }}
                       checked={i.checked}

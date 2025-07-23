@@ -1,10 +1,23 @@
 import { motion } from "framer-motion";
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "../../utils";
 import Button from "../Button";
 import Dropdown from "../Dropdown";
-import EllipsisWithTooltip from "../EllipsisWithTooltip";
-import { MoreIcon, PenIcon, PlusIcon, SaveIcon, TrashIcon } from "../Icon";
+import Ellipsis from "../Ellipsis";
+import {
+  CopyIcon,
+  MoreIcon,
+  PenIcon,
+  PlusIcon,
+  SaveIcon,
+  TrashIcon,
+} from "../Icon";
 import "./index.css";
 
 const DragDropTable = ({ data = [], onChange }) => {
@@ -63,7 +76,7 @@ const DragDropTable = ({ data = [], onChange }) => {
     const dragInfo = dragColRef.current;
     if (!dragInfo) return;
 
-    const { oldIndex } = dragInfo;
+    const { oldIndex, column } = dragInfo;
     if (oldIndex === -1 || oldIndex === newIndex) return;
 
     const next = [...data];
@@ -74,7 +87,12 @@ const DragDropTable = ({ data = [], onChange }) => {
 
     next.splice(adjustedIndex, 0, moved);
 
-    onChange(next);
+    onChange(next, {
+      type: "moveColumn",
+      colId: column.id,
+      fromIndex: oldIndex,
+      toIndex: newIndex,
+    });
     dragColRef.current = null;
   }
 
@@ -82,7 +100,7 @@ const DragDropTable = ({ data = [], onChange }) => {
     setTimeout(() => boardRef?.current?.classList.remove("overlay-active"), 10);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("column", JSON.stringify(column));
-    e.dataTransfer.setData("text/plain", JSON.stringify(column));
+    // e.dataTransfer.setData("text/plain", JSON.stringify(column));
     dragType.current = "column";
     const oldIndex = data.findIndex((col) => col.id === column.id);
     dragColRef.current = { column, oldIndex };
@@ -187,6 +205,18 @@ const DragDropTable = ({ data = [], onChange }) => {
     );
   }
 
+  function handleCopyCard(card, column) {
+    updateCard({
+      card: {
+        id: Math.random().toString(),
+        title: `${card.title.trim()}-copy`,
+      },
+      oldCol: column,
+      targetCol: column,
+      dropIndex: column.items.length,
+    });
+  }
+
   function updateCard({ card, oldCol, targetCol, dropIndex }) {
     const cardId = card.id;
     const oldColId = oldCol.id;
@@ -212,7 +242,15 @@ const DragDropTable = ({ data = [], onChange }) => {
         if (isSameCol && adjustedIndex === oldIndex) return;
 
         toCol.items.splice(adjustedIndex, 0, cardToMove);
-        onChange(next);
+        const diffInfo = {
+          type: "moveCard",
+          cardId,
+          fromColId: oldColId,
+          toColId: targetColId,
+          fromIndex: oldIndex,
+          toIndex: adjustedIndex,
+        };
+        onChange(next, diffInfo);
         return;
       }
     }
@@ -220,7 +258,15 @@ const DragDropTable = ({ data = [], onChange }) => {
     const alreadyExists = toCol.items.some((c) => c.id === cardId);
     if (!alreadyExists) {
       toCol.items.splice(dropIndex, 0, card);
-      onChange(next);
+      const diffInfo = {
+        type: "moveCard",
+        cardId,
+        fromColId: oldColId,
+        toColId: targetColId,
+        fromIndex: -1,
+        toIndex: dropIndex,
+      };
+      onChange(next, diffInfo);
     }
   }
 
@@ -263,6 +309,7 @@ const DragDropTable = ({ data = [], onChange }) => {
               handelEditCardTitle={handelEditCardTitle}
               handleDeleteCol={handleDeleteCol}
               handleDeleteCard={handleDeleteCard}
+              handleCopyCard={handleCopyCard}
               uuid={uuid}
             />
           </div>
@@ -290,19 +337,21 @@ const Column = React.forwardRef(
       handelEditCardTitle,
       handleDeleteCol,
       handleDeleteCard,
+      handleCopyCard,
       uuid,
     },
     ref
   ) => {
     const [active, setActive] = useState(false);
     const dragEnterCounter = useRef(0);
+    const addCardRef = useRef(null);
 
     function handleDragStart(e, card, oldColumn) {
       e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData(
-        "text/plain",
-        JSON.stringify({ card: card, oldColumn: oldColumn })
-      );
+      // e.dataTransfer.setData(
+      //   "text/plain",
+      //   JSON.stringify({ card: card, oldColumn: oldColumn })
+      // );
       e.dataTransfer.setData("card", JSON.stringify(card));
       e.dataTransfer.setData("oldColumn", JSON.stringify(oldColumn));
       dragType.current = "card";
@@ -433,14 +482,22 @@ const Column = React.forwardRef(
                 {
                   element: (
                     <>
-                      <PenIcon /> <span>Edit title</span>
+                      <PenIcon /> <span>Edit</span>
                     </>
                   ),
                 },
                 {
                   element: (
                     <>
-                      <TrashIcon /> <span>Delete column</span>
+                      <PlusIcon /> <span>Add card</span>
+                    </>
+                  ),
+                  onClick: () => addCardRef.current.open(),
+                },
+                {
+                  element: (
+                    <>
+                      <TrashIcon /> <span>Delete</span>
                     </>
                   ),
                   onClick: () => handleDeleteCol(column),
@@ -465,11 +522,12 @@ const Column = React.forwardRef(
               }}
               handelEditCardTitle={handelEditCardTitle}
               handleDeleteCard={handleDeleteCard}
+              handleCopyCard={handleCopyCard}
             />
           </React.Fragment>
         ))}
         <DropIndicator beforeId={null} column={column} uuid={uuid} />
-        <AddCard column={column} setCards={setCards} />
+        <AddCard ref={addCardRef} column={column} setCards={setCards} />
       </motion.div>
     );
   }
@@ -479,21 +537,36 @@ Column.displayName = "Column";
 
 const Card = React.forwardRef(
   (
-    { item, handleDragStart, column, handelEditCardTitle, handleDeleteCard },
+    {
+      item,
+      handleDragStart,
+      column,
+      handelEditCardTitle,
+      handleDeleteCard,
+      handleCopyCard,
+    },
     ref
   ) => {
     const menuItems = [
       {
         element: (
           <>
-            <PenIcon /> <span>Edit card</span>
+            <PenIcon /> <span>Edit</span>
           </>
         ),
       },
       {
         element: (
           <>
-            <TrashIcon /> <span>Delete card</span>
+            <CopyIcon /> <span>Copy</span>
+          </>
+        ),
+        onClick: () => handleCopyCard(item, column),
+      },
+      {
+        element: (
+          <>
+            <TrashIcon /> <span>Delete</span>
           </>
         ),
         onClick: () => handleDeleteCard(item, column),
@@ -502,6 +575,9 @@ const Card = React.forwardRef(
 
     return (
       <motion.div
+        onClick={() => {
+          console.log("click");
+        }}
         key={item.id}
         layout
         layoutId={item.id}
@@ -624,7 +700,7 @@ const AddCol = ({ onAdd }) => {
   );
 };
 
-const AddCard = ({ column, setCards }) => {
+const AddCard = React.forwardRef(({ column, setCards }, ref) => {
   const [text, setText] = useState("");
   const [adding, setAdding] = useState(false);
   const handleSubmit = (e) => {
@@ -639,6 +715,28 @@ const AddCard = ({ column, setCards }) => {
     setText("");
     setAdding(false);
   };
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setAdding(false);
+      setText("");
+    } else if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+  const handleClose = () => {
+    setAdding(false);
+    setText("");
+  };
+  const handleOpen = () => {
+    setAdding(true);
+  };
+  useImperativeHandle(ref, () => ({
+    close: handleClose,
+    open: handleOpen,
+    submit: handleSubmit,
+  }));
   return adding ? (
     <motion.form layout className="dragdroptable-form" onSubmit={handleSubmit}>
       <textarea
@@ -646,9 +744,10 @@ const AddCard = ({ column, setCards }) => {
         onChange={(e) => setText(e.target.value)}
         placeholder="Add card..."
         autoFocus
+        onKeyDown={handleKeyDown}
       />
       <div className="dragdroptable-form-actions">
-        <Button type="default" onClick={() => setAdding(false)}>
+        <Button theme="default" onClick={handleClose}>
           Cancel
         </Button>
         <Button>
@@ -664,12 +763,14 @@ const AddCard = ({ column, setCards }) => {
         justifyContent: "end",
       }}
     >
-      <Button type="text" onClick={() => setAdding(true)}>
+      <Button theme="text" onClick={handleOpen}>
         <PlusIcon /> Add card
       </Button>
     </motion.div>
   );
-};
+});
+
+AddCard.displayName = "AddCard";
 
 const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
   const [editing, setEditing] = useState(false);
@@ -721,7 +822,7 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
           return obj;
         })}
       >
-        <Button type="icon">
+        <Button theme="icon">
           <MoreIcon direction="vertical" />
         </Button>
       </Dropdown>
@@ -734,6 +835,7 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
       className="dragdroptable-form"
       onSubmit={handleSubmit}
       ref={formRef}
+      onClick={(e) => e.stopPropagation()}
     >
       <textarea
         ref={textareaRef}
@@ -742,7 +844,7 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
         onKeyDown={handleKeyDown}
       />
       <div className="dragdroptable-form-actions">
-        <Button type="default" onClick={handleCancel}>
+        <Button theme="default" onClick={handleCancel}>
           Cancel
         </Button>
         <Button>
@@ -752,9 +854,7 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
     </motion.form>
   ) : (
     <motion.div layout className="fieldedit-wrapper">
-      <EllipsisWithTooltip trigger={"click"} row={row}>
-        {value}
-      </EllipsisWithTooltip>
+      <Ellipsis row={row}>{value}</Ellipsis>
       {renderControl()}
     </motion.div>
   );

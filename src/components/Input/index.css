@@ -1,0 +1,27 @@
+.common-input {
+    width: 100%;
+    padding: 0px 8px;
+    background-color: var(--hadesui-bg-color);
+    color: var(--hadesui-text-color);
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--hadesui-border-color);
+}
+
+.common-input:focus {
+    outline: none;
+    border-color: var(--hadesui-border-focus-color);
+    box-shadow: none;
+}
+
+.common-input[type="number"]::-webkit-outer-spin-button,
+.common-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.common-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}

@@ -4,10 +4,13 @@ export { default as OverFlow } from "./OverFlow";
 export { default as ResizableBox } from "./ResizableBox";
 export { default as Dropdown } from "./Dropdown";
 export { default as Tooltip } from "./Tooltip";
-export { default as EllipsisWithTooltip } from "./EllipsisWithTooltip";
+export { default as Ellipsis } from "./Ellipsis";
 export { default as Modal } from "./Modal";
 export { default as Panel } from "./Panel";
 export { default as Divider } from "./Divider";
 export { default as Select } from "./Select";
 export { default as DragDropTable } from "./DragDropTable";
+export { default as Input } from "./Input";
+export { default as UploadFile } from "./UploadFile";
+export * from "./Form"
 export * from "./Icon";

@@ -101,7 +101,7 @@ export default function Panel({
         <Stack className="panel-header">
           <Stack className="panel-title">{title ?? "Panel"}</Stack>
           <Stack className="panel-close-btn">
-            <Button type="icon" onClick={onClose}>
+            <Button theme="icon" onClick={onClose}>
               <CloseIcon />
             </Button>
           </Stack>
@@ -118,7 +118,7 @@ export default function Panel({
         <Stack className="panel-footer">
           {(
             buttons ?? [
-              <Button type="default" key="close-panel-modal" onClick={onClose}>
+              <Button theme="default" key="close-panel-modal" onClick={onClose}>
                 Close
               </Button>,
             ]

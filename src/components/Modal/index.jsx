@@ -96,7 +96,7 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         <Stack className="modal-header">
           <Stack className="modal-title">{title ?? "Modal"}</Stack>
           <Stack className="modal-close-btn">
-            <Button type="icon" onClick={onClose}>
+            <Button theme="icon" onClick={onClose}>
               <CloseIcon />
             </Button>
           </Stack>
@@ -113,7 +113,7 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         <Stack className="modal-footer">
           {(
             buttons ?? [
-              <Button type="default" key="close-button-modal" onClick={onClose}>
+              <Button theme="default" key="close-button-modal" onClick={onClose}>
                 Close
               </Button>,
             ]

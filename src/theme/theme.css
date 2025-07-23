@@ -76,6 +76,7 @@ html.light {
     --hadesui-text-color: var(--hadesui-gray-10);
     --hadesui-bg-btn-text: var(--hadesui-gray-4);
     --hadesui-border-color: var(--hadesui-gray-5);
+    --hadesui-border-focus-color: var(--hadesui-gray-6);
     --hadesui-boxshadow-color: rgba(0, 0, 0, 0.4);
     --hadesui-tooltip-color: var(--hadesui-gray-8);
     --hadesui-tooltiptext-color: var(--hadesui-gray-3);
@@ -93,6 +94,7 @@ html.dark {
     --hadesui-text-color: var(--hadesui-gray-1);
     --hadesui-bg-btn-text: var(--hadesui-gray-8);
     --hadesui-border-color: var(--hadesui-gray-8);
+    --hadesui-border-focus-color: var(--hadesui-gray-7);
     --hadesui-boxshadow-color: rgba(0, 0, 0, 0.6);
     --hadesui-tooltip-color: var(--hadesui-gray-5);
     --hadesui-tooltiptext-color: var(--hadesui-gray-10);
@@ -134,4 +136,15 @@ body {
 * {
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+[data-border-red-error="true"] {
+    border: 1px solid red !important;
+    outline: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+[data-color-red-error="true"] {
+    color: red !important;
 }
