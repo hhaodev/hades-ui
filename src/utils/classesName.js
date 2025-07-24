@@ -11,5 +11,6 @@ export function cn(...args) {
       }
       return cls;
     })
-    .join(" ");
+    .join(" ")
+    .trim();
 }

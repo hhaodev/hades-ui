@@ -1,12 +1,38 @@
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border: 1px solid var(--hadesui-border-color);
+    border-radius: 8px;
+    background-color: var(--hadesui-bg-color);
+    color: var(--hadesui-text-color);
+    overflow: hidden;
+    padding: 0px 8px;
+}
+
 .common-input {
     width: 100%;
-    padding: 0px 8px;
     background-color: var(--hadesui-bg-color);
     color: var(--hadesui-text-color);
     height: 36px;
     font-size: 14px;
     border-radius: 8px;
-    border: 1px solid var(--hadesui-border-color);
+    border: none;
+}
+
+.input-icon {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+}
+
+.input-icon.prefix {
+    margin-right: 8px;
+}
+
+.input-icon.suffix {
+    margin-left: 8px;
 }
 
 .common-input:focus {

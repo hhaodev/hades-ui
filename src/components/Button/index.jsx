@@ -11,6 +11,7 @@ const Button = forwardRef(
       loading = false,
       onClick,
       className = "",
+      type = "button",
       ...rest
     },
     ref
@@ -51,6 +52,7 @@ const Button = forwardRef(
         )}
         onClick={isDisabled ? undefined : handleClick}
         disabled={isDisabled}
+        type={type}
         {...rest}
       >
         {loading && <span className="hds-btn-spinner" />}

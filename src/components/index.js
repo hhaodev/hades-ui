@@ -11,6 +11,7 @@ export { default as Divider } from "./Divider";
 export { default as Select } from "./Select";
 export { default as DragDropTable } from "./DragDropTable";
 export { default as Input } from "./Input";
+export { default as DatePicker } from "./DatePicker";
 export { default as UploadFile } from "./UploadFile";
-export * from "./Form"
+export * from "./Form";
 export * from "./Icon";

@@ -16,6 +16,7 @@ import {
   Input,
   Form,
   UploadFile,
+  DatePicker,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 import { DropdownItem } from "./components/Dropdown/DropdownItem";
@@ -97,6 +98,7 @@ function App() {
   const [openPanel, setOpenPanel] = useState(false);
   const [placementPanel, setPlacementPanel] = useState("right");
   const [selectedValue, setSelectedValue] = useState("");
+  const [file, setFile] = useState();
   const fetchDataFromLocalStorage = () => {
     try {
       const stored = localStorage.getItem("data");
@@ -207,6 +209,7 @@ function App() {
         </Stack>
         {/* end theme region */}
         <DragDropTable data={data} onChange={handleMove} />
+        {/* <UploadFile multiple onChange={setFile} /> */}
         <Input type="date" onChange={(v) => console.log(v)} />
         <Select
           value={selectedValue}
@@ -224,10 +227,9 @@ function App() {
             console.log("Submit:", values);
           }}
         >
-          <Form.Item
+          {/* <Form.Item
             label="Email"
             name="email"
-            validateTrigger="onChange"
             rules={[
               { required: true, message: "Email là bắt buộc" },
               { pattern: /^\S+@\S+\.\S+$/, message: "Email không hợp lệ" },
@@ -238,7 +240,6 @@ function App() {
           <Form.Item
             label="Age"
             name="age"
-            validateTrigger={["onBlur"]}
             rules={[
               { required: true, message: "Tuổi là bắt buộc" },
               {
@@ -253,25 +254,29 @@ function App() {
           </Form.Item>
 
           <Form.Item label="Chọn file" name="file" rules={[{ required: true }]}>
-            <UploadFile />
-          </Form.Item>
+            <UploadFile
+              accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
+              multiple
+              maxSize={1 * 1024 * 1024}
+            />
+          </Form.Item> */}
 
           <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
-            <Select
+            {/* <Select
+              hasSearch
               options={Array.from({ length: 50 }, (_, i) => {
                 const val = `${i + 1}0000000000000`.toString();
                 return { label: val, value: val };
               })}
               placeholder="Chọn 1 số nào hẹ hẹ"
-            />
+            /> */}
+            <DatePicker />
           </Form.Item>
 
           <Button type="submit">Submit</Button>
         </Form>
         <Stack flexCol gap={8}>
-          <Button
-            onClick={() => form.setFieldsValue({ email: "hehe@gmail.com" })}
-          >
+          <Button onClick={() => form.setFieldsValue({ file: "" })}>
             Set email to hehe@gmail.com
           </Button>
           <Button

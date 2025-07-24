@@ -96,6 +96,7 @@ export default function Dropdown({
   const [ready, setReady] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [actualPlacement, setActualPlacement] = useState(placement);
+  const [popupWidth, setPopupWidth] = useState(0);
 
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -173,7 +174,7 @@ export default function Dropdown({
         !referenceRef.current?.contains(e.target) &&
         !dropdownRef.current?.contains(e.target)
       ) {
-        onClickOutSide(e);
+        onClickOutSide?.(e);
         setOpen(false);
       }
     };
@@ -200,13 +201,22 @@ export default function Dropdown({
     triggerNode = cloneElement(children, triggerProps);
   }
 
+  useEffect(() => {
+    const handleResize = () => {
+      setPopupWidth(referenceRef?.current?.getBoundingClientRect()?.width);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <>
-      <Stack
-        style={{ display: "inline-block", cursor: "pointer", width: "100%" }}
-      >
-        {triggerNode}
-      </Stack>
+      <Stack style={{ cursor: "pointer" }}>{triggerNode}</Stack>
       {shouldRender &&
         createPortal(
           <Stack id={`dropdown-menu-${actualPlacement}`}>
@@ -217,9 +227,7 @@ export default function Dropdown({
                 borderRadius: 8,
                 boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
                 minWidth: 150,
-                width: fixedWidthPopup
-                  ? referenceRef?.current?.getBoundingClientRect()?.width
-                  : "fit-content",
+                width: fixedWidthPopup ? popupWidth : "fit-content",
                 ...(!popupRender ? { maxHeight: 400 } : {}),
                 ...popupStyles,
                 overflow: "hidden",

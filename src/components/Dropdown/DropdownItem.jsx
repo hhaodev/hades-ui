@@ -33,7 +33,8 @@ export const DropdownItem = forwardRef(
           display: "flex",
           alignItems: "center",
           background: checked ? hoverBg : defaultBg,
-          height: "50px",
+          height: "40px",
+          minHeight: "40px",
           cursor: onClick ? "pointer" : "auto",
           ...style,
         }}

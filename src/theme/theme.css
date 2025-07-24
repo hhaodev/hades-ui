@@ -73,7 +73,10 @@
 /* ===== Light Mode Overrides ===== */
 html.light {
     --hadesui-bg-color: var(--hadesui-gray-1);
+    --hadesui-bg2-color: var(--hadesui-gray-2);
+    --hadesui-bg-color: var(--hadesui-gray-1);
     --hadesui-text-color: var(--hadesui-gray-10);
+    --hadesui-text2-color: var(--hadesui-gray-7);
     --hadesui-bg-btn-text: var(--hadesui-gray-4);
     --hadesui-border-color: var(--hadesui-gray-5);
     --hadesui-border-focus-color: var(--hadesui-gray-6);
@@ -86,12 +89,15 @@ html.light {
     --hadesui-placeholder-color: var(--hadesui-gray-6);
     --hadesui-card-bg-color: var(--hadesui-gray-5);
     --hadesui-bg-board-active-color: rgba(20, 20, 20, 0.05);
+    --hadesui-bg-card-file-color: var(--hadesui-gray-5)
 }
 
 /* ===== Dark Mode Overrides ===== */
 html.dark {
     --hadesui-bg-color: var(--hadesui-gray-9);
+    --hadesui-bg2-color: var(--hadesui-gray-8);
     --hadesui-text-color: var(--hadesui-gray-1);
+    --hadesui-text2-color: var(--hadesui-gray-7);
     --hadesui-bg-btn-text: var(--hadesui-gray-8);
     --hadesui-border-color: var(--hadesui-gray-8);
     --hadesui-border-focus-color: var(--hadesui-gray-7);
@@ -104,6 +110,7 @@ html.dark {
     --hadesui-placeholder-color: var(--hadesui-gray-7);
     --hadesui-card-bg-color: #3f3f3f;
     --hadesui-bg-board-active-color: rgba(255, 255, 255, 0.05);
+    --hadesui-bg-card-file-color: #3f3f3f
 }
 
 /* ===== Global Styles (using tokens) ===== */
@@ -131,6 +138,8 @@ body {
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 * {

@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { Controller } from "react-hook-form";
 import { useFormInstance } from ".";
+import { debounce, isEmpty } from "../../utils";
 
 function mergeRules(rules = []) {
   const output = {};
@@ -38,12 +39,55 @@ function mergeRules(rules = []) {
   return output;
 }
 
-function debounce(fn, delay) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
+function getFirstRuleError(value, rules = []) {
+  for (const rule of rules) {
+    if (rule.required && isEmpty(value)) {
+      return rule.message || "This field is required";
+    }
+
+    if (
+      rule.minLength &&
+      typeof value === "string" &&
+      value.length < rule.minLength
+    ) {
+      return rule.message || `Min length is ${rule.minLength}`;
+    }
+
+    if (
+      rule.maxLength &&
+      typeof value === "string" &&
+      value.length > rule.maxLength
+    ) {
+      return rule.message || `Max length is ${rule.maxLength}`;
+    }
+
+    if (
+      rule.pattern &&
+      typeof value === "string" &&
+      !rule.pattern.test(value)
+    ) {
+      return rule.message || "Invalid format";
+    }
+
+    if (rule.validate) {
+      if (typeof rule.validate === "function") {
+        const result = rule.validate(value);
+        if (result !== true) return result || "Invalid value";
+      } else if (typeof rule.validate === "object") {
+        for (const key in rule.validate) {
+          const validator = rule.validate[key];
+          if (typeof validator === "function") {
+            const result = validator(value);
+            if (result !== true) return result || "Invalid value";
+          } else {
+            return validator;
+          }
+        }
+      }
+    }
+  }
+
+  return null;
 }
 
 export function FormItem({
@@ -51,16 +95,13 @@ export function FormItem({
   label,
   rules = [],
   children,
-  validateTrigger = "onBlur",
+  validateTrigger = ["onBlur"],
   debounceValidate = 0,
 }) {
-  const {
-    control,
-    trigger,
-    formState: { errors },
-  } = useFormInstance();
+  const { control, trigger, formState, setError, clearErrors } =
+    useFormInstance();
 
-  const error = errors[name]?.message;
+  const error = formState.errors[name]?.message;
   const mergedRules = mergeRules(rules);
   const triggers = Array.isArray(validateTrigger)
     ? validateTrigger
@@ -106,29 +147,42 @@ export function FormItem({
 
           const isFileInput =
             child.type === "input" && child.props.type === "file";
-          const isCustomUploadFile = child.type?.displayName === "UploadFile";
 
           const handleChange = (eOrValue) => {
-            const isEvent = eOrValue?.target !== undefined;
+            const isEvent = !!eOrValue?.target;
+            const isInputFile = isEvent && eOrValue.target.files;
 
-            const value = isEvent
-              ? eOrValue.target.type === "file"
-                ? eOrValue.target.multiple
-                  ? Array.from(eOrValue.target.files)
-                  : eOrValue.target.files[0]
-                : eOrValue.target.value
+            const value = isInputFile
+              ? Array.from(eOrValue.target.files)
               : eOrValue;
 
-            const syntheticEvent = isEvent
-              ? eOrValue
-              : {
-                  target: {
-                    name: field.name,
-                    value,
-                  },
-                };
+            const syntheticEvent =
+              isEvent && !isInputFile
+                ? eOrValue
+                : {
+                    target: {
+                      name: field.name,
+                      value,
+                    },
+                  };
 
             field.onChange(syntheticEvent);
+
+            const message = getFirstRuleError(
+              syntheticEvent.target.value,
+              rules
+            );
+
+            if (!isEvent) {
+              if (message) {
+                setError(field.name, {
+                  type: "manual",
+                  message: message,
+                });
+              } else {
+                clearErrors(field.name);
+              }
+            }
 
             if (triggers.includes("onChange")) {
               debouncedTrigger(field.name);
@@ -137,11 +191,7 @@ export function FormItem({
 
           const handleBlur = () => {
             field.onBlur();
-            if (
-              !isFileInput &&
-              !isCustomUploadFile &&
-              triggers.includes("onBlur")
-            ) {
+            if (!isFileInput && triggers.includes("onBlur")) {
               trigger(field.name);
             }
           };
@@ -150,10 +200,9 @@ export function FormItem({
             name: field.name,
             onBlur: handleBlur,
             onChange: handleChange,
-            ...(isFileInput || isCustomUploadFile
-              ? {}
-              : { value: field.value }),
+            ...(isFileInput ? {} : { value: field.value }),
             "data-border-red-error": !!error,
+            error,
           });
         }}
       />

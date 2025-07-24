@@ -1,9 +1,17 @@
-import React, { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { DropdownItem } from "../Dropdown/DropdownItem";
 import { DropdownMenu } from "../Dropdown/DropdownMenu";
 import Ellipsis from "../Ellipsis";
-import { DownIcon, UpIcon, XIcon } from "../Icon";
+import { CloseIcon, DownIcon, SearchIcon, UpIcon, XIcon } from "../Icon";
+import Input from "../Input";
 import Stack from "../Stack";
 
 const Select = forwardRef(
@@ -18,6 +26,7 @@ const Select = forwardRef(
       disabled = false,
       style,
       onClear,
+      hasSearch,
       ...rest
     },
     ref
@@ -26,17 +35,22 @@ const Select = forwardRef(
     const selected = options.find((opt) => opt.value === value);
     const menuRef = useRef(null);
     const itemRefs = useRef({});
+    const timeoutRef = useRef();
     const [open, setOpen] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
+    const [searchValueOrigin, setSearchValueOrigin] = useState("");
 
     useLayoutEffect(() => {
-      if (!open) return;
+      if (!open || searchValue) return;
+
       const frame = requestAnimationFrame(() => {
         setTimeout(() => {
           const menuEl = menuRef.current;
           const selectedEl = itemRefs.current[selected?.value];
           if (menuEl && selectedEl) {
+            const relativeOffsetTop = selectedEl.offsetTop - menuEl.offsetTop;
             menuEl.scrollTop =
-              selectedEl.offsetTop -
+              relativeOffsetTop -
               menuEl.clientHeight / 2 +
               selectedEl.offsetHeight / 2;
           }
@@ -44,7 +58,21 @@ const Select = forwardRef(
       });
 
       return () => cancelAnimationFrame(frame);
-    }, [open, selected?.value]);
+    }, [open, selected, value, searchValue]);
+
+    useEffect(() => {
+      if (!open) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          setSearchValue("");
+          setSearchValueOrigin("");
+        }, 200);
+      }
+
+      return () => {
+        clearTimeout(timeoutRef.current);
+      };
+    }, [open]);
 
     return (
       <Dropdown
@@ -52,39 +80,83 @@ const Select = forwardRef(
         open={open}
         onOpenChange={setOpen}
         getPlacement={setPlacement}
-        onClickOutSide={() => {
-          onBlur?.();
-          setOpen(false);
-        }}
         popupRender={() => (
-          <DropdownMenu
-            ref={(el) => {
-              if (el) {
-                menuRef.current = el;
-              }
-            }}
-            style={{
-              maxHeight: "400px",
-              overflow: "auto",
-            }}
-          >
-            {options.map((opt) => (
-              <DropdownItem
-                key={opt.value}
-                ref={(el) => {
-                  if (el) itemRefs.current[opt.value] = el;
+          <>
+            {hasSearch && (
+              <div
+                style={{
+                  padding: "8px 16px",
                 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onChange?.(opt.value);
-                  setOpen(false);
-                }}
-                checked={opt.value === value}
               >
-                {opt.label}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
+                <Input
+                  value={searchValueOrigin}
+                  onChange={(e) => {
+                    setSearchValueOrigin(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setSearchValue(searchValueOrigin);
+                    }
+                  }}
+                  prefix={
+                    <SearchIcon
+                      style={{
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        setSearchValue(searchValueOrigin);
+                      }}
+                    />
+                  }
+                  suffix={
+                    searchValueOrigin && (
+                      <Button
+                        onClick={() => {
+                          setSearchValue("");
+                          setSearchValueOrigin("");
+                        }}
+                        theme="icon"
+                      >
+                        <CloseIcon />
+                      </Button>
+                    )
+                  }
+                />
+              </div>
+            )}
+            <DropdownMenu
+              ref={(el) => {
+                if (el) {
+                  menuRef.current = el;
+                }
+              }}
+              style={{
+                maxHeight: "400px",
+                overflow: "auto",
+              }}
+            >
+              {options
+                .filter((opt) =>
+                  opt.label.toLowerCase().includes(searchValue.toLowerCase())
+                )
+                .map((opt) => (
+                  <DropdownItem
+                    key={opt.value}
+                    ref={(el) => {
+                      if (el) itemRefs.current[opt.value] = el;
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onChange?.(opt.value);
+                      setOpen(false);
+                    }}
+                    checked={opt.value === value}
+                  >
+                    {opt.label}
+                  </DropdownItem>
+                ))}
+            </DropdownMenu>
+          </>
         )}
       >
         <Stack
