@@ -5,7 +5,14 @@ import Stack from "../Stack";
 import TimePicker from "./TimePicker";
 import Divider from "../Divider";
 
-function Calendar({ value, onSelect, hasTimePicker = true }) {
+function Calendar({
+  value,
+  onSelect,
+  hasTimePicker = true,
+  min = new Date(2025, 6, 25),
+  max = new Date(2025, 6, 29, 6, 23, 3),
+}) {
+  console.log("🚀 ~ min:", min);
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(
     value ? new Date(value) : null
@@ -55,6 +62,12 @@ function Calendar({ value, onSelect, hasTimePicker = true }) {
     newDate.setSeconds(time.getSeconds());
 
     setSelectedDate?.(newDate);
+  };
+
+  const isDateInRange = (date) => {
+    if (min && date < min) return false;
+    if (max && date > max) return false;
+    return true;
   };
 
   const renderMonthPicker = () => {
@@ -130,38 +143,42 @@ function Calendar({ value, onSelect, hasTimePicker = true }) {
         const date = new Date(year, month, day);
         const isCurrentMonth = date.getMonth() === month;
         const isSelected = selectedDate?.toDateString() === date.toDateString();
-
+        const isInRange = isDateInRange(date);
+        const isDisabled = !isInRange || (!isCurrentMonth && !isSelected);
         week.push(
           <td key={d} style={{ padding: 0 }}>
             <Stack
               style={{
-                padding: "10px",
-                margin: "2px",
+                padding: isDisabled ? "12px" : "10px",
+                margin: isDisabled ? "0px" : "2px",
                 textAlign: "center",
                 borderRadius: 4,
                 color:
-                  isCurrentMonth || isSelected
+                  isCurrentMonth && !isDisabled
                     ? "var(--hadesui-text-color)"
                     : "var(--hadesui-text2-color)",
                 background: isSelected
                   ? "var(--hadesui-blue-6)"
+                  : isDisabled
+                  ? "linear-gradient(to bottom, transparent 0%, transparent 20%, var(--hadesui-bg-disable-calender) 20%, var(--hadesui-bg-disable-calender) 80%, transparent 80%, transparent 100%)"
                   : "transparent",
                 cursor:
-                  isCurrentMonth || isSelected ? "pointer" : "not-allowed",
+                  isCurrentMonth && !isDisabled ? "pointer" : "not-allowed",
                 userSelect: "none",
                 fontSize: 14,
+                transition: "color 0.2s ease, background-color 0.2s ease",
               }}
               onClick={() => {
-                if (isCurrentMonth) handleSelectDate(date);
+                if (!isDisabled) handleSelectDate(date);
               }}
               onMouseEnter={(e) => {
-                if (isCurrentMonth && !isSelected) {
+                if (!isDisabled && !isSelected) {
                   e.currentTarget.style.background =
                     "var(--hadesui-bg-btn-text)";
                 }
               }}
               onMouseLeave={(e) => {
-                if (!isSelected) {
+                if (!isSelected && !isDisabled) {
                   e.currentTarget.style.background = "transparent";
                 }
               }}
@@ -256,9 +273,11 @@ function Calendar({ value, onSelect, hasTimePicker = true }) {
         {mode === "date" && (
           <Stack flex justify="end" wfull>
             <Button
+              disabled={!isDateInRange(new Date())}
               theme="link"
               onClick={() => {
                 const now = new Date();
+                if (!isDateInRange(now)) return;
                 const selected = new Date(
                   now.getFullYear(),
                   now.getMonth(),
@@ -273,8 +292,10 @@ function Calendar({ value, onSelect, hasTimePicker = true }) {
             >
               Now
             </Button>
+
             <Button
               theme="primary"
+              disabled={!selectedDate || !isDateInRange(selectedDate)}
               onClick={() => {
                 onSelect?.(selectedDate);
               }}
@@ -288,7 +309,12 @@ function Calendar({ value, onSelect, hasTimePicker = true }) {
       {hasTimePicker && (
         <React.Fragment>
           <Divider vertical />
-          <TimePicker value={selectedDate} onChange={handleChangeTime} />
+          <TimePicker
+            value={selectedDate}
+            onChange={handleChangeTime}
+            min={min}
+            max={max}
+          />
         </React.Fragment>
       )}
     </Stack>

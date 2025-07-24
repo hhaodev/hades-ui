@@ -6,7 +6,7 @@ const range = (start, end) =>
     String(i + start).padStart(2, "0")
   );
 
-const TimeColumn = ({ values, value, onChange }) => {
+const TimeColumn = ({ values, value, onChange, disabledValues = [] }) => {
   const menuRef = useRef(null);
   const itemRefs = useRef({});
   const skipScrollRef = useRef(false);
@@ -44,7 +44,6 @@ const TimeColumn = ({ values, value, onChange }) => {
         if (el) menuRef.current = el;
       }}
       flexCol
-      gap={4}
       style={{
         height: "100%",
         overflowY: "auto",
@@ -53,46 +52,54 @@ const TimeColumn = ({ values, value, onChange }) => {
         textAlign: "center",
       }}
     >
-      {values.map((v) => (
-        <Stack
-          ref={(el) => {
-            if (el) itemRefs.current[v] = el;
-          }}
-          key={v}
-          style={{
-            padding: "4px 8px",
-            cursor: "pointer",
-            borderRadius: 4,
-            backgroundColor:
-              v === value ? "var(--hadesui-blue-6)" : "transparent",
-            color: "var(--hadesui-text-color)",
-            fontSize: 14,
-          }}
-          onClick={() => handleClick(v)}
-          onMouseEnter={(e) => {
-            if (v !== value) {
-              e.currentTarget.style.background = "var(--hadesui-bg-btn-text)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (v !== value) {
-              e.currentTarget.style.background = "transparent";
-            }
-          }}
-        >
-          {v}
-        </Stack>
-      ))}
+      {values.map((v) => {
+        const isDisabled = disabledValues.includes(v);
+        const isSelected = v === value;
+        return (
+          <Stack
+            ref={(el) => {
+              if (el) itemRefs.current[v] = el;
+            }}
+            key={v}
+            style={{
+              padding: `${isDisabled ? "6px" : "4px"} 8px`,
+              cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
+              marginBottom: `${isDisabled ? "0px" : "4px"}`,
+              borderRadius: 4,
+              background: isSelected
+                ? "var(--hadesui-blue-6)"
+                : isDisabled
+                ? "linear-gradient(to right, transparent 0%, transparent 15%, var(--hadesui-bg-disable-calender) 15%, var(--hadesui-bg-disable-calender) 85%, transparent 85%, transparent 100%)"
+                : "transparent",
+              color:
+                isDisabled && !isSelected
+                  ? "var(--hadesui-text2-color)"
+                  : "var(--hadesui-text-color)",
+              fontSize: 14,
+              transition: "color 0.2s ease, background-color 0.2s ease",
+            }}
+            onClick={() => !isDisabled && handleClick(v)}
+            onMouseEnter={(e) => {
+              if (!isSelected && !isDisabled) {
+                e.currentTarget.style.background = "var(--hadesui-bg-btn-text)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSelected && !isDisabled) {
+                e.currentTarget.style.background = "transparent";
+              }
+            }}
+          >
+            {v}
+          </Stack>
+        );
+      })}
     </Stack>
   );
 };
 
-const TimePicker = ({ value, onChange }) => {
-  const [time, setTime] = useState({
-    hour: "00",
-    minute: "00",
-    second: "00",
-  });
+const TimePicker = ({ value, onChange, min, max }) => {
+  const [time, setTime] = useState({ hour: "00", minute: "00", second: "00" });
 
   useEffect(() => {
     if (value instanceof Date) {
@@ -104,46 +111,81 @@ const TimePicker = ({ value, onChange }) => {
     }
   }, [value]);
 
+  const getDisabled = () => {
+    if (!(value instanceof Date)) return {};
+
+    const disabled = { hours: [], minutes: [], seconds: [] };
+
+    if (min) {
+      const minDate = new Date(min);
+      if (value < minDate) {
+        disabled.hours = range(0, 23);
+        disabled.minutes = range(0, 59);
+        disabled.seconds = range(0, 59);
+      } else if (
+        value.getFullYear() === minDate.getFullYear() &&
+        value.getMonth() === minDate.getMonth() &&
+        value.getDate() === minDate.getDate()
+      ) {
+        for (let h = 0; h < minDate.getHours(); h++)
+          disabled.hours.push(String(h).padStart(2, "0"));
+        if (value.getHours() === minDate.getHours()) {
+          for (let m = 0; m < minDate.getMinutes(); m++)
+            disabled.minutes.push(String(m).padStart(2, "0"));
+          if (value.getMinutes() === minDate.getMinutes()) {
+            for (let s = 0; s < minDate.getSeconds(); s++)
+              disabled.seconds.push(String(s).padStart(2, "0"));
+          }
+        }
+      }
+    }
+
+    if (max) {
+      const maxDate = new Date(max);
+      if (value > maxDate) {
+        disabled.hours = range(0, 23);
+        disabled.minutes = range(0, 59);
+        disabled.seconds = range(0, 59);
+      } else if (
+        value.getFullYear() === maxDate.getFullYear() &&
+        value.getMonth() === maxDate.getMonth() &&
+        value.getDate() === maxDate.getDate()
+      ) {
+        for (let h = maxDate.getHours() + 1; h < 24; h++)
+          disabled.hours.push(String(h).padStart(2, "0"));
+        if (value.getHours() === maxDate.getHours()) {
+          for (let m = maxDate.getMinutes() + 1; m < 60; m++)
+            disabled.minutes.push(String(m).padStart(2, "0"));
+          if (value.getMinutes() === maxDate.getMinutes()) {
+            for (let s = maxDate.getSeconds() + 1; s < 60; s++)
+              disabled.seconds.push(String(s).padStart(2, "0"));
+          }
+        }
+      }
+    }
+
+    return disabled;
+  };
+
+  const disabled = getDisabled();
+
   const update = (h, m, s) => {
     if (!(value instanceof Date)) return;
-
     const newDate = new Date(value);
     newDate.setHours(Number(h));
     newDate.setMinutes(Number(m));
     newDate.setSeconds(Number(s));
-
     onChange?.(newDate);
   };
 
-  const renderTime = () => (
-    <Stack
-      style={{
-        fontSize: 14,
-        textAlign: "center",
-        width: "100%",
-        height: "20px",
-      }}
-    >
-      {`${time.hour} : ${time.minute} : ${time.second}`}
-    </Stack>
-  );
-
   return (
-    <Stack
-      flexCol
-      style={{
-        padding: 16,
-        height: "100%",
-      }}
-    >
-      <Stack>{renderTime()}</Stack>
+    <Stack flexCol style={{ padding: 16, height: "100%" }}>
       <Stack
-        flex
-        gap={8}
-        style={{
-          height: "calc(100% - 20px)",
-        }}
+        style={{ fontSize: 14, textAlign: "center", width: "100%", height: 20 }}
       >
+        {`${time.hour} : ${time.minute} : ${time.second}`}
+      </Stack>
+      <Stack flex gap={8} style={{ height: "calc(100% - 20px)" }}>
         <TimeColumn
           values={range(0, 23)}
           value={time.hour}
@@ -152,6 +194,7 @@ const TimePicker = ({ value, onChange }) => {
             setTime(newTime);
             update(v, newTime.minute, newTime.second);
           }}
+          disabledValues={disabled.hours}
         />
         <TimeColumn
           values={range(0, 59)}
@@ -161,6 +204,7 @@ const TimePicker = ({ value, onChange }) => {
             setTime(newTime);
             update(newTime.hour, v, newTime.second);
           }}
+          disabledValues={disabled.minutes}
         />
         <TimeColumn
           values={range(0, 59)}
@@ -170,6 +214,7 @@ const TimePicker = ({ value, onChange }) => {
             setTime(newTime);
             update(newTime.hour, newTime.minute, v);
           }}
+          disabledValues={disabled.seconds}
         />
       </Stack>
     </Stack>

@@ -89,7 +89,8 @@ html.light {
     --hadesui-placeholder-color: var(--hadesui-gray-6);
     --hadesui-card-bg-color: var(--hadesui-gray-5);
     --hadesui-bg-board-active-color: rgba(20, 20, 20, 0.05);
-    --hadesui-bg-card-file-color: var(--hadesui-gray-5)
+    --hadesui-bg-card-file-color: var(--hadesui-gray-5);
+    --hadesui-bg-disable-calender: #363636;
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -110,7 +111,8 @@ html.dark {
     --hadesui-placeholder-color: var(--hadesui-gray-7);
     --hadesui-card-bg-color: #3f3f3f;
     --hadesui-bg-board-active-color: rgba(255, 255, 255, 0.05);
-    --hadesui-bg-card-file-color: #3f3f3f
+    --hadesui-bg-card-file-color: #3f3f3f;
+    --hadesui-bg-disable-calender: #363636;
 }
 
 /* ===== Global Styles (using tokens) ===== */
