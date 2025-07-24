@@ -6,13 +6,10 @@ import Stack from "../Stack";
 import "./index.css";
 import { CloseIcon } from "../Icon";
 
-let mousePosition = null;
-
-document.addEventListener(
-  "click",
+window.addEventListener(
+  "mousedown",
   (e) => {
-    mousePosition = { x: e.clientX, y: e.clientY };
-    setTimeout(() => (mousePosition = null), 100);
+    window.__mousePosition__ = { x: e.clientX, y: e.clientY };
   },
   true
 );
@@ -34,15 +31,22 @@ export default function Modal({ title, buttons, open, onClose, children }) {
       setClosing(false);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          if (mousePosition && modalRef.current) {
-            const rect = modalRef.current.getBoundingClientRect();
-            const offsetX = mousePosition.x - rect.left;
-            const offsetY = mousePosition.y - rect.top;
-            setOrigin(`${offsetX}px ${offsetY}px`);
-          } else {
-            setOrigin("center center");
-          }
-          setVisible(true);
+          setTimeout(() => {
+            if (modalRef.current) {
+              const rect = modalRef.current.getBoundingClientRect();
+              const pos = window.__mousePosition__;
+              if (pos) {
+                const offsetX = pos.x - rect.left;
+                const offsetY = pos.y - rect.top;
+                setOrigin(`${offsetX}px ${offsetY}px`);
+              } else {
+                setOrigin("center center");
+              }
+            } else {
+              setOrigin("center center");
+            }
+            setVisible(true);
+          }, 0);
         });
       });
     } else if (active) {
@@ -113,7 +117,11 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         <Stack className="modal-footer">
           {(
             buttons ?? [
-              <Button theme="default" key="close-button-modal" onClick={onClose}>
+              <Button
+                theme="default"
+                key="close-button-modal"
+                onClick={onClose}
+              >
                 Close
               </Button>,
             ]

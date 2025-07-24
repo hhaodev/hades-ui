@@ -9,10 +9,11 @@ const range = (start, end) =>
 const TimeColumn = ({ values, value, onChange }) => {
   const menuRef = useRef(null);
   const itemRefs = useRef({});
-  const didScroll = useRef(false);
+  const skipScrollRef = useRef(false);
 
   useLayoutEffect(() => {
-    if (!value || didScroll.current) return;
+    if (!value || skipScrollRef.current) return;
+
     const frame = requestAnimationFrame(() => {
       setTimeout(() => {
         const menuEl = menuRef.current;
@@ -24,11 +25,18 @@ const TimeColumn = ({ values, value, onChange }) => {
             menuEl.clientHeight / 2 +
             selectedEl.offsetHeight / 2;
         }
-        didScroll.current = true;
       });
     });
     return () => cancelAnimationFrame(frame);
   }, [value]);
+
+  const handleClick = (v) => {
+    skipScrollRef.current = true;
+    onChange(v);
+    requestAnimationFrame(() => {
+      skipScrollRef.current = false;
+    });
+  };
 
   return (
     <Stack
@@ -60,7 +68,7 @@ const TimeColumn = ({ values, value, onChange }) => {
             color: "var(--hadesui-text-color)",
             fontSize: 14,
           }}
-          onClick={() => onChange(v)}
+          onClick={() => handleClick(v)}
           onMouseEnter={(e) => {
             if (v !== value) {
               e.currentTarget.style.background = "var(--hadesui-bg-btn-text)";
@@ -80,15 +88,19 @@ const TimeColumn = ({ values, value, onChange }) => {
 };
 
 const TimePicker = ({ value, onChange }) => {
-  const [hour, setHour] = useState("00");
-  const [minute, setMinute] = useState("00");
-  const [second, setSecond] = useState("00");
+  const [time, setTime] = useState({
+    hour: "00",
+    minute: "00",
+    second: "00",
+  });
 
   useEffect(() => {
     if (value instanceof Date) {
-      setHour(String(value.getHours()).padStart(2, "0"));
-      setMinute(String(value.getMinutes()).padStart(2, "0"));
-      setSecond(String(value.getSeconds()).padStart(2, "0"));
+      setTime({
+        hour: String(value.getHours()).padStart(2, "0"),
+        minute: String(value.getMinutes()).padStart(2, "0"),
+        second: String(value.getSeconds()).padStart(2, "0"),
+      });
     }
   }, [value]);
 
@@ -103,18 +115,18 @@ const TimePicker = ({ value, onChange }) => {
     onChange?.(newDate);
   };
 
-  const renderTime = () => {
-    return (
-      <Stack
-        style={{
-          fontSize: 14,
-          textAlign: "center",
-          width: "100%",
-          height: "20px",
-        }}
-      >{`${hour} : ${minute} : ${second}`}</Stack>
-    );
-  };
+  const renderTime = () => (
+    <Stack
+      style={{
+        fontSize: 14,
+        textAlign: "center",
+        width: "100%",
+        height: "20px",
+      }}
+    >
+      {`${time.hour} : ${time.minute} : ${time.second}`}
+    </Stack>
+  );
 
   return (
     <Stack
@@ -134,26 +146,29 @@ const TimePicker = ({ value, onChange }) => {
       >
         <TimeColumn
           values={range(0, 23)}
-          value={hour}
+          value={time.hour}
           onChange={(v) => {
-            setHour(v);
-            update(v, minute, second);
+            const newTime = { ...time, hour: v };
+            setTime(newTime);
+            update(v, newTime.minute, newTime.second);
           }}
         />
         <TimeColumn
           values={range(0, 59)}
-          value={minute}
+          value={time.minute}
           onChange={(v) => {
-            setMinute(v);
-            update(hour, v, second);
+            const newTime = { ...time, minute: v };
+            setTime(newTime);
+            update(newTime.hour, v, newTime.second);
           }}
         />
         <TimeColumn
           values={range(0, 59)}
-          value={second}
+          value={time.second}
           onChange={(v) => {
-            setSecond(v);
-            update(hour, minute, v);
+            const newTime = { ...time, second: v };
+            setTime(newTime);
+            update(newTime.hour, newTime.minute, v);
           }}
         />
       </Stack>

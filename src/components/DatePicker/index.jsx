@@ -25,7 +25,6 @@ const DatePicker = forwardRef(
     const [placement, setPlacement] = useState("");
     const [open, setOpen] = useState(false);
     const [valueInternal, setValueInternal] = useState("");
-    console.log("🚀 ~ valueInternal:", valueInternal);
 
     return (
       <Dropdown
@@ -39,7 +38,6 @@ const DatePicker = forwardRef(
             <Calendar
               value={valueInternal}
               onSelect={(date) => {
-                console.log("🚀 ~ date:", date);
                 setValueInternal(date);
                 onChange?.(date);
                 setOpen(false);

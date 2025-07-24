@@ -227,7 +227,7 @@ function App() {
             console.log("Submit:", values);
           }}
         >
-          {/* <Form.Item
+          <Form.Item
             label="Email"
             name="email"
             rules={[
@@ -259,17 +259,20 @@ function App() {
               multiple
               maxSize={1 * 1024 * 1024}
             />
-          </Form.Item> */}
+          </Form.Item>
 
           <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
-            {/* <Select
+            <Select
               hasSearch
               options={Array.from({ length: 50 }, (_, i) => {
                 const val = `${i + 1}0000000000000`.toString();
                 return { label: val, value: val };
               })}
               placeholder="Chọn 1 số nào hẹ hẹ"
-            /> */}
+            />
+          </Form.Item>
+
+          <Form.Item label="Chọn ngày" name="date" rules={[{ required: true }]}>
             <DatePicker />
           </Form.Item>
 

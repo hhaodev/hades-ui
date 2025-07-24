@@ -1,11 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Button from "../Button";
 import { DoubleLeftIcon, DoubleRightIcon, LeftIcon, RightIcon } from "../Icon";
 import Stack from "../Stack";
 import TimePicker from "./TimePicker";
 import Divider from "../Divider";
 
-function Calendar({ value, onSelect }) {
+function Calendar({ value, onSelect, hasTimePicker = true }) {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(
     value ? new Date(value) : null
@@ -92,10 +92,7 @@ function Calendar({ value, onSelect }) {
                 i === currentMonth.getMonth()
                   ? "var(--hadesui-blue-6)"
                   : "transparent",
-              color:
-                i === currentMonth.getMonth()
-                  ? "#fff"
-                  : "var(--hadesui-text-color)",
+              color: "var(--hadesui-text-color)",
               borderRadius: 8,
               cursor: "pointer",
               textAlign: "center",
@@ -261,11 +258,17 @@ function Calendar({ value, onSelect }) {
             <Button
               theme="link"
               onClick={() => {
-                const newToday = new Date();
-                setCurrentMonth(
-                  new Date(newToday.getFullYear(), newToday.getMonth(), 1)
+                const now = new Date();
+                const selected = new Date(
+                  now.getFullYear(),
+                  now.getMonth(),
+                  now.getDate(),
+                  hasTimePicker ? now.getHours() : 0,
+                  hasTimePicker ? now.getMinutes() : 0,
+                  hasTimePicker ? now.getSeconds() : 0
                 );
-                setSelectedDate?.(newToday);
+                setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+                setSelectedDate?.(selected);
               }}
             >
               Now
@@ -281,8 +284,13 @@ function Calendar({ value, onSelect }) {
           </Stack>
         )}
       </Stack>
-      <Divider vertical />
-      <TimePicker value={selectedDate} onChange={handleChangeTime} />
+
+      {hasTimePicker && (
+        <React.Fragment>
+          <Divider vertical />
+          <TimePicker value={selectedDate} onChange={handleChangeTime} />
+        </React.Fragment>
+      )}
     </Stack>
   );
 }
