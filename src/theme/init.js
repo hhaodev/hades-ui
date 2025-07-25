@@ -8,10 +8,7 @@ import themeToken from "./theme.css?raw";
     ).matches;
     const isDark = theme === "dark" || (theme === "system" && prefersDark);
     document.documentElement.classList.add(isDark ? "dark" : "light");
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDark ? "dark" : "light"
-    );
+    document.body.setAttribute("data-theme", isDark ? "dark" : "light");
     const themeStyle = document.createElement("style");
     themeStyle.id = "--hadesui-theme--";
     themeStyle.textContent = themeToken;
