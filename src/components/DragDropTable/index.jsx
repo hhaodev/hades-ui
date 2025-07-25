@@ -664,7 +664,7 @@ const AddCol = ({ onAdd }) => {
       />
       <div className="dragdroptable-form-actions">
         <Button
-          type="default"
+          theme="default"
           onClick={() => {
             setAdding(false);
             setText("");
@@ -672,7 +672,7 @@ const AddCol = ({ onAdd }) => {
         >
           Cancel
         </Button>
-        <Button>
+        <Button type="submit">
           <PlusIcon />
           Add
         </Button>
@@ -750,7 +750,7 @@ const AddCard = React.forwardRef(({ column, setCards }, ref) => {
         <Button theme="default" onClick={handleClose}>
           Cancel
         </Button>
-        <Button>
+        <Button type="submit">
           <PlusIcon /> Add
         </Button>
       </div>
@@ -847,7 +847,7 @@ const ActionField = ({ value, onEdit, action = [], row = 5 }) => {
         <Button theme="default" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button>
+        <Button type="submit">
           <SaveIcon /> Save
         </Button>
       </div>

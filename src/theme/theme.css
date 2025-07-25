@@ -1,81 +1,122 @@
 /* =========================
-   🎨 Hades UI Color Tokens
-   Prefix: --hadesui-
+🎨 Hades UI Color Tokens
+Prefix: --hadesui-
 ============================ */
 
 /* ===== Base Palette ===== */
 :root {
     /* === Blue === */
     --hadesui-blue-1: #e6f4ff;
+    --hadesui-blue-1-5: #d0eaff;
     --hadesui-blue-2: #bae0ff;
+    --hadesui-blue-2-5: #a5d5ff;
     --hadesui-blue-3: #91caff;
+    --hadesui-blue-3-5: #7dbeff;
     --hadesui-blue-4: #69b1ff;
+    --hadesui-blue-4-5: #54a3ff;
     --hadesui-blue-5: #4096ff;
+    --hadesui-blue-5-5: #2b86ff;
     --hadesui-blue-6: #1677ff;
+    --hadesui-blue-6-5: #1068ec;
     --hadesui-blue-7: #0958d9;
+    --hadesui-blue-7-5: #044bc6;
     --hadesui-blue-8: #003eb3;
+    --hadesui-blue-8-5: #0035a0;
     --hadesui-blue-9: #002c8c;
+    --hadesui-blue-9-5: #002479;
     --hadesui-blue-10: #001d66;
 
     /* === Gray === */
     --hadesui-gray-1: #ffffff;
+    --hadesui-gray-1-5: #fcfcfc;
     --hadesui-gray-2: #fafafa;
+    --hadesui-gray-2-5: #f7f7f7;
     --hadesui-gray-3: #f5f5f5;
+    --hadesui-gray-3-5: #f2f2f2;
     --hadesui-gray-4: #f0f0f0;
+    --hadesui-gray-4-5: #dadada;
     --hadesui-gray-5: #d9d9d9;
+    --hadesui-gray-5-5: #c9c9c9;
     --hadesui-gray-6: #bfbfbf;
+    --hadesui-gray-6-5: #a5a5a5;
     --hadesui-gray-7: #8c8c8c;
+    --hadesui-gray-7-5: #707070;
     --hadesui-gray-8: #595959;
+    --hadesui-gray-8-5: #424242;
     --hadesui-gray-9: #262626;
+    --hadesui-gray-9-5: #1b1b1b;
     --hadesui-gray-10: #141414;
+
 
     /* === Red (Error) === */
     --hadesui-red-1: #fff1f0;
+    --hadesui-red-1-5: #ffd9d4;
     --hadesui-red-2: #ffccc7;
+    --hadesui-red-2-5: #ffb5ae;
     --hadesui-red-3: #ffa39e;
+    --hadesui-red-3-5: #ff8f87;
     --hadesui-red-4: #ff7875;
+    --hadesui-red-4-5: #ff6262;
     --hadesui-red-5: #ff4d4f;
+    --hadesui-red-5-5: #f83a3c;
     --hadesui-red-6: #f5222d;
+    --hadesui-red-6-5: #e01825;
     --hadesui-red-7: #cf1322;
+    --hadesui-red-7-5: #a80a1c;
     --hadesui-red-8: #a8071a;
+    --hadesui-red-8-5: #930312;
     --hadesui-red-9: #820014;
+    --hadesui-red-9-5: #6e000d;
     --hadesui-red-10: #5c0011;
 
     /* === Green (Success) === */
     --hadesui-green-1: #f6ffed;
+    --hadesui-green-1-5: #e2fcc0;
     --hadesui-green-2: #d9f7be;
+    --hadesui-green-2-5: #c8f4a4;
     --hadesui-green-3: #b7eb8f;
+    --hadesui-green-3-5: #a7e278;
     --hadesui-green-4: #95de64;
+    --hadesui-green-4-5: #84d352;
     --hadesui-green-5: #73d13d;
+    --hadesui-green-5-5: #62c02a;
     --hadesui-green-6: #52c41a;
+    --hadesui-green-6-5: #419e14;
     --hadesui-green-7: #389e0d;
+    --hadesui-green-7-5: #2b8809;
     --hadesui-green-8: #237804;
+    --hadesui-green-8-5: #1c6a02;
     --hadesui-green-9: #135200;
+    --hadesui-green-9-5: #0c3c00;
     --hadesui-green-10: #092b00;
 
     /* === Yellow (Warning) === */
-    --hadesui-yellow-1: #fffbe6;
-    --hadesui-yellow-2: #fff1b8;
-    --hadesui-yellow-3: #ffe58f;
-    --hadesui-yellow-4: #ffd666;
-    --hadesui-yellow-5: #ffc53d;
-    --hadesui-yellow-6: #faad14;
-    --hadesui-yellow-7: #d48806;
-    --hadesui-yellow-8: #ad6800;
-    --hadesui-yellow-9: #874d00;
-    --hadesui-yellow-10: #613400;
-
-    /* === Theme Tokens (default: light) === */
-    --hadesui-bg-color: var(--hadesui-gray-1);
-    --hadesui-text-color: var(--hadesui-gray-10);
+    --hadesui-yellow-1: #feffe6;
+    --hadesui-yellow-1-5: #fff8d2;
+    --hadesui-yellow-2: #ffffb8;
+    --hadesui-yellow-2-5: #ffe8a4;
+    --hadesui-yellow-3: #fffb8f;
+    --hadesui-yellow-3-5: #ffdb77;
+    --hadesui-yellow-4: #fff566;
+    --hadesui-yellow-4-5: #ffca4f;
+    --hadesui-yellow-5: #ffec3d;
+    --hadesui-yellow-5-5: #dea525;
+    --hadesui-yellow-6: #fadb14;
+    --hadesui-yellow-6-5: #c09110;
+    --hadesui-yellow-7: #d4b106;
+    --hadesui-yellow-7-5: #a37604;
+    --hadesui-yellow-8: #ad8b00;
+    --hadesui-yellow-8-5: #966200;
+    --hadesui-yellow-9: #876800;
+    --hadesui-yellow-9-5: #743f00;
+    --hadesui-yellow-10: #614700
 }
 
 /* ===== Light Mode Overrides ===== */
 html.light {
     --hadesui-bg-color: var(--hadesui-gray-1);
     --hadesui-bg2-color: var(--hadesui-gray-2);
-    --hadesui-bg-color: var(--hadesui-gray-1);
-    --hadesui-text-color: var(--hadesui-gray-10);
+    --hadesui-text-color: var(--hadesui-gray-9);
     --hadesui-text2-color: var(--hadesui-gray-7);
     --hadesui-bg-btn-text: var(--hadesui-gray-4);
     --hadesui-border-color: var(--hadesui-gray-5);
@@ -90,7 +131,11 @@ html.light {
     --hadesui-card-bg-color: var(--hadesui-gray-5);
     --hadesui-bg-board-active-color: rgba(20, 20, 20, 0.05);
     --hadesui-bg-card-file-color: var(--hadesui-gray-5);
-    --hadesui-bg-disable-calender: #363636;
+    --hadesui-bg-disable-calender: var(--hadesui-gray-4-5);
+    --hadesui-icon-loading-global: var(--hadesui-gray-2);
+    --hadesui-icon-loading-global-animate: var(--hadesui-gray-9);
+    --hadesui-bg-disabled-color: var(--hadesui-gray-5-5);
+    --hadesui-text-disabled-color: var(--hadesui-gray-7-5)
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -112,31 +157,14 @@ html.dark {
     --hadesui-card-bg-color: #3f3f3f;
     --hadesui-bg-board-active-color: rgba(255, 255, 255, 0.05);
     --hadesui-bg-card-file-color: #3f3f3f;
-    --hadesui-bg-disable-calender: #363636;
+    --hadesui-bg-disable-calender: var(--hadesui-gray-8-5);
+    --hadesui-icon-loading-global: var(--hadesui-gray-9);
+    --hadesui-icon-loading-global-animate: var(--hadesui-gray-6);
+    --hadesui-bg-disabled-color: var(--hadesui-gray-8-5);
+    --hadesui-text-disabled-color: var(--hadesui-gray-6-5)
 }
 
 /* ===== Global Styles (using tokens) ===== */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Inter, sans-serif;
-    background-color: var(--hadesui-bg-color);
-    color: var(--hadesui-text-color);
-}
-
-@media (prefers-color-scheme: dark) {
-    html:not(.dark):not(.light) body {
-        background-color: #262626;
-        color: #ffffff;
-    }
-}
-
-@media (prefers-color-scheme: light) {
-    html:not(.dark):not(.light) body {
-        background-color: #ffffff;
-        color: #141414;
-    }
-}
 
 * {
     box-sizing: border-box;
@@ -149,13 +177,47 @@ body {
     scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
 }
 
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Inter, sans-serif;
+    background-color: var(--hadesui-bg-color);
+    color: var(--hadesui-text-color);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.dark):not(.light) body {
+        background-color: var(---hadesui-gray-9);
+        color: var(--hadesui-gray-1);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    html:not(.dark):not(.light) body {
+        background-color: var(--hadesui-gray-1);
+        color: var(---hadesui-gray-9);
+    }
+}
+
 [data-border-red-error="true"] {
     border: 1px solid red !important;
-    outline: none;
-    border-radius: 4px;
-    box-sizing: border-box;
+    outline: none !important;
+    box-sizing: border-box !important;
+    transition: none !important;
 }
 
 [data-color-red-error="true"] {
     color: red !important;
+    transition: none !important;
+}
+
+[data-disabled-action="true"] {
+    background: var(--hadesui-bg-disabled-color) !important;
+    background-color: var(--hadesui-bg-disabled-color) !important;
+    pointer-events: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    color: var(--hadesui-text-disabled-color) !important;
+    cursor: not-allowed !important;
+    border-color: transparent !important;
 }

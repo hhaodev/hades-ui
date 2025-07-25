@@ -168,13 +168,14 @@ const Tooltip = forwardRef(
         triggerNode = (
           <Stack
             ref={mergedRef}
-            style={{ width: "fit-content" }}
+            style={{ width: "fit-content", fontSize: 14 }}
             {...triggerEvents}
           >
             {children}
           </Stack>
         );
       } else {
+        const originalStyle = children.props?.style || {};
         triggerNode = cloneElement(children, {
           ref: (el) => {
             mergedRef(el);
@@ -182,13 +183,14 @@ const Tooltip = forwardRef(
             if (typeof childRef === "function") childRef(el);
             else if (childRef) childRef.current = el;
           },
+          style: { ...originalStyle, fontSize: 14 },
           ...triggerEvents,
         });
       }
     } else if (typeof children === "string" || typeof children === "number") {
       triggerNode = (
         <Stack
-          style={{ width: "fit-content" }}
+          style={{ width: "fit-content", fontSize: 14 }}
           ref={mergedRef}
           {...triggerEvents}
         >

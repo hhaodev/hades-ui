@@ -3,7 +3,18 @@ import Stack from "../Stack";
 import Ellipsis from "../Ellipsis";
 
 export const DropdownItem = forwardRef(
-  ({ children, onClick, row = 1, style, checked = false, ...rest }, ref) => {
+  (
+    {
+      children,
+      onClick,
+      row = 1,
+      style,
+      checked = false,
+      view = false,
+      ...rest
+    },
+    ref
+  ) => {
     const defaultBg = "var(--hadesui-bg-color)";
     const hoverBg = "var(--hadesui-bg-btn-text)";
 
@@ -24,7 +35,7 @@ export const DropdownItem = forwardRef(
         ref={ref}
         role="menuitem"
         tabIndex={0}
-        onClick={onClick}
+        onClick={(e) => (view ? undefined : onClick(e))}
         style={{
           width: "100%",
           padding: "8px 12px",
@@ -36,10 +47,11 @@ export const DropdownItem = forwardRef(
           height: "40px",
           minHeight: "40px",
           cursor: onClick ? "pointer" : "auto",
+          fontSize: 14,
           ...style,
         }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={(e) => (view ? undefined : handleMouseEnter(e))}
+        onMouseLeave={(e) => (view ? undefined : handleMouseLeave(e))}
         {...rest}
       >
         <Ellipsis row={row}>{children}</Ellipsis>

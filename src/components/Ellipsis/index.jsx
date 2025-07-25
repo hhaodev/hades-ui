@@ -114,6 +114,7 @@ const Ellipsis = forwardRef(
               width: "100%",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              fontSize: 14,
               ...multiLineStyle,
               ...style,
             }}

@@ -13,6 +13,7 @@ import Ellipsis from "../Ellipsis";
 import { CloseIcon, DownIcon, SearchIcon, UpIcon, XIcon } from "../Icon";
 import Input from "../Input";
 import Stack from "../Stack";
+import Divider from "../Divider";
 
 const Select = forwardRef(
   (
@@ -23,6 +24,8 @@ const Select = forwardRef(
       name,
       options = [],
       placeholder = "Select...",
+      placement: placementProps = "bottom-start",
+      popupWidthFull = false,
       disabled = false,
       style,
       onClear,
@@ -76,16 +79,19 @@ const Select = forwardRef(
 
     return (
       <Dropdown
-        placement="bottom"
+        disabled={disabled}
+        fixedWidthPopup={popupWidthFull}
+        placement={placementProps}
         open={open}
         onOpenChange={setOpen}
         getPlacement={setPlacement}
         popupRender={() => (
-          <>
+          <Stack wfull>
             {hasSearch && (
-              <div
+              <Stack
+                wfull
                 style={{
-                  padding: "8px 16px",
+                  padding: "8px",
                 }}
               >
                 <Input
@@ -99,14 +105,14 @@ const Select = forwardRef(
                     }
                   }}
                   prefix={
-                    <SearchIcon
-                      style={{
-                        cursor: "pointer",
-                      }}
+                    <Button
+                      theme="icon"
                       onClick={() => {
                         setSearchValue(searchValueOrigin);
                       }}
-                    />
+                    >
+                      <SearchIcon size={16} />
+                    </Button>
                   }
                   suffix={
                     searchValueOrigin && (
@@ -122,8 +128,9 @@ const Select = forwardRef(
                     )
                   }
                 />
-              </div>
+              </Stack>
             )}
+            {hasSearch && <Divider style={{ marginBottom: 0, marginTop: 0 }} />}
             <DropdownMenu
               ref={(el) => {
                 if (el) {
@@ -135,28 +142,36 @@ const Select = forwardRef(
                 overflow: "auto",
               }}
             >
-              {options
-                .filter((opt) =>
-                  opt.label.toLowerCase().includes(searchValue.toLowerCase())
-                )
-                .map((opt) => (
-                  <DropdownItem
-                    key={opt.value}
-                    ref={(el) => {
-                      if (el) itemRefs.current[opt.value] = el;
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onChange?.(opt.value);
-                      setOpen(false);
-                    }}
-                    checked={opt.value === value}
-                  >
-                    {opt.label}
-                  </DropdownItem>
-                ))}
+              {options?.filter((opt) =>
+                opt.label.toLowerCase().includes(searchValue.toLowerCase())
+              )?.length === 0 ? (
+                <DropdownItem view key="no-item">
+                  No item to show here.
+                </DropdownItem>
+              ) : (
+                options
+                  ?.filter((opt) =>
+                    opt.label.toLowerCase().includes(searchValue.toLowerCase())
+                  )
+                  ?.map((opt) => (
+                    <DropdownItem
+                      key={opt.value}
+                      ref={(el) => {
+                        if (el) itemRefs.current[opt.value] = el;
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onChange?.(opt.value);
+                        setOpen(false);
+                      }}
+                      checked={opt.value === value}
+                    >
+                      {opt.label}
+                    </DropdownItem>
+                  ))
+              )}
             </DropdownMenu>
-          </>
+          </Stack>
         )}
       >
         <Stack
@@ -180,7 +195,9 @@ const Select = forwardRef(
           <Ellipsis
             key={selected ? "selectedlabel" : "placeholder"}
             style={{
-              color: selected
+              color: disabled
+                ? "inherit"
+                : selected
                 ? "var(--hadesui-text-color)"
                 : "var(--hadesui-placeholder-color)",
             }}

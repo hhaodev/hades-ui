@@ -1,10 +1,15 @@
-import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Stack from "../Stack";
 
 const range = (start, end) =>
   Array.from({ length: end - start + 1 }, (_, i) =>
     String(i + start).padStart(2, "0")
   );
+
+const isSameDate = (a, b) =>
+  a?.getFullYear() === b?.getFullYear() &&
+  a?.getMonth() === b?.getMonth() &&
+  a?.getDate() === b?.getDate();
 
 const TimeColumn = ({ values, value, onChange, disabledValues = [] }) => {
   const menuRef = useRef(null);
@@ -98,7 +103,7 @@ const TimeColumn = ({ values, value, onChange, disabledValues = [] }) => {
   );
 };
 
-const TimePicker = ({ value, onChange, min, max }) => {
+const TimePicker = ({ value, onChange, min, max, currentDate }) => {
   const [time, setTime] = useState({ hour: "00", minute: "00", second: "00" });
 
   useEffect(() => {
@@ -111,72 +116,49 @@ const TimePicker = ({ value, onChange, min, max }) => {
     }
   }, [value]);
 
-  const getDisabled = () => {
-    if (!(value instanceof Date)) return {};
-
-    const disabled = { hours: [], minutes: [], seconds: [] };
-
-    if (min) {
-      const minDate = new Date(min);
-      if (value < minDate) {
-        disabled.hours = range(0, 23);
-        disabled.minutes = range(0, 59);
-        disabled.seconds = range(0, 59);
-      } else if (
-        value.getFullYear() === minDate.getFullYear() &&
-        value.getMonth() === minDate.getMonth() &&
-        value.getDate() === minDate.getDate()
-      ) {
-        for (let h = 0; h < minDate.getHours(); h++)
-          disabled.hours.push(String(h).padStart(2, "0"));
-        if (value.getHours() === minDate.getHours()) {
-          for (let m = 0; m < minDate.getMinutes(); m++)
-            disabled.minutes.push(String(m).padStart(2, "0"));
-          if (value.getMinutes() === minDate.getMinutes()) {
-            for (let s = 0; s < minDate.getSeconds(); s++)
-              disabled.seconds.push(String(s).padStart(2, "0"));
-          }
-        }
-      }
-    }
-
-    if (max) {
-      const maxDate = new Date(max);
-      if (value > maxDate) {
-        disabled.hours = range(0, 23);
-        disabled.minutes = range(0, 59);
-        disabled.seconds = range(0, 59);
-      } else if (
-        value.getFullYear() === maxDate.getFullYear() &&
-        value.getMonth() === maxDate.getMonth() &&
-        value.getDate() === maxDate.getDate()
-      ) {
-        for (let h = maxDate.getHours() + 1; h < 24; h++)
-          disabled.hours.push(String(h).padStart(2, "0"));
-        if (value.getHours() === maxDate.getHours()) {
-          for (let m = maxDate.getMinutes() + 1; m < 60; m++)
-            disabled.minutes.push(String(m).padStart(2, "0"));
-          if (value.getMinutes() === maxDate.getMinutes()) {
-            for (let s = maxDate.getSeconds() + 1; s < 60; s++)
-              disabled.seconds.push(String(s).padStart(2, "0"));
-          }
-        }
-      }
-    }
-
-    return disabled;
-  };
-
-  const disabled = getDisabled();
-
   const update = (h, m, s) => {
-    if (!(value instanceof Date)) return;
     const newDate = new Date(value);
     newDate.setHours(Number(h));
     newDate.setMinutes(Number(m));
     newDate.setSeconds(Number(s));
     onChange?.(newDate);
   };
+
+  const disabled = {
+    hours: [],
+    minutes: [],
+    seconds: [],
+  };
+
+  if (value instanceof Date && currentDate) {
+    if (min instanceof Date && isSameDate(currentDate, min)) {
+      const minH = min.getHours();
+      const minM = min.getMinutes();
+      const minS = min.getSeconds();
+
+      disabled.hours.push(...range(0, minH - 1));
+      if (Number(time.hour) === minH) {
+        disabled.minutes.push(...range(0, minM - 1));
+        if (Number(time.minute) === minM) {
+          disabled.seconds.push(...range(0, minS - 1));
+        }
+      }
+    }
+
+    if (max instanceof Date && isSameDate(currentDate, max)) {
+      const maxH = max.getHours();
+      const maxM = max.getMinutes();
+      const maxS = max.getSeconds();
+
+      disabled.hours.push(...range(maxH + 1, 23));
+      if (Number(time.hour) === maxH) {
+        disabled.minutes.push(...range(maxM + 1, 59));
+        if (Number(time.minute) === maxM) {
+          disabled.seconds.push(...range(maxS + 1, 59));
+        }
+      }
+    }
+  }
 
   return (
     <Stack flexCol style={{ padding: 16, height: "100%" }}>

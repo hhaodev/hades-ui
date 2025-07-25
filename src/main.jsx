@@ -1,4 +1,3 @@
-import "./theme/theme.css";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import { ThemeProvider } from "./theme/themeProvider.jsx";

@@ -8,31 +8,46 @@
     background-color: var(--hadesui-bg-color);
     color: var(--hadesui-text-color);
     overflow: hidden;
-    padding: 0px 8px;
+    height: 36px;
 }
 
 .common-input {
+    position: absolute;
     width: 100%;
+    padding: 0px 8px;
     background-color: var(--hadesui-bg-color);
     color: var(--hadesui-text-color);
-    height: 36px;
+    height: 100%;
     font-size: 14px;
     border-radius: 8px;
     border: none;
 }
 
+.common-input.padding-prefix {
+    padding-left: 32px;
+}
+
+.common-input.padding-suffix {
+    padding-right: 32px;
+}
+
 .input-icon {
+    position: absolute;
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-self: center;
+    height: 100%;
+    max-width: 30px;
+    width: 30px;
+    min-width: 30px;
 }
 
 .input-icon.prefix {
-    margin-right: 8px;
+    left: 2px;
 }
 
 .input-icon.suffix {
-    margin-left: 8px;
+    right: 2px;
 }
 
 .common-input:focus {

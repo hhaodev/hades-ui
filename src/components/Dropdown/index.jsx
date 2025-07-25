@@ -91,6 +91,7 @@ export default function Dropdown({
   fixedWidthPopup = true,
   getPlacement,
   onClickOutSide,
+  disabled = false,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -185,11 +186,13 @@ export default function Dropdown({
   let triggerNode = children;
   if (isValidElement(children)) {
     const triggerProps = {
+      "data-disabled-action": disabled ? "true" : "false",
       onClick: (e) => {
+        if (disabled) return;
         if (!acquireClickLock()) return;
         e.stopPropagation();
         children.props.onClick?.(e);
-        setOpen((prev) => !prev);
+        setOpen(open ? false : true);
       },
       ref: (el) => {
         referenceRef.current = el;
@@ -216,8 +219,11 @@ export default function Dropdown({
 
   return (
     <>
-      <Stack style={{ cursor: "pointer" }}>{triggerNode}</Stack>
+      <Stack style={{ cursor: disabled ? "not-allowed" : "pointer" }}>
+        {triggerNode}
+      </Stack>
       {shouldRender &&
+        !disabled &&
         createPortal(
           <Stack id={`dropdown-menu-${actualPlacement}`}>
             <Stack

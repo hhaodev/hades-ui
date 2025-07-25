@@ -1,25 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import {
   Button,
-  Dropdown,
-  Ellipsis,
-  OverFlow,
-  ResizableBox,
-  Stack,
-  Tooltip,
-  Modal,
-  Panel,
+  DatePicker,
   Divider,
   DragDropTable,
-  Select,
-  Input,
+  Dropdown,
+  Ellipsis,
   Form,
+  Input,
+  Modal,
+  OverFlow,
+  Panel,
+  ResizableBox,
+  SearchIcon,
+  Select,
+  Stack,
+  Tooltip,
   UploadFile,
-  DatePicker,
 } from "./components";
-import { useTheme } from "./theme/useTheme";
 import { DropdownItem } from "./components/Dropdown/DropdownItem";
+import { useTheme } from "./theme/useTheme";
 
 const menu = [
   {
@@ -176,7 +177,7 @@ function App() {
   function fakeApiCall({ shouldFail = false, delay = 3000 } = {}) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (shouldFail || Math.random() < 1) {
+        if (shouldFail || Math.random() < 0) {
           reject(new Error("Lỗi gọi API (giả lập)"));
         } else {
           resolve({ data: "Dữ liệu trả về từ API" });
@@ -214,7 +215,7 @@ function App() {
         <Select
           value={selectedValue}
           onChange={(v) => setSelectedValue(v)}
-          options={Array.from({ length: 50 }, (_, i) => {
+          options={Array.from({ length: 5 }, (_, i) => {
             const val = `${i + 1}0000000000000`.toString();
             return { label: val, value: val };
           })}
@@ -235,7 +236,14 @@ function App() {
               { pattern: /^\S+@\S+\.\S+$/, message: "Email không hợp lệ" },
             ]}
           >
-            <Input placeholder="Nhập email" />
+            <Input
+              placeholder="Nhập email"
+              suffix={
+                <Button theme="icon">
+                  <SearchIcon size={16} />
+                </Button>
+              }
+            />
           </Form.Item>
           <Form.Item
             label="Age"
@@ -264,7 +272,7 @@ function App() {
           <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
             <Select
               hasSearch
-              options={Array.from({ length: 50 }, (_, i) => {
+              options={Array.from({ length: 5 }, (_, i) => {
                 const val = `${i + 1}0000000000000`.toString();
                 return { label: val, value: val };
               })}
@@ -319,6 +327,19 @@ function App() {
         </Stack>
         {/* end button region */}
         <Divider>BUTTON</Divider>
+
+        <Button
+          theme="default"
+          onClick={() => {
+            $$.loading(true);
+            // setTimeout(() => $$.loading(false), 1100);
+            // setTimeout(() => $$.loading(true), 1250);
+            // setTimeout(() => $$.loading(false), 3000);
+          }}
+        >
+          Start Loading
+        </Button>
+        <Divider>Test Loading</Divider>
 
         {/* overflow region */}
         <Stack>VERTICAL OVERFLOW</Stack>

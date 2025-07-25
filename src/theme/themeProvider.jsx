@@ -16,6 +16,8 @@ export const ThemeProvider = ({ children, defaultTheme = "system" }) => {
 
     html.classList.remove("light", "dark");
     html.classList.add(isDark ? "dark" : "light");
+    html.setAttribute("data-theme", isDark ? "dark" : "light");
+    document.body.setAttribute("data-theme", isDark ? "dark" : "light");
     localStorage.setItem("theme", theme);
   }, [theme]);
 
@@ -28,6 +30,11 @@ export const ThemeProvider = ({ children, defaultTheme = "system" }) => {
         const html = document.documentElement;
         html.classList.remove("light", "dark");
         html.classList.add(prefersDark ? "dark" : "light");
+        html.setAttribute("data-theme", prefersDark ? "dark" : "light");
+        document.body.setAttribute(
+          "data-theme",
+          prefersDark ? "dark" : "light"
+        );
       }
     };
 

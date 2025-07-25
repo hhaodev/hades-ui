@@ -9,14 +9,19 @@ function Calendar({
   value,
   onSelect,
   hasTimePicker = true,
-  min = new Date(2025, 6, 25),
-  max = new Date(2025, 6, 29, 6, 23, 3),
+  min,
+  // = new Date(2025, 6, 25, 16, 58, 0)
+  max = new Date(2025, 6, 25, 13, 10, 15),
+  // = new Date(2025, 6, 28, 0, 1, 0)
 }) {
-  console.log("🚀 ~ min:", min);
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(
     value ? new Date(value) : null
   );
+  const [selectedTime, setSelectedTime] = useState(
+    value ? new Date(value) : null
+  );
+
   const [currentMonth, setCurrentMonth] = useState(
     new Date((value || today).getFullYear(), (value || today).getMonth(), 1)
   );
@@ -35,15 +40,21 @@ function Calendar({
   };
 
   const handleSelectDate = (date) => {
-    if (mode === "date") {
-      if (selectedDate) {
-        date.setHours(
-          selectedDate.getHours(),
-          selectedDate.getMinutes(),
-          selectedDate.getSeconds()
-        );
-      }
-      setSelectedDate?.(date);
+    if (!date) return;
+    setSelectedDate(date);
+    if (!selectedTime) {
+      const defaultTime = new Date(date);
+      defaultTime.setHours(0, 0, 0, 0);
+      setSelectedTime(defaultTime);
+    } else {
+      const newDateTime = new Date(date);
+      newDateTime.setHours(
+        selectedTime.getHours(),
+        selectedTime.getMinutes(),
+        selectedTime.getSeconds(),
+        selectedTime.getMilliseconds()
+      );
+      setSelectedTime(newDateTime);
     }
   };
 
@@ -54,20 +65,12 @@ function Calendar({
   };
 
   const handleChangeTime = (time) => {
-    if (!selectedDate) return;
-
-    const newDate = new Date(selectedDate);
+    const newDate = new Date(selectedTime);
     newDate.setHours(time.getHours());
     newDate.setMinutes(time.getMinutes());
     newDate.setSeconds(time.getSeconds());
 
-    setSelectedDate?.(newDate);
-  };
-
-  const isDateInRange = (date) => {
-    if (min && date < min) return false;
-    if (max && date > max) return false;
-    return true;
+    setSelectedTime?.(newDate);
   };
 
   const renderMonthPicker = () => {
@@ -109,6 +112,7 @@ function Calendar({
               borderRadius: 8,
               cursor: "pointer",
               textAlign: "center",
+              transition: "color 0.2s ease, background-color 0.2s ease",
             }}
             onMouseEnter={(e) => {
               if (i !== currentMonth.getMonth()) {
@@ -128,6 +132,96 @@ function Calendar({
     );
   };
 
+  const isDateBetween = (date, min, max) => {
+    if (!(date instanceof Date)) return false;
+
+    const time = date.getTime();
+    const minTime = min instanceof Date ? min.getTime() : -Infinity;
+    const maxTime = max instanceof Date ? max.getTime() : Infinity;
+
+    return time >= minTime && time <= maxTime;
+  };
+
+  const isMergedValid = () => {
+    if (!selectedDate || !selectedTime) return false;
+
+    const merged = new Date(selectedDate);
+    merged.setHours(
+      selectedTime.getHours(),
+      selectedTime.getMinutes(),
+      selectedTime.getSeconds()
+    );
+
+    return isDateBetween(merged, min, max);
+  };
+
+  const isToday = (date) => {
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  };
+
+  function isDateInRange(date) {
+    if (!date) return false;
+
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    if (hasTimePicker) {
+      if (min) {
+        const minDateOnly = new Date(
+          min.getFullYear(),
+          min.getMonth(),
+          min.getDate()
+        );
+
+        if (dateOnly.getTime() === minDateOnly.getTime()) {
+          const dateWithMaxTime = new Date(dateOnly);
+          dateWithMaxTime.setHours(23, 59, 59, 999);
+          if (dateWithMaxTime.getTime() < min.getTime()) return false;
+        } else if (dateOnly.getTime() < minDateOnly.getTime()) {
+          return false;
+        }
+      }
+
+      if (max) {
+        const maxDateOnly = new Date(
+          max.getFullYear(),
+          max.getMonth(),
+          max.getDate()
+        );
+
+        if (dateOnly.getTime() === maxDateOnly.getTime()) {
+          const dateWithMinTime = new Date(dateOnly);
+          dateWithMinTime.setHours(0, 0, 0, 0);
+          if (dateWithMinTime.getTime() > max.getTime()) return false;
+        } else if (dateOnly.getTime() > maxDateOnly.getTime()) {
+          return false;
+        }
+      }
+
+      return true;
+    } else {
+      const minDateOnly = min
+        ? new Date(min.getFullYear(), min.getMonth(), min.getDate())
+        : null;
+      const maxDateOnly = max
+        ? new Date(max.getFullYear(), max.getMonth(), max.getDate())
+        : null;
+
+      if (minDateOnly && dateOnly < minDateOnly) return false;
+      if (maxDateOnly && dateOnly > maxDateOnly) return false;
+
+      return true;
+    }
+  }
+
   const getWeeks = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -141,6 +235,7 @@ function Calendar({
 
       for (let d = 0; d < 7; d++, day++) {
         const date = new Date(year, month, day);
+        const today = isToday(date);
         const isCurrentMonth = date.getMonth() === month;
         const isSelected = selectedDate?.toDateString() === date.toDateString();
         const isInRange = isDateInRange(date);
@@ -167,6 +262,9 @@ function Calendar({
                 userSelect: "none",
                 fontSize: 14,
                 transition: "color 0.2s ease, background-color 0.2s ease",
+                border: `1px solid ${
+                  today ? "var(--hadesui-blue-6)" : "transparent"
+                } `,
               }}
               onClick={() => {
                 if (!isDisabled) handleSelectDate(date);
@@ -273,21 +371,23 @@ function Calendar({
         {mode === "date" && (
           <Stack flex justify="end" wfull>
             <Button
-              disabled={!isDateInRange(new Date())}
               theme="link"
               onClick={() => {
                 const now = new Date();
-                if (!isDateInRange(now)) return;
-                const selected = new Date(
-                  now.getFullYear(),
-                  now.getMonth(),
-                  now.getDate(),
-                  hasTimePicker ? now.getHours() : 0,
-                  hasTimePicker ? now.getMinutes() : 0,
-                  hasTimePicker ? now.getSeconds() : 0
+
+                setSelectedDate(
+                  new Date(now.getFullYear(), now.getMonth(), now.getDate())
                 );
-                setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
-                setSelectedDate?.(selected);
+
+                const t = new Date();
+                t.setHours(
+                  now.getHours(),
+                  now.getMinutes(),
+                  now.getSeconds(),
+                  0
+                );
+                t.setFullYear(1970, 0, 1);
+                setSelectedTime(t);
               }}
             >
               Now
@@ -295,9 +395,22 @@ function Calendar({
 
             <Button
               theme="primary"
-              disabled={!selectedDate || !isDateInRange(selectedDate)}
+              disabled={!isMergedValid()}
               onClick={() => {
-                onSelect?.(selectedDate);
+                if (!selectedDate || !selectedTime) return;
+
+                const merged = new Date(selectedDate);
+                merged.setHours(
+                  selectedTime.getHours(),
+                  selectedTime.getMinutes(),
+                  selectedTime.getSeconds()
+                );
+
+                const isValid = isDateBetween(merged, min, max);
+
+                if (!isValid) return;
+
+                onSelect?.(merged);
               }}
             >
               OK
@@ -310,7 +423,8 @@ function Calendar({
         <React.Fragment>
           <Divider vertical />
           <TimePicker
-            value={selectedDate}
+            value={selectedTime}
+            currentDate={selectedDate}
             onChange={handleChangeTime}
             min={min}
             max={max}

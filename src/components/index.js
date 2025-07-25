@@ -1,3 +1,5 @@
+import "../theme/init";
+import "./Loading";
 export { default as Stack } from "./Stack";
 export { default as Button } from "./Button";
 export { default as OverFlow } from "./OverFlow";

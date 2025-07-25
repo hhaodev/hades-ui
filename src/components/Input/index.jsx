@@ -9,15 +9,17 @@ const Input = forwardRef(
   ) => {
     return (
       <div data-border-red-error={!!error} className="input-wrapper">
-        {prefix && <div className="input-icon prefix">{prefix}</div>}
-
         <input
           ref={ref}
           name={props.name}
-          className={"common-input"}
+          className={cn(
+            "common-input",
+            { "padding-prefix": prefix },
+            { "padding-suffix": suffix }
+          )}
           {...props}
         />
-
+        {prefix && <div className="input-icon prefix">{prefix}</div>}
         {suffix && <div className="input-icon suffix">{suffix}</div>}
       </div>
     );

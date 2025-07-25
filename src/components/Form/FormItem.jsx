@@ -173,6 +173,10 @@ export function FormItem({
               rules
             );
 
+            if (syntheticEvent.target.value && !!error) {
+              clearErrors(field.name);
+            }
+
             if (!isEvent) {
               if (message) {
                 setError(field.name, {

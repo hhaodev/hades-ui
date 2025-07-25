@@ -1,11 +1,10 @@
-import { forwardRef, useRef, useState } from "react";
+import { forwardRef, useState } from "react";
+import { formatDate } from "../../utils";
 import Dropdown from "../Dropdown";
-import { DropdownMenu } from "../Dropdown/DropdownMenu";
 import Ellipsis from "../Ellipsis";
 import { DownIcon, UpIcon, XIcon } from "../Icon";
 import Stack from "../Stack";
 import Calendar from "./Calender";
-import { formatDate } from "../../utils";
 
 const DatePicker = forwardRef(
   (
@@ -18,18 +17,20 @@ const DatePicker = forwardRef(
       disabled = false,
       style,
       onClear,
+      placement: placementProps = "bottom-start",
       ...rest
     },
     ref
   ) => {
     const [placement, setPlacement] = useState("");
     const [open, setOpen] = useState(false);
-    const [valueInternal, setValueInternal] = useState("");
+    const [valueInternal, setValueInternal] = useState(null);
 
     return (
       <Dropdown
+        disabled={disabled}
         fixedWidthPopup={false}
-        placement="bottom"
+        placement={placementProps}
         open={open}
         onOpenChange={setOpen}
         getPlacement={setPlacement}
@@ -60,13 +61,18 @@ const DatePicker = forwardRef(
             padding: "0px 8px",
             fontSize: 14,
             height: 36,
+            background: disabled
+              ? "var(--hadesui-bg-disabled-color)"
+              : "transparent",
             cursor: disabled ? "not-allowed" : "pointer",
             ...style,
           }}
         >
           <Ellipsis
             style={{
-              color: valueInternal
+              color: disabled
+                ? "inherit"
+                : valueInternal
                 ? "var(--hadesui-text-color)"
                 : "var(--hadesui-placeholder-color)",
             }}
