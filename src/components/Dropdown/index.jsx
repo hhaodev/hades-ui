@@ -92,6 +92,7 @@ export default function Dropdown({
   getPlacement,
   onClickOutSide,
   disabled = false,
+  id,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -219,13 +220,11 @@ export default function Dropdown({
 
   return (
     <>
-      <Stack style={{ cursor: disabled ? "not-allowed" : "pointer" }}>
-        {triggerNode}
-      </Stack>
+      {triggerNode}
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack id={`dropdown-menu-${actualPlacement}`}>
+          <Stack id={id ?? `dropdown-menu-${actualPlacement}`}>
             <Stack
               ref={dropdownRef}
               style={{
@@ -248,7 +247,7 @@ export default function Dropdown({
               }}
             >
               {popupRender ? (
-                popupRender()
+                popupRender(referenceRef)
               ) : React.isValidElement(menu) ? (
                 <DropdownMenu>{menu}</DropdownMenu>
               ) : Array.isArray(menu) && menu.length > 0 ? (

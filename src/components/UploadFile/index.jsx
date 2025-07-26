@@ -15,7 +15,17 @@ import {
 
 const UploadFile = forwardRef(
   (
-    { value, error, multiple, onChange, name, accept = [], maxSize, ...rest },
+    {
+      value,
+      error,
+      multiple,
+      onChange,
+      name,
+      accept = [],
+      maxSize,
+      disabled,
+      ...rest
+    },
     ref
   ) => {
     const [isDragging, setIsDragging] = useState(false);
@@ -195,7 +205,11 @@ const UploadFile = forwardRef(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           style={{
-            border: `2px dashed ${isDragging ? "#007BFF" : "#444"}`,
+            border: `2px dashed ${
+              isDragging
+                ? "var(--hadesui-blue-6)"
+                : "var(--hadesui-border-color)"
+            }`,
             backgroundColor: isDragging
               ? "var(--hadesui-bg2-color)"
               : "var(--hadesui-bg-color)",
@@ -204,7 +218,17 @@ const UploadFile = forwardRef(
             textAlign: "center",
             cursor: "pointer",
             color: "#ccc",
-            transition: "all 0.2s ease-in-out",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!disabled) {
+              e.currentTarget.style.borderColor = "var(--hadesui-blue-6)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!disabled) {
+              e.currentTarget.style.borderColor = "var(--hadesui-border-color)";
+            }
           }}
         >
           <FileUpload size={40} />
@@ -242,7 +266,8 @@ const UploadFile = forwardRef(
             multiple={multiple}
             onChange={handleChange}
             {...rest}
-            style={{ display: "none" }}
+            hidden
+            disabled={disabled}
           />
         </div>
         {internalError?.length > 0 && (

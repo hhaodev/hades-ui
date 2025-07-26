@@ -52,7 +52,7 @@ const TimeColumn = ({ values, value, onChange, disabledValues = [] }) => {
       style={{
         height: "100%",
         overflowY: "auto",
-        borderRadius: 4,
+        borderRadius: 8,
         padding: 4,
         textAlign: "center",
       }}
@@ -70,7 +70,7 @@ const TimeColumn = ({ values, value, onChange, disabledValues = [] }) => {
               padding: `${isDisabled ? "6px" : "4px"} 8px`,
               cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
               marginBottom: `${isDisabled ? "0px" : "4px"}`,
-              borderRadius: 4,
+              borderRadius: 8,
               background: isSelected
                 ? "var(--hadesui-blue-6)"
                 : isDisabled

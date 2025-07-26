@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import {
   Button,
   DatePicker,
+  DateRangePicker,
   Divider,
   DragDropTable,
   Dropdown,
@@ -210,8 +210,7 @@ function App() {
         </Stack>
         {/* end theme region */}
         <DragDropTable data={data} onChange={handleMove} />
-        {/* <UploadFile multiple onChange={setFile} /> */}
-        <Input type="date" onChange={(v) => console.log(v)} />
+        <UploadFile multiple onChange={setFile} />
         <Select
           value={selectedValue}
           onChange={(v) => setSelectedValue(v)}
@@ -222,6 +221,7 @@ function App() {
           placeholder="Chọn 1 số nào hẹ hẹ"
           onClear={() => setSelectedValue("")}
         />
+        <Input placeholder="Nhập email" />
         <Form
           form={form}
           onFinish={(values) => {
@@ -258,7 +258,7 @@ function App() {
               },
             ]}
           >
-            <Input type="number" />
+            <Input placeholder="Input number ..." type="number" />
           </Form.Item>
 
           <Form.Item label="Chọn file" name="file" rules={[{ required: true }]}>
@@ -276,19 +276,34 @@ function App() {
                 const val = `${i + 1}0000000000000`.toString();
                 return { label: val, value: val };
               })}
-              placeholder="Chọn 1 số nào hẹ hẹ"
+              placeholder="Select..."
             />
           </Form.Item>
 
-          <Form.Item label="Chọn ngày" name="date" rules={[{ required: true }]}>
-            <DatePicker />
-          </Form.Item>
+          {/* <Form.Item label="Chọn ngày" name="date" rules={[{ required: true }]}>
+            <DateRangePicker />
+          </Form.Item> */}
 
           <Button type="submit">Submit</Button>
         </Form>
+        <DateRangePicker />
+        <DatePicker customRender={() => <>123</>} />
+
         <Stack flexCol gap={8}>
-          <Button onClick={() => form.setFieldsValue({ file: "" })}>
-            Set email to hehe@gmail.com
+          <Button
+            onClick={() =>
+              form.setFieldsValue({
+                date: {
+                  start: "2025-07-22T17:00:00.000Z",
+                  end: "2025-07-26T17:00:00.000Z",
+                },
+                email: "test@gmail.com",
+                age: 54,
+                select: "30000000000000",
+              })
+            }
+          >
+            Set form data
           </Button>
           <Button
             onClick={() =>

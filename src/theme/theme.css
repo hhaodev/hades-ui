@@ -127,7 +127,7 @@ html.light {
     --hadesui-bg-modal-color: var(--hadesui-gray-2);
     --hadesui-bg-mark-color: rgba(0, 0, 0, 0.35);
     --hadesui-divider-color: rgba(0, 0, 0, 0.45);
-    --hadesui-placeholder-color: var(--hadesui-gray-6);
+    --hadesui-placeholder-color: var(--hadesui-gray-7-5);
     --hadesui-card-bg-color: var(--hadesui-gray-5);
     --hadesui-bg-board-active-color: rgba(20, 20, 20, 0.05);
     --hadesui-bg-card-file-color: var(--hadesui-gray-5);
@@ -199,25 +199,29 @@ body {
     }
 }
 
+[data-disabled-action="true"] {
+    background: var(--hadesui-bg-disabled-color) !important;
+    background-color: var(--hadesui-bg-disabled-color) !important;
+    color: var(--hadesui-text-disabled-color) !important;
+    border-color: transparent !important;
+    pointer-events: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    cursor: not-allowed !important;
+}
+
 [data-border-red-error="true"] {
-    border: 1px solid red !important;
+    border: 1px solid var(--hadesui-red-6) !important;
     outline: none !important;
     box-sizing: border-box !important;
     transition: none !important;
 }
 
 [data-color-red-error="true"] {
-    color: red !important;
+    color: var(--hadesui-red-6) !important;
     transition: none !important;
 }
 
-[data-disabled-action="true"] {
-    background: var(--hadesui-bg-disabled-color) !important;
-    background-color: var(--hadesui-bg-disabled-color) !important;
-    pointer-events: none !important;
-    -webkit-user-select: none !important;
-    user-select: none !important;
-    color: var(--hadesui-text-disabled-color) !important;
-    cursor: not-allowed !important;
-    border-color: transparent !important;
+.no-transition {
+    transition: none !important;
 }

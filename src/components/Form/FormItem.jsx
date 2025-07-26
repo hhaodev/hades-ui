@@ -143,7 +143,7 @@ export function FormItem({
         control={control}
         rules={mergedRules}
         render={({ field }) => {
-          const child = React.Children.only(children);
+          const child = React?.Children?.only(children);
 
           const isFileInput =
             child.type === "input" && child.props.type === "file";
@@ -211,7 +211,15 @@ export function FormItem({
         }}
       />
       {error && (
-        <div style={{ color: "red", fontSize: 12, marginTop: 2 }}>{error}</div>
+        <div
+          style={{
+            color: "var(--hadesui-red-6)",
+            fontSize: 12,
+            marginTop: 2,
+          }}
+        >
+          {error}
+        </div>
       )}
     </div>
   );

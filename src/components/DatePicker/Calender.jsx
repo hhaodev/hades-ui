@@ -8,10 +8,10 @@ import Divider from "../Divider";
 function Calendar({
   value,
   onSelect,
-  hasTimePicker = true,
+  hasTimePicker,
   min,
   // = new Date(2025, 6, 25, 16, 58, 0)
-  max = new Date(2025, 6, 25, 13, 10, 15),
+  max,
   // = new Date(2025, 6, 28, 0, 1, 0)
 }) {
   const today = new Date();
@@ -247,14 +247,15 @@ function Calendar({
                 padding: isDisabled ? "12px" : "10px",
                 margin: isDisabled ? "0px" : "2px",
                 textAlign: "center",
-                borderRadius: 4,
-                color:
-                  isCurrentMonth && !isDisabled
-                    ? "var(--hadesui-text-color)"
-                    : "var(--hadesui-text2-color)",
+                borderRadius: 8,
+                color: isSelected
+                  ? "var(--hadesui-text-color)"
+                  : isCurrentMonth && !isDisabled
+                  ? "var(--hadesui-text-color)"
+                  : "var(--hadesui-text2-color)",
                 background: isSelected
                   ? "var(--hadesui-blue-6)"
-                  : isDisabled
+                  : isDisabled && !today
                   ? "linear-gradient(to bottom, transparent 0%, transparent 20%, var(--hadesui-bg-disable-calender) 20%, var(--hadesui-bg-disable-calender) 80%, transparent 80%, transparent 100%)"
                   : "transparent",
                 cursor:
@@ -299,7 +300,7 @@ function Calendar({
   });
 
   return (
-    <Stack flex wfull style={{ height: 380, overflowX: "auto" }}>
+    <Stack flex wfull style={{ height: 395, overflowX: "auto" }}>
       <Stack flexCol align="center" style={{ padding: 16 }}>
         <Stack
           flex

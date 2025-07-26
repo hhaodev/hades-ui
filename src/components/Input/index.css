@@ -8,7 +8,8 @@
     background-color: var(--hadesui-bg-color);
     color: var(--hadesui-text-color);
     overflow: hidden;
-    height: 36px;
+    min-height: 34px;
+    transition: border-color 0.2s ease;
 }
 
 .common-input {
@@ -21,6 +22,12 @@
     font-size: 14px;
     border-radius: 8px;
     border: none;
+    min-height: 34px;
+}
+
+.common-input::placeholder {
+    font-size: 14px;
+    color: var(--hadesui-placeholder-color);
 }
 
 .common-input.padding-prefix {
