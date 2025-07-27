@@ -13,6 +13,7 @@ function Calendar({
   // = new Date(2025, 6, 25, 16, 58, 0)
   max,
   // = new Date(2025, 6, 28, 0, 1, 0)
+  inRangePicker,
 }) {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(
@@ -222,6 +223,33 @@ function Calendar({
     }
   }
 
+  function isInHoverRangeSpan(date, hoverDate, min, max) {
+    if (!(date instanceof Date) || !(hoverDate instanceof Date)) return false;
+
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const h = new Date(
+      hoverDate.getFullYear(),
+      hoverDate.getMonth(),
+      hoverDate.getDate()
+    );
+
+    if (min instanceof Date) {
+      const m = new Date(min.getFullYear(), min.getMonth(), min.getDate());
+      const start = m < h ? m : h;
+      const end = m < h ? h : m;
+      return d >= start && d <= end;
+    }
+
+    if (max instanceof Date) {
+      const m = new Date(max.getFullYear(), max.getMonth(), max.getDate());
+      const start = h < m ? h : m;
+      const end = h < m ? m : h;
+      return d >= start && d <= end;
+    }
+
+    return false;
+  }
+
   const getWeeks = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -239,25 +267,52 @@ function Calendar({
         const isCurrentMonth = date.getMonth() === month;
         const isSelected = selectedDate?.toDateString() === date.toDateString();
         const isInRange = isDateInRange(date);
-        const isDisabled = !isInRange || (!isCurrentMonth && !isSelected);
+        const isInRangHover =
+          inRangePicker && isInHoverRangeSpan(date, selectedDate, min, max);
+        const isDisabled =
+          !isInRange || (!isCurrentMonth && !isSelected && !isInRangHover);
+        const isMinMaxSelect =
+          inRangePicker &&
+          (date.toDateString() === min?.toDateString() ||
+            date.toDateString() === max?.toDateString());
+        const isMinSelect =
+          inRangePicker &&
+          date.toDateString() ===
+            (min ? min?.toDateString() : selectedDate?.toDateString());
+        const isMaxSelect =
+          inRangePicker &&
+          date.toDateString() ===
+            (max ? max?.toDateString() : selectedDate?.toDateString());
         week.push(
           <td key={d} style={{ padding: 0 }}>
             <Stack
               style={{
-                padding: isDisabled ? "12px" : "10px",
-                margin: isDisabled ? "0px" : "2px",
+                padding:
+                  isDisabled ||
+                  (isInRangHover && !isMinSelect && !isMaxSelect && !today)
+                    ? "12px"
+                    : "10px",
+                margin:
+                  isDisabled ||
+                  (isInRangHover && !isMinSelect && !isMaxSelect && !today)
+                    ? "0px"
+                    : "2px",
                 textAlign: "center",
                 borderRadius: 8,
-                color: isSelected
-                  ? "var(--hadesui-text-color)"
-                  : isCurrentMonth && !isDisabled
-                  ? "var(--hadesui-text-color)"
-                  : "var(--hadesui-text2-color)",
-                background: isSelected
-                  ? "var(--hadesui-blue-6)"
-                  : isDisabled && !today
-                  ? "linear-gradient(to bottom, transparent 0%, transparent 20%, var(--hadesui-bg-disable-calender) 20%, var(--hadesui-bg-disable-calender) 80%, transparent 80%, transparent 100%)"
-                  : "transparent",
+                color:
+                  isSelected || isInRangHover
+                    ? "var(--hadesui-text-color)"
+                    : isCurrentMonth && !isDisabled
+                    ? "var(--hadesui-text-color)"
+                    : "var(--hadesui-text2-color)",
+                background:
+                  isSelected || isMinMaxSelect
+                    ? "var(--hadesui-blue-6)"
+                    : isInRangHover && !today
+                    ? "linear-gradient(to bottom, transparent 0%, transparent 20%, var(--hadesui-blue-6) 20%, var(--hadesui-blue-6) 80%, transparent 80%, transparent 100%)"
+                    : isDisabled && !today
+                    ? "linear-gradient(to bottom, transparent 0%, transparent 20%, var(--hadesui-bg-disable-calender) 20%, var(--hadesui-bg-disable-calender) 80%, transparent 80%, transparent 100%)"
+                    : "transparent",
                 cursor:
                   isCurrentMonth && !isDisabled ? "pointer" : "not-allowed",
                 userSelect: "none",
@@ -271,13 +326,23 @@ function Calendar({
                 if (!isDisabled) handleSelectDate(date);
               }}
               onMouseEnter={(e) => {
-                if (!isDisabled && !isSelected) {
+                if (
+                  !isDisabled &&
+                  !isSelected &&
+                  !isMinMaxSelect &&
+                  !isInRangHover
+                ) {
                   e.currentTarget.style.background =
                     "var(--hadesui-bg-btn-text)";
                 }
               }}
               onMouseLeave={(e) => {
-                if (!isSelected && !isDisabled) {
+                if (
+                  !isSelected &&
+                  !isDisabled &&
+                  !isMinMaxSelect &&
+                  !isInRangHover
+                ) {
                   e.currentTarget.style.background = "transparent";
                 }
               }}

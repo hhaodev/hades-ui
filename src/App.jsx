@@ -286,8 +286,11 @@ function App() {
 
           <Button type="submit">Submit</Button>
         </Form>
-        <DateRangePicker />
-        <DatePicker customRender={() => <>123</>} />
+        <DateRangePicker
+          hasTimePicker
+          format={"ddd, MMMM D, YYYY [at] hh:mm:ss A"}
+        />
+        <DatePicker />
 
         <Stack flexCol gap={8}>
           <Button

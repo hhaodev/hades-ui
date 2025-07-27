@@ -119,7 +119,7 @@ const DatePicker = forwardRef(
             >
               {valueInternal
                 ? customRender
-                  ? customRender(formatDate(valueInternal))
+                  ? customRender(valueInternal)
                   : formatDate(valueInternal, format)
                 : placeholder}
             </Ellipsis>

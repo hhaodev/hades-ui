@@ -1,4 +1,17 @@
 import { createContext, useEffect, useState } from "react";
+import themeToken from "./theme.css?raw";
+
+(() => {
+  let themeStyle = document.getElementById("--hadesui-theme--");
+
+  if (!themeStyle) {
+    themeStyle = document.createElement("style");
+    themeStyle.id = "--hadesui-theme--";
+    document.head.appendChild(themeStyle);
+  }
+
+  themeStyle.textContent = themeToken;
+})()
 
 export const ThemeContext = createContext();
 

@@ -1,11 +1,11 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { formatDate, usePrevious } from "../../utils";
+import Divider from "../Divider";
 import Dropdown from "../Dropdown";
 import Ellipsis from "../Ellipsis";
 import { DownIcon, UpIcon, XIcon } from "../Icon";
 import Stack from "../Stack";
 import Calendar from "./Calender";
-import Divider from "../Divider";
 
 const DateRangePicker = forwardRef(
   (
@@ -18,7 +18,7 @@ const DateRangePicker = forwardRef(
       style,
       onClear,
       placement: placementProps = "bottom-start",
-      hasTimepicker = true,
+      hasTimePicker,
       // layout = "vertical",
       layout = "horizontal",
       format,
@@ -148,17 +148,12 @@ const DateRangePicker = forwardRef(
             fixedWidthPopup={false}
             placement={placementProps}
             open={openStart}
-            onOpenChange={(open) => {
-              if (open) setOpenStart(true);
-              else setOpenStart(false);
-            }}
-            onClickOutSide={() => {
-              setOpenStart(false);
-            }}
+            onOpenChange={setOpenStart}
             getPlacement={setPlacement}
             popupRender={() => (
               <Calendar
-                hasTimePicker={hasTimepicker}
+                inRangePicker
+                hasTimePicker={hasTimePicker}
                 value={startDate}
                 onSelect={(date) => {
                   setStartDate(date);
@@ -210,7 +205,7 @@ const DateRangePicker = forwardRef(
               >
                 {startDate
                   ? customRenderFrom
-                    ? customRenderFrom(formatDate(startDate))
+                    ? customRenderFrom(startDate)
                     : `From: ${formatDate(startDate, format)}`
                   : "From"}
               </Ellipsis>
@@ -235,7 +230,8 @@ const DateRangePicker = forwardRef(
             getPlacement={setPlacement}
             popupRender={() => (
               <Calendar
-                hasTimePicker={hasTimepicker}
+                inRangePicker
+                hasTimePicker={hasTimePicker}
                 value={endDate}
                 onSelect={(date) => {
                   setEndDate(date);
@@ -287,7 +283,7 @@ const DateRangePicker = forwardRef(
               >
                 {endDate
                   ? customRenderTo
-                    ? customRenderTo(formatDate(endDate))
+                    ? customRenderTo(endDate)
                     : `To: ${formatDate(endDate, format)}`
                   : "To"}
               </Ellipsis>
@@ -305,7 +301,7 @@ const DateRangePicker = forwardRef(
             e.stopPropagation();
             if (disabled) return;
             if (endDate && startDate) {
-              setEndDate(null);
+              setStartDate(null);
               setEndDate(null);
             }
             if (!startDate) {
