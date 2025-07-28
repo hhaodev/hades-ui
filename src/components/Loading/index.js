@@ -53,7 +53,7 @@ class HadesUILoading extends HTMLElement {
           inset: 0;
           background: rgba(0, 0, 0, 0.3);
           display: none;
-          z-index: 9999;
+          z-index: var(--z-loading);
           align-items: center;
           justify-content: center;
         }

@@ -227,6 +227,7 @@ const Tooltip = forwardRef(
                   ? "translateY(0)"
                   : getInitialTransform(placement),
                 transition: "opacity 0.2s ease, transform 0.2s ease",
+                zIndex: "var(--z-tooltip)",
                 ...style,
               }}
               className={className}

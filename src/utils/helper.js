@@ -42,6 +42,10 @@ export function useDisableScroll(condition = true, refOrEl = null) {
     const el = getElement(refOrEl) || document.body;
     if (!condition || !el) return;
 
+    if (el.dataset["disableScroll"] === "true") return;
+
+    el.dataset["disableScroll"] = "true";
+
     const scrollY = window.scrollY;
     const originalStyle = {
       top: el.style.top,
@@ -78,6 +82,7 @@ export function useDisableScroll(condition = true, refOrEl = null) {
     });
 
     return () => {
+      delete el.dataset["disableScroll"];
       Object.assign(el.style, originalStyle);
       window.scrollTo(0, scrollY);
       focusableEls.forEach((el) => {

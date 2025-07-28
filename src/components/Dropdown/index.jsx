@@ -245,6 +245,7 @@ export default function Dropdown({
                     : getInitialTransform(actualPlacement),
                 pointerEvents: open && ready ? "auto" : "none",
                 transition: "opacity 0.2s ease, transform 0.2s ease",
+                zIndex: "var(--z-dropdown)",
               }}
             >
               {popupRender ? (

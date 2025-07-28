@@ -9,6 +9,7 @@ let root = null;
 let addToast = null;
 
 const limitToast = 3;
+const defaultDuration = 5000;
 
 export const toast = {
   success: (opts) => showToast({ ...opts, type: "success" }),
@@ -65,7 +66,7 @@ function ToastRoot({ onReady }) {
     (toast) => {
       const id = idRef.current++;
       const placement = toast.placement || "topRight";
-      const duration = toast.duration ?? 5000;
+      const duration = toast.duration ?? defaultDuration;
       const newToast = {
         ...toast,
         id,
@@ -125,7 +126,7 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
     cursor: "default",
     maxHeight: "calc(100% - 16px)",
     padding: "16px 16px 24px 16px",
-    zIndex: 1000,
+    zIndex: "var(--z-toast)",
   };
 
   useEffect(() => {
@@ -225,7 +226,7 @@ const getToastIcon = (type) => {
   }
 };
 
-function ToastItem({ icon, type = "info", message, description, onClose }) {
+function ToastItem({ icon, type = "info", title, description, onClose }) {
   return (
     <div
       style={{
@@ -253,7 +254,7 @@ function ToastItem({ icon, type = "info", message, description, onClose }) {
               color: "var(--hadesui-text-color)",
             }}
           >
-            <div>{message}</div>
+            <div>{title}</div>
             {description && (
               <div
                 style={{

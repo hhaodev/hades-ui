@@ -9,6 +9,7 @@ import {
   Ellipsis,
   Form,
   Input,
+  message,
   Modal,
   OverFlow,
   Panel,
@@ -310,12 +311,12 @@ function App() {
         >
           Start Loading
         </Button>
-        <Stack flex>
+        <Stack flex gap={8}>
           <Button
             theme="default"
             onClick={() => {
               toast.success({
-                message: "Notification!!!",
+                title: "Notification!!!",
                 description: "Đây là notification không tự động tắt..",
                 placement: "topRight", // default
                 duration: 0, // 0 is don't auto closeable
@@ -328,10 +329,9 @@ function App() {
             theme="default"
             onClick={() => {
               toast.success({
-                message: "topLeft",
+                title: "topLeft",
                 description: "topLeft",
                 placement: "topLeft",
-                duration: 0,
               });
             }}
           >
@@ -341,10 +341,9 @@ function App() {
             theme="default"
             onClick={() => {
               toast.success({
-                message: "bottomLeft",
+                title: "bottomLeft",
                 description: "bottomLeft",
                 placement: "bottomLeft",
-                duration: 0,
               });
             }}
           >
@@ -354,22 +353,21 @@ function App() {
             theme="default"
             onClick={() => {
               toast.success({
-                message: "bottomRight",
+                title: "bottomRight",
                 description: "bottomRight",
                 placement: "bottomRight",
-                duration: 0,
               });
             }}
           >
             Make toast bottom right
           </Button>
         </Stack>
-        <Stack flex>
+        <Stack flex gap={8}>
           <Button
             theme="default"
             onClick={() => {
               toast.success({
-                message: "Success",
+                title: "Success",
                 description: "Success",
               });
             }}
@@ -380,7 +378,7 @@ function App() {
             theme="default"
             onClick={() => {
               toast.warning({
-                message: "Warning",
+                title: "Warning",
                 description: "Warning",
               });
             }}
@@ -391,7 +389,7 @@ function App() {
             theme="default"
             onClick={() => {
               toast.info({
-                message: "Info",
+                title: "Info",
                 description: "Info",
               });
             }}
@@ -402,12 +400,61 @@ function App() {
             theme="default"
             onClick={() => {
               toast.error({
-                message: "Error",
+                title: "Error",
                 description: "Error",
               });
             }}
           >
             Make toast Error
+          </Button>
+        </Stack>
+        <Stack flex gap={8}>
+          <Button
+            onClick={() => {
+              message.success({
+                message: "Successfully!",
+                allowClear: true,
+              });
+            }}
+          >
+            Make message success
+          </Button>
+          <Button
+            onClick={() => {
+              message.info({
+                message: "Information!",
+              });
+            }}
+          >
+            Make message info
+          </Button>
+          <Button
+            onClick={() => {
+              message.warning({
+                message: "Warning!",
+              });
+            }}
+          >
+            Make message warning
+          </Button>
+          <Button
+            onClick={() => {
+              message.error({
+                message: "Error!",
+              });
+            }}
+          >
+            Make message error
+          </Button>
+          <Button
+            onClick={() => {
+              message.info({
+                message:
+                  "This is long message! This is long message! This is long message! This is long message!",
+              });
+            }}
+          >
+            Make long message
           </Button>
         </Stack>
 

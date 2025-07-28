@@ -42,11 +42,7 @@ export default function Panel({
     if (open) {
       setShouldRender(true);
       setVisible(false);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setVisible(true);
-        });
-      });
+      setTimeout(() => setVisible(true), 0);
     } else {
       setVisible(false);
       timeoutRef.current = setTimeout(() => {
