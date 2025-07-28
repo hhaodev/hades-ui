@@ -421,7 +421,6 @@ const FileCard = ({ file, onRemove, view }) => {
             >
               {view ? (
                 <Link
-                  disabled
                   onClick={(e) => {
                     e.stopPropagation();
                     if (file instanceof File) {
