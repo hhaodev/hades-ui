@@ -135,7 +135,8 @@ html.light {
     --hadesui-icon-loading-global: var(--hadesui-gray-2);
     --hadesui-icon-loading-global-animate: var(--hadesui-gray-9);
     --hadesui-bg-disabled-color: var(--hadesui-gray-5-5);
-    --hadesui-text-disabled-color: var(--hadesui-gray-7-5)
+    --hadesui-text-disabled-color: var(--hadesui-gray-7-5);
+    --hadesui-bg-toast-color: var(--hadesui-gray-1)
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -161,7 +162,8 @@ html.dark {
     --hadesui-icon-loading-global: var(--hadesui-gray-9);
     --hadesui-icon-loading-global-animate: var(--hadesui-gray-6);
     --hadesui-bg-disabled-color: var(--hadesui-gray-8-5);
-    --hadesui-text-disabled-color: var(--hadesui-gray-6-5)
+    --hadesui-text-disabled-color: var(--hadesui-gray-6-5);
+    --hadesui-bg-toast-color: var(--hadesui-gray-9)
 }
 
 /* ===== Global Styles (using tokens) ===== */

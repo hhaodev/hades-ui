@@ -40,54 +40,6 @@ const menu = [
     element: <Stack>text4</Stack>,
     onClick: () => console.log("text 4"),
   },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
-  {
-    element: "aaa",
-    onClick: () => console.log("text 5"),
-  },
 ];
 function App() {
   const [form] = Form.useForm();
@@ -353,65 +305,111 @@ function App() {
           theme="default"
           onClick={() => {
             $$.loading(true);
-            // setTimeout(() => $$.loading(false), 1100);
-            // setTimeout(() => $$.loading(true), 1250);
-            // setTimeout(() => $$.loading(false), 3000);
+            setTimeout(() => $$.loading(false), 3000);
           }}
         >
           Start Loading
         </Button>
-        <Button
-          theme="default"
-          onClick={() => {
-            toast.success({
-              message: "topRight",
-              description: "topRight",
-              placement: "topRight",
-              duration: 5000,
-            });
-          }}
-        >
-          Make toast top right
-        </Button>
-        <Button
-          theme="default"
-          onClick={() => {
-            toast.success({
-              message: "topLeft",
-              description: "topLeft",
-              placement: "topLeft",
-              duration: 0,
-            });
-          }}
-        >
-          Make toast top left
-        </Button>
-        <Button
-          theme="default"
-          onClick={() => {
-            toast.success({
-              message: "bottomLeft",
-              description: "bottomLeft",
-              placement: "bottomLeft",
-              duration: 0,
-            });
-          }}
-        >
-          Make toast bottom left
-        </Button>
-        <Button
-          theme="default"
-          onClick={() => {
-            toast.success({
-              message: "bottomRight",
-              description: "bottomRight",
-              placement: "bottomRight",
-              duration: 0,
-            });
-          }}
-        >
-          Make toast bottom right
-        </Button>
+        <Stack flex>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.success({
+                message: "Notification!!!",
+                description: "Đây là notification không tự động tắt..",
+                placement: "topRight", // default
+                duration: 0, // 0 is don't auto closeable
+              });
+            }}
+          >
+            Make toast top right
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.success({
+                message: "topLeft",
+                description: "topLeft",
+                placement: "topLeft",
+                duration: 0,
+              });
+            }}
+          >
+            Make toast top left
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.success({
+                message: "bottomLeft",
+                description: "bottomLeft",
+                placement: "bottomLeft",
+                duration: 0,
+              });
+            }}
+          >
+            Make toast bottom left
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.success({
+                message: "bottomRight",
+                description: "bottomRight",
+                placement: "bottomRight",
+                duration: 0,
+              });
+            }}
+          >
+            Make toast bottom right
+          </Button>
+        </Stack>
+        <Stack flex>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.success({
+                message: "Success",
+                description: "Success",
+              });
+            }}
+          >
+            Make toast Success
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.warning({
+                message: "Warning",
+                description: "Warning",
+              });
+            }}
+          >
+            Make toast Warning
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.info({
+                message: "Info",
+                description: "Info",
+              });
+            }}
+          >
+            Make toast Info
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.error({
+                message: "Error",
+                description: "Error",
+              });
+            }}
+          >
+            Make toast Error
+          </Button>
+        </Stack>
 
         <Divider>Test Loading</Divider>
 

@@ -468,3 +468,73 @@ export const IconDownload = ({
     </svg>
   );
 };
+
+export const IconInfo = ({ size = 16, color = "#0000FF", ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke={color}
+    strokeWidth={1.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <circle cx="12" cy="8" r="1" />
+  </svg>
+);
+
+export const IconSuccess = ({ size = 16, color = "#00FF00", ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke={color}
+    strokeWidth={1.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 12l2.5 2.5L16 9" />
+  </svg>
+);
+
+export const IconWarning = ({ size = 16, color = "#D89614", ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke={color}
+    strokeWidth={1.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="13" />
+    <circle cx="12" cy="16.5" r="1" />
+  </svg>
+);
+
+export const IconError = ({ size = 16, color = "#E40000", ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    fill="none"
+    stroke={color}
+    strokeWidth={1.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9 9l6 6M15 9l-6 6" />
+  </svg>
+);
