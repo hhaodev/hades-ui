@@ -319,19 +319,22 @@ const renderNoItem = () => (
     style={{
       display: "flex",
       alignItems: "center",
-      gap: "12px",
       padding: "8px 12px",
       backgroundColor: "var(--hadesui-bg-card-file-color, #1e1e1e)",
       borderRadius: "8px",
       marginBottom: "8px",
       marginTop: "8px",
       width: "100%",
+      minHeight: 36,
     }}
   >
     <div
       style={{
         fontSize: "14px",
         width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
         color: "var(--hadesui-text-color)",
       }}
     >
