@@ -5,6 +5,7 @@ import React, {
   useLayoutEffect,
   cloneElement,
   isValidElement,
+  useId,
 } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -90,7 +91,6 @@ export default function Dropdown({
   popupStyles,
   fixedWidthPopup = true,
   getPlacement,
-  onClickOutSide,
   disabled = false,
   id,
 }) {
@@ -99,6 +99,8 @@ export default function Dropdown({
   const [shouldRender, setShouldRender] = useState(false);
   const [actualPlacement, setActualPlacement] = useState(placement);
   const [popupWidth, setPopupWidth] = useState(0);
+
+  const dropdownId = useId();
 
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -176,8 +178,7 @@ export default function Dropdown({
         !referenceRef.current?.contains(e.target) &&
         !dropdownRef.current?.contains(e.target)
       ) {
-        onClickOutSide?.(e);
-        setOpen(false);
+        setTimeout(() => setOpen(false), 0);
       }
     };
     window.addEventListener("mousedown", handleClickOutside);
@@ -224,7 +225,7 @@ export default function Dropdown({
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack id={id ?? `dropdown-menu-${actualPlacement}`}>
+          <Stack id={id ?? `dropdown-menu-${actualPlacement}-${dropdownId}`}>
             <Stack
               ref={dropdownRef}
               style={{

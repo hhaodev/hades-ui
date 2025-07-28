@@ -130,7 +130,7 @@ const DatePicker = forwardRef(
                 alignItems: "center",
                 color: "var(--hadesui-placeholder-color)",
               }}
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
                 if (valueInternal) {

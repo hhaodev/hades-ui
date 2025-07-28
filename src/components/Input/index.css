@@ -8,7 +8,7 @@
     background-color: var(--hadesui-bg-color);
     color: var(--hadesui-text-color);
     overflow: hidden;
-    min-height: 34px;
+    min-height: 36px;
     transition: border-color 0.2s ease;
 }
 
@@ -22,7 +22,7 @@
     font-size: 14px;
     border-radius: 8px;
     border: none;
-    min-height: 34px;
+    min-height: 36px;
 }
 
 .common-input::placeholder {

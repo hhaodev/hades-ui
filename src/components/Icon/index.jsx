@@ -445,3 +445,26 @@ export const SearchIcon = ({ size = 20, ...props }) => (
     <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z" />
   </svg>
 );
+
+export const IconDownload = ({
+  size = 16,
+  color = "currentColor",
+  ...props
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      fill="none"
+      stroke={color}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+};

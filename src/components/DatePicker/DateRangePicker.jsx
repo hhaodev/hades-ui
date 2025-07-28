@@ -28,7 +28,7 @@ const DateRangePicker = forwardRef(
     },
     ref
   ) => {
-    const [placement, setPlacement] = useState("");
+    const [placement, setPlacement] = useState(placementProps);
     const [openStart, setOpenStart] = useState(false);
     const [openEnd, setOpenEnd] = useState(false);
     const [startDate, setStartDate] = useState(
@@ -297,16 +297,22 @@ const DateRangePicker = forwardRef(
             alignItems: "center",
             color: "var(--hadesui-placeholder-color)",
           }}
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.stopPropagation();
             if (disabled) return;
             if (endDate && startDate) {
               setStartDate(null);
               setEndDate(null);
             }
-            if (!startDate) {
+            if (!startDate && (openEnd || openStart)) {
+              setOpenStart(false);
+              setOpenEnd(false);
+            } else if (!openStart && !startDate) {
               setOpenStart(true);
-            } else if (!endDate) {
+            } else if (!endDate && (openEnd || openStart)) {
+              setOpenStart(false);
+              setOpenEnd(false);
+            } else if (!openEnd && !endDate) {
               setOpenEnd(true);
             }
           }}

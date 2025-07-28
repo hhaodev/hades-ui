@@ -50,6 +50,7 @@
 .divider-vertical {
     display: inline-block;
     width: 1px;
+    min-width: 1px;
     height: 100%;
     margin: 0 8px;
     background-color: var(--hadesui-divider-color);

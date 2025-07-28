@@ -247,7 +247,7 @@ const Select = forwardRef(
               {selected ? selected.label : placeholder}
             </Ellipsis>
             <Stack
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
                 if (selected) {

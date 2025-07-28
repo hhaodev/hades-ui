@@ -273,34 +273,26 @@ function Calendar({
           !isInRange || (!isCurrentMonth && !isSelected && !isInRangHover);
         const isMinMaxSelect =
           inRangePicker &&
-          (date.toDateString() === min?.toDateString() ||
-            date.toDateString() === max?.toDateString());
-        const isMinSelect =
-          inRangePicker &&
-          date.toDateString() ===
-            (min ? min?.toDateString() : selectedDate?.toDateString());
-        const isMaxSelect =
-          inRangePicker &&
-          date.toDateString() ===
-            (max ? max?.toDateString() : selectedDate?.toDateString());
+          (date.toDateString() ===
+            (min ? min?.toDateString() : selectedDate?.toDateString()) ||
+            date.toDateString() ===
+              (max ? max?.toDateString() : selectedDate?.toDateString()));
         week.push(
           <td key={d} style={{ padding: 0 }}>
             <Stack
               style={{
                 padding:
-                  isDisabled ||
-                  (isInRangHover && !isMinSelect && !isMaxSelect && !today)
+                  !isMinMaxSelect && (isDisabled || (isInRangHover && !today))
                     ? "12px"
                     : "10px",
                 margin:
-                  isDisabled ||
-                  (isInRangHover && !isMinSelect && !isMaxSelect && !today)
+                  !isMinMaxSelect && (isDisabled || (isInRangHover && !today))
                     ? "0px"
                     : "2px",
                 textAlign: "center",
                 borderRadius: 8,
                 color:
-                  isSelected || isInRangHover
+                  isSelected || isInRangHover || isMinMaxSelect
                     ? "var(--hadesui-text-color)"
                     : isCurrentMonth && !isDisabled
                     ? "var(--hadesui-text-color)"

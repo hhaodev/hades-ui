@@ -263,6 +263,7 @@ function App() {
 
           <Form.Item label="Chọn file" name="file" rules={[{ required: true }]}>
             <UploadFile
+              view
               accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
               multiple
               maxSize={1 * 1024 * 1024}
@@ -303,6 +304,7 @@ function App() {
                 email: "test@gmail.com",
                 age: 54,
                 select: "30000000000000",
+                file: file,
               })
             }
           >

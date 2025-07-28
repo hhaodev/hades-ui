@@ -6,12 +6,14 @@ import {
   ExcelIcon,
   FileUpload,
   GenericFileIcon,
+  IconDownload,
   ImageIcon,
   PdfIcon,
   TrashIcon,
   VideoIcon,
   WordIcon,
 } from "../Icon";
+import Link from "../Link";
 
 const UploadFile = forwardRef(
   (
@@ -24,6 +26,7 @@ const UploadFile = forwardRef(
       accept = [],
       maxSize,
       disabled,
+      view,
       ...rest
     },
     ref
@@ -197,102 +200,112 @@ const UploadFile = forwardRef(
 
     return (
       <div>
-        <div
-          data-border-red-error={rest["data-border-red-error"]}
-          onClick={handleClick}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          style={{
-            border: `2px dashed ${
-              isDragging
-                ? "var(--hadesui-blue-6)"
-                : "var(--hadesui-border-color)"
-            }`,
-            backgroundColor: isDragging
-              ? "var(--hadesui-bg2-color)"
-              : "var(--hadesui-bg-color)",
-            padding: "24px",
-            borderRadius: "12px",
-            textAlign: "center",
-            cursor: "pointer",
-            color: "#ccc",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            if (!disabled) {
-              e.currentTarget.style.borderColor = "var(--hadesui-blue-6)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!disabled) {
-              e.currentTarget.style.borderColor = "var(--hadesui-border-color)";
-            }
-          }}
-        >
-          <FileUpload size={40} />
+        {!view && (
+          <>
+            <div
+              data-border-red-error={rest["data-border-red-error"]}
+              onClick={handleClick}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              style={{
+                border: `2px dashed ${
+                  isDragging
+                    ? "var(--hadesui-blue-6)"
+                    : "var(--hadesui-border-color)"
+                }`,
+                backgroundColor: isDragging
+                  ? "var(--hadesui-bg2-color)"
+                  : "var(--hadesui-bg-color)",
+                padding: "24px",
+                borderRadius: "12px",
+                textAlign: "center",
+                cursor: "pointer",
+                color: "#ccc",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.borderColor = "var(--hadesui-blue-6)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.borderColor =
+                    "var(--hadesui-border-color)";
+                }
+              }}
+            >
+              <FileUpload size={40} />
 
-          <div
-            style={{
-              fontWeight: 500,
-              color: "var(--hadesui-text-color)",
-              marginBottom: "6px",
-            }}
-          >
-            Click or drag file to this area to upload
-          </div>
-          <div
-            style={{
-              color: "var(--hadesui-text2-color)",
-              fontSize: "14px",
-              margin: 0,
-            }}
-          >
-            {`Support for a single ${multiple ? "or bulk" : ""} upload. ${
-              accept.length > 0 ? `(${accept.join(", ")})` : ""
-            } ${maxSize ? `(maximum ${formatSize(maxSize)} per file)` : ""}`}
-          </div>
-
-          <input
-            type="file"
-            accept={accept.join(",")}
-            ref={(el) => {
-              inputRef.current = el;
-              if (typeof ref === "function") ref(el);
-              else if (ref) ref.current = el;
-            }}
-            name={name}
-            multiple={multiple}
-            onChange={handleChange}
-            {...rest}
-            hidden
-            disabled={disabled}
-          />
-        </div>
-        {internalError?.length > 0 && (
-          <div>
-            {internalError.map((i, index) => (
               <div
-                key={index}
-                style={{ color: "red", fontSize: 12, marginTop: 2 }}
+                style={{
+                  fontWeight: 500,
+                  color: "var(--hadesui-text-color)",
+                  marginBottom: "6px",
+                }}
               >
-                {i}
+                Click or drag file to this area to upload
               </div>
-            ))}
-          </div>
+              <div
+                style={{
+                  color: "var(--hadesui-text2-color)",
+                  fontSize: "14px",
+                  margin: 0,
+                }}
+              >
+                {`Support for a single ${multiple ? "or bulk" : ""} upload. ${
+                  accept.length > 0 ? `(${accept.join(", ")})` : ""
+                } ${
+                  maxSize ? `(maximum ${formatSize(maxSize)} per file)` : ""
+                }`}
+              </div>
+
+              <input
+                type="file"
+                accept={accept.join(",")}
+                ref={(el) => {
+                  inputRef.current = el;
+                  if (typeof ref === "function") ref(el);
+                  else if (ref) ref.current = el;
+                }}
+                name={name}
+                multiple={multiple}
+                onChange={handleChange}
+                {...rest}
+                hidden
+                disabled={disabled}
+              />
+            </div>
+            {internalError?.length > 0 && (
+              <div>
+                {internalError.map((i, index) => (
+                  <div
+                    key={index}
+                    style={{ color: "red", fontSize: 12, marginTop: 2 }}
+                  >
+                    {i}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
-        {file?.length > 0 && (
+        {file?.length > 0 ? (
           <div>
-            {file?.map((item, index) => (
+            {file.map((item, index) => (
               <FileCard
                 key={index}
                 file={item}
                 onRemove={() => handleRemove(index)}
+                view={view}
               />
             ))}
           </div>
-        )}
+        ) : view ? (
+          renderNoItem()
+        ) : null}
       </div>
     );
   }
@@ -300,6 +313,32 @@ const UploadFile = forwardRef(
 
 UploadFile.displayName = "UploadFile";
 export default UploadFile;
+
+const renderNoItem = () => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      padding: "8px 12px",
+      backgroundColor: "var(--hadesui-bg-card-file-color, #1e1e1e)",
+      borderRadius: "8px",
+      marginBottom: "8px",
+      marginTop: "8px",
+      width: "100%",
+    }}
+  >
+    <div
+      style={{
+        fontSize: "14px",
+        width: "100%",
+        color: "var(--hadesui-text-color)",
+      }}
+    >
+      <Ellipsis>No item to show here.</Ellipsis>
+    </div>
+  </div>
+);
 
 const formatSize = (size) => {
   const kb = size / 1024;
@@ -341,7 +380,7 @@ const getFileIcon = (file) => {
   return <GenericFileIcon size={24} />;
 };
 
-const FileCard = ({ file, onRemove }) => {
+const FileCard = ({ file, onRemove, view }) => {
   return (
     <div
       style={{
@@ -373,22 +412,66 @@ const FileCard = ({ file, onRemove }) => {
               color: "var(--hadesui-text-color)",
             }}
           >
-            <Ellipsis row={2}>{file?.name}</Ellipsis>
+            <Ellipsis
+              row={2}
+              style={{ color: view ? "var(--hadesui-blue-6-5)" : "inherit" }}
+            >
+              {view ? (
+                <Link
+                  disabled
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (file instanceof File) {
+                      const url = URL.createObjectURL(file);
+                      window.open(url, "_blank");
+                      setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    } else if (typeof file?.url === "string") {
+                      window.open(file.url, "_blank");
+                    }
+                  }}
+                >
+                  {file?.name}
+                </Link>
+              ) : (
+                file?.name
+              )}
+            </Ellipsis>
             <div
               style={{ fontSize: "12px", color: "var(--hadesui-text2-color)" }}
             >
               {formatSize(file?.size)}
             </div>
           </div>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove?.();
-            }}
-            theme="icon"
-          >
-            <TrashIcon />
-          </Button>
+          {!view ? (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove?.();
+              }}
+              theme="icon"
+            >
+              <TrashIcon />
+            </Button>
+          ) : (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (file instanceof File) {
+                  const url = URL.createObjectURL(file);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = file.name || "download";
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }
+              }}
+              theme="icon"
+            >
+              <IconDownload />
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -1,0 +1,16 @@
+.link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--hadesui-blue-6-5);
+    cursor: pointer !important;
+    transition: opacity 0.2s;
+    text-decoration: underline;
+}
+
+
+
+.link.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
