@@ -16,6 +16,7 @@ import {
   SearchIcon,
   Select,
   Stack,
+  toast,
   Tooltip,
   UploadFile,
 } from "./components";
@@ -359,6 +360,59 @@ function App() {
         >
           Start Loading
         </Button>
+        <Button
+          theme="default"
+          onClick={() => {
+            toast.success({
+              message: "topRight",
+              description: "topRight",
+              placement: "topRight",
+              duration: 5000,
+            });
+          }}
+        >
+          Make toast top right
+        </Button>
+        <Button
+          theme="default"
+          onClick={() => {
+            toast.success({
+              message: "topLeft",
+              description: "topLeft",
+              placement: "topLeft",
+              duration: 0,
+            });
+          }}
+        >
+          Make toast top left
+        </Button>
+        <Button
+          theme="default"
+          onClick={() => {
+            toast.success({
+              message: "bottomLeft",
+              description: "bottomLeft",
+              placement: "bottomLeft",
+              duration: 0,
+            });
+          }}
+        >
+          Make toast bottom left
+        </Button>
+        <Button
+          theme="default"
+          onClick={() => {
+            toast.success({
+              message: "bottomRight",
+              description: "bottomRight",
+              placement: "bottomRight",
+              duration: 0,
+            });
+          }}
+        >
+          Make toast bottom right
+        </Button>
+
         <Divider>Test Loading</Divider>
 
         {/* overflow region */}
