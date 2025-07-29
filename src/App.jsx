@@ -85,6 +85,16 @@ const Render3 = () => {
     </>
   );
 };
+const Render4 = () => {
+  useEffect(() => {
+    console.log("render4");
+  }, []);
+  return (
+    <>
+      <div>Content render 4</div>
+    </>
+  );
+};
 
 function App() {
   const [form] = Form.useForm();
@@ -324,7 +334,7 @@ function App() {
             console.log(tab);
           }}
         />
-        <Tabs defaultActive="tab2" tabPosition="top">
+        <Tabs defaultActive="tab1" tabPosition="top">
           <Tabs.Item tabKey="tab1" title="Tab1">
             <Render1 />
           </Tabs.Item>
@@ -333,6 +343,9 @@ function App() {
           </Tabs.Item>
           <Tabs.Item tabKey="tab3" title="Tab3">
             <Render3 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab4" title="Tab4">
+            <Render4 />
           </Tabs.Item>
         </Tabs>
         <Tabs defaultActive="tab2" tabPosition="bottom">
@@ -345,8 +358,11 @@ function App() {
           <Tabs.Item tabKey="tab3" title="Tab3">
             <Render3 />
           </Tabs.Item>
+          <Tabs.Item tabKey="tab4" title="Tab3">
+            <Render4 />
+          </Tabs.Item>
         </Tabs>
-        <Tabs defaultActive="tab2" tabPosition="left">
+        <Tabs defaultActive="tab3" tabPosition="left">
           <Tabs.Item tabKey="tab1" title="Tab1">
             <Render1 />
           </Tabs.Item>
@@ -356,18 +372,25 @@ function App() {
           <Tabs.Item tabKey="tab3" title="Tab3">
             <Render3 />
           </Tabs.Item>
+          <Tabs.Item tabKey="tab4" title="Tab4">
+            <Render4 />
+          </Tabs.Item>
         </Tabs>
-        <Tabs defaultActive="tab2" tabPosition="right">
+        <Tabs defaultActive="tab4" tabPosition="right">
           <Tabs.Item tabKey="tab1" title="Tab1">
             <Render1 />
           </Tabs.Item>
           <Tabs.Item tabKey="tab2" title="Tab2">
             <Render2 />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab3">
+          <Tabs.Item tabKey="tab3" title="Tab4">
             <Render3 />
           </Tabs.Item>
+          <Tabs.Item tabKey="tab4" title="Tab4">
+            <Render4 />
+          </Tabs.Item>
         </Tabs>
+
         <Input placeholder="Nhập email" />
         <Form
           form={form}

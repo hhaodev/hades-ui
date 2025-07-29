@@ -100,21 +100,37 @@ const DragDropTable = ({ data = [], onChange }) => {
     setTimeout(() => boardRef?.current?.classList.remove("overlay-active"), 10);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("column", JSON.stringify(column));
-    // e.dataTransfer.setData("text/plain", JSON.stringify(column));
     dragType.current = "column";
     const oldIndex = data.findIndex((col) => col.id === column.id);
     dragColRef.current = { column, oldIndex };
     e.dataTransfer.setDragImage(new Image(), 0, 0);
     const el = columnRefs.current[column.id];
+    const rect = el.getBoundingClientRect();
     const ghost = el.cloneNode(true);
     ghost.classList.add("drag-ghost-column");
+    ghost.style.position = "fixed";
+    ghost.style.top = `${rect.top}px`;
+    ghost.style.left = `${rect.left}px`;
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.pointerEvents = "none";
+    ghost.style.opacity = "0.8";
+    ghost.style.zIndex = 9999;
+    ghost.style.margin = "0";
+
     document.body.appendChild(ghost);
     ghostRef.current = ghost;
+
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+
     const moveGhost = (ev) => {
-      ghost.style.left = `${ev.clientX + 8}px`;
-      ghost.style.top = `${ev.clientY + 8}px`;
+      ghost.style.left = `${ev.clientX - offsetX}px`;
+      ghost.style.top = `${ev.clientY - offsetY}px`;
     };
+
     document.addEventListener("dragover", moveGhost);
+
     const cleanup = () => {
       document.removeEventListener("dragover", moveGhost);
       if (ghostRef.current) {
@@ -272,6 +288,8 @@ const DragDropTable = ({ data = [], onChange }) => {
 
   return (
     <motion.div
+      layout
+      transition={{ duration: 0.3 }}
       ref={(el) => (boardRef.current = el)}
       className={cn("dragdroptable-board", { active: active })}
       onDrop={(e) => {
@@ -348,10 +366,6 @@ const Column = React.forwardRef(
 
     function handleDragStart(e, card, oldColumn) {
       e.dataTransfer.effectAllowed = "move";
-      // e.dataTransfer.setData(
-      //   "text/plain",
-      //   JSON.stringify({ card: card, oldColumn: oldColumn })
-      // );
       e.dataTransfer.setData("card", JSON.stringify(card));
       e.dataTransfer.setData("oldColumn", JSON.stringify(oldColumn));
       dragType.current = "card";
@@ -650,6 +664,16 @@ const AddCol = ({ onAdd }) => {
     setText("");
     setAdding(false);
   };
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setAdding(false);
+      setText("");
+    } else if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
   return adding ? (
     <motion.form
       layout
@@ -661,6 +685,7 @@ const AddCol = ({ onAdd }) => {
         onChange={(e) => setText(e.target.value)}
         placeholder="Add column..."
         autoFocus
+        onKeyDown={handleKeyDown}
       />
       <div className="dragdroptable-form-actions">
         <Button

@@ -1,5 +1,4 @@
-import { motion } from "framer-motion";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 function isValidKey(value) {
   return value !== undefined && value !== null;
@@ -15,13 +14,42 @@ const ChipTabs = ({ tabs = [], defaultActive, active, onChange }) => {
   );
   const currentActive = isControlled ? String(active) : internalActive;
 
-  useEffect(() => {
-    if (!isControlled && tabs.length > 0 && !isValidKey(internalActive)) {
-      setInternalActive(
-        isValidKey(defaultActive) ? String(defaultActive) : String(tabs[0]?.key)
-      );
-    }
-  }, [tabs, defaultActive, isControlled, internalActive]);
+  const containerRef = useRef(null);
+  const indicatorRef = useRef(null);
+  const tabRefs = useRef({});
+  const hasMounted = useRef(false);
+
+  useLayoutEffect(() => {
+    const el = tabRefs.current[currentActive];
+    const indicator = indicatorRef.current;
+    const container = containerRef.current;
+
+    if (!el || !indicator || !container) return;
+
+    const updateIndicator = () => {
+      const tabRect = el.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      const left = tabRect.left - containerRect.left;
+      const top = tabRect.top - containerRect.top;
+
+      indicator.style.left = `${left}px`;
+      indicator.style.top = `${top}px`;
+      indicator.style.width = `${tabRect.width}px`;
+      indicator.style.height = `${tabRect.height}px`;
+
+      if (!hasMounted.current) {
+        indicator.style.transition = "none";
+        requestAnimationFrame(() => {
+          hasMounted.current = true;
+          indicator.style.transition =
+            "left 0.2s ease, top 0.2s ease, width 0.2s ease, height 0.2s ease";
+        });
+      }
+    };
+
+    requestAnimationFrame(updateIndicator);
+  }, [currentActive, tabs]);
 
   const containerStyle = {
     backgroundColor: "var(--hadesui-bg-chip-tab-color)",
@@ -34,69 +62,57 @@ const ChipTabs = ({ tabs = [], defaultActive, active, onChange }) => {
     height: "100%",
     width: "fit-content",
     borderRadius: "8px",
-  };
-
-  const wrapperStyle = {
     position: "relative",
-    borderRadius: "6px",
   };
 
   const buttonStyle = (isSelected) => ({
-    position: "relative",
-    padding: "3px 8px",
+    padding: "4px 8px",
     border: "none",
     borderRadius: "6px",
     fontSize: "14px",
-    background: isSelected ? "var(--hadesui-blue-6)" : "transparent",
+    background: "transparent",
     color: isSelected ? "var(--hadesui-gray-1)" : "var(--hadesui-text-color)",
     cursor: "pointer",
+    position: "relative",
+    backgroundColor: "transparent",
     transition: "all 0.2s ease",
   });
 
-  const textStyle = {
-    position: "relative",
-  };
-
-  const backgroundStyle = {
+  const indicatorStyle = {
     position: "absolute",
-    inset: 0,
     background: "var(--hadesui-blue-6)",
-    borderRadius: "6px",
+    borderRadius: "5px",
+    pointerEvents: "none",
   };
 
   return (
-    <div style={containerStyle}>
+    <div ref={containerRef} style={containerStyle}>
+      <div ref={indicatorRef} style={indicatorStyle} />
       {tabs.map((tab) => {
         const key = String(tab?.key);
         const isSelected = currentActive === key;
         return (
-          <div style={wrapperStyle} key={key}>
-            {isSelected && (
-              <motion.div
-                layoutId={`pill-tab-${id}`}
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                style={backgroundStyle}
-              />
-            )}
-            <div
-              style={buttonStyle(isSelected)}
-              onClick={() => {
-                if (isSelected) return;
-                if (!isControlled) setInternalActive(key);
-                onChange?.(tab);
-              }}
-              onMouseEnter={(e) => {
-                if (!isSelected)
-                  e.currentTarget.style.backgroundColor =
-                    "var(--hadesui-bg-chip-tab-hover)";
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected)
-                  e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              <span style={textStyle}>{tab?.title}</span>
-            </div>
+          <div
+            key={key}
+            ref={(el) => (tabRefs.current[key] = el)}
+            style={buttonStyle(isSelected)}
+            onClick={(e) => {
+              if (isSelected) return;
+              e.currentTarget.style.backgroundColor = "transparent";
+              if (!isControlled) setInternalActive(key);
+              onChange?.(tab);
+            }}
+            onMouseEnter={(e) => {
+              if (!isSelected)
+                e.currentTarget.style.backgroundColor =
+                  "var(--hadesui-bg-chip-tab-hover)";
+            }}
+            onMouseLeave={(e) => {
+              if (!isSelected)
+                e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            {tab?.title}
           </div>
         );
       })}
