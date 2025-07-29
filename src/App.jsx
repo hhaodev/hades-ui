@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import {
   Button,
+  ChipTabs,
   DatePicker,
   DateRangePicker,
   Divider,
+  DragDropProvider,
   DragDropTable,
+  Draggable,
   Dropdown,
+  Droppable,
   Ellipsis,
   Form,
   Input,
@@ -17,6 +21,7 @@ import {
   SearchIcon,
   Select,
   Stack,
+  Tabs,
   toast,
   Tooltip,
   UploadFile,
@@ -42,6 +47,45 @@ const menu = [
     onClick: () => console.log("text 4"),
   },
 ];
+
+const Render1 = () => {
+  useEffect(() => {
+    console.log("render1");
+  }, []);
+  return <div>Content render 1</div>;
+};
+const Render2 = () => {
+  useEffect(() => {
+    console.log("render2");
+  }, []);
+  return (
+    <>
+      <div>Content render 2</div>
+      <div>Content render 2</div>
+      <div>Content render 2</div>
+    </>
+  );
+};
+const Render3 = () => {
+  useEffect(() => {
+    console.log("render3");
+  }, []);
+  return (
+    <>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+      <div>Content render 3</div>
+    </>
+  );
+};
+
 function App() {
   const [form] = Form.useForm();
   const { theme, setTheme } = useTheme();
@@ -165,16 +209,165 @@ function App() {
         {/* end theme region */}
         <DragDropTable data={data} onChange={handleMove} />
         <UploadFile multiple onChange={setFile} />
-        <Select
-          value={selectedValue}
-          onChange={(v) => setSelectedValue(v)}
-          options={Array.from({ length: 5 }, (_, i) => {
-            const val = `${i + 1}0000000000000`.toString();
-            return { label: val, value: val };
-          })}
-          placeholder="Chọn 1 số nào hẹ hẹ"
-          onClear={() => setSelectedValue("")}
+        <DragDropProvider onDragEnd={(props) => console.log(props)}>
+          <Droppable droppableId="board" acceptType="column">
+            <div style={{ display: "flex", gap: 8 }}>
+              <Draggable
+                droppableId="board"
+                draggableId="col-1"
+                dragType="column"
+                data={{ id: "col-1" }}
+              >
+                <div
+                  style={{
+                    padding: 16,
+                    background: "#ccc",
+                  }}
+                >
+                  <div className="column-header">Column 1</div>
+                  <Droppable droppableId="col-1" acceptType="card">
+                    <div className="card-list">
+                      <Draggable
+                        draggableId="card-1"
+                        dragType="card"
+                        droppableId="col-1"
+                        data={{ id: "card-1" }}
+                      >
+                        <div className="card">Card 1</div>
+                        <div>
+                          <Droppable
+                            droppableId="card-1"
+                            acceptType="mini-card"
+                          >
+                            <Draggable
+                              draggableId="mini-card-1"
+                              dragType="mini-card"
+                              droppableId="card-1"
+                              data={{ id: "mini-card-1" }}
+                            >
+                              <div>mini card 1</div>
+                            </Draggable>
+                          </Droppable>
+                        </div>
+                      </Draggable>
+                    </div>
+                  </Droppable>
+                </div>
+              </Draggable>
+              <Draggable
+                droppableId="board"
+                draggableId="col-2"
+                dragType="column"
+                data={{ id: "col-2" }}
+              >
+                <div
+                  style={{
+                    padding: 16,
+                    background: "#ccc",
+                  }}
+                >
+                  <div className="column-header">Column 2</div>
+                  <Droppable droppableId="col-2" acceptType="card">
+                    <div className="card-list">
+                      <Draggable
+                        draggableId="card-2"
+                        dragType="card"
+                        droppableId="col-2"
+                        data={{ id: "card-2" }}
+                      >
+                        <div className="card">Card 2</div>
+                        <div>
+                          <Droppable
+                            droppableId="card-2"
+                            acceptType="mini-card"
+                          >
+                            <Draggable
+                              draggableId="mini-card-2"
+                              dragType="mini-card"
+                              droppableId="card-2"
+                              data={{ id: "mini-card-2" }}
+                            >
+                              <div>mini card 2</div>
+                            </Draggable>
+                          </Droppable>
+                        </div>
+                      </Draggable>
+                    </div>
+                  </Droppable>
+                </div>
+              </Draggable>
+            </div>
+          </Droppable>
+        </DragDropProvider>
+
+        <ChipTabs
+          tabs={[
+            { key: 1, title: "Tab 1" /*props....*/ },
+            { key: 2, title: "Tab 2" },
+            { key: 3, title: "Tab 3" },
+            { key: 4, title: "Tab 4" },
+          ]}
+          defaultActive={4}
+          onChange={(tab) => {
+            console.log(tab);
+          }}
         />
+        <ChipTabs
+          tabs={[
+            { key: 1, title: "Tab 1" /*props....*/ },
+            { key: 2, title: "Tab 2" },
+            { key: 3, title: "Tab 3" },
+            { key: 4, title: "Tab 4" },
+          ]}
+          defaultActive={4}
+          onChange={(tab) => {
+            console.log(tab);
+          }}
+        />
+        <Tabs defaultActive="tab2" tabPosition="top">
+          <Tabs.Item tabKey="tab1" title="Tab1">
+            <Render1 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab2" title="Tab2">
+            <Render2 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab3" title="Tab3">
+            <Render3 />
+          </Tabs.Item>
+        </Tabs>
+        <Tabs defaultActive="tab2" tabPosition="bottom">
+          <Tabs.Item tabKey="tab1" title="Tab1">
+            <Render1 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab2" title="Tab2">
+            <Render2 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab3" title="Tab3">
+            <Render3 />
+          </Tabs.Item>
+        </Tabs>
+        <Tabs defaultActive="tab2" tabPosition="left">
+          <Tabs.Item tabKey="tab1" title="Tab1">
+            <Render1 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab2" title="Tab2">
+            <Render2 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab3" title="Tab3">
+            <Render3 />
+          </Tabs.Item>
+        </Tabs>
+        <Tabs defaultActive="tab2" tabPosition="right">
+          <Tabs.Item tabKey="tab1" title="Tab1">
+            <Render1 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab2" title="Tab2">
+            <Render2 />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab3" title="Tab3">
+            <Render3 />
+          </Tabs.Item>
+        </Tabs>
         <Input placeholder="Nhập email" />
         <Form
           form={form}
@@ -496,7 +689,7 @@ function App() {
 
         {/* dropdown region */}
         <Stack>DROPDOWN</Stack>
-        <Stack>
+        <OverFlow>
           <Stack flex gap={8}>
             <Dropdown placement="top-start" menu={menu}>
               <Button theme="default">TOP L</Button>
@@ -525,59 +718,30 @@ function App() {
             <Dropdown menu={menu} placement="left">
               <Button theme="default">LEFT</Button>
             </Dropdown>
+            <Dropdown popupRender={() => <DateRangePicker />}>
+              <Button theme="default">Open Custom Popup</Button>
+            </Dropdown>
             <Dropdown
-              fixedWidthPopup={false}
               open={open}
               onOpenChange={setOpen}
               popupRender={() => (
-                <Dropdown.Menu>
-                  <DropdownItem>
-                    <Ellipsis>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Ellipsis>
-                  </DropdownItem>
-                  <DropdownItem row={2}>
-                    <Stack>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Stack>
-                  </DropdownItem>
-                  <DropdownItem row={2}>
-                    <Stack>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Stack>
-                  </DropdownItem>
-                  <DropdownItem row={2}>
-                    <Stack>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Stack>
-                  </DropdownItem>
-                  <DropdownItem row={2}>
-                    <Stack>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Stack>
-                  </DropdownItem>
-                  <DropdownItem row={2}>
-                    <Stack>
-                      ttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontenttttttttttttttttttttttttttttttcontentttttttttttttttttttttttttttttttcontentttttttttttttttcontentttttttttttttttttttttttt
-                    </Stack>
-                  </DropdownItem>
-                </Dropdown.Menu>
+                <Select
+                  hasSearch
+                  options={Array.from({ length: 5 }, (_, i) => {
+                    const val = `${i + 1}0000000000000`.toString();
+                    return { label: val, value: val };
+                  })}
+                  placeholder="Select..."
+                />
               )}
             >
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
-            <Dropdown
-              open={open2}
-              onOpenChange={setOpen2}
-              popupStyles={{
-                maxWidth: "100%",
-              }}
-              menu={<>hehehehehehe</>}
-            >
+            <Dropdown menu={<>hehehehehehe</>}>
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
           </Stack>
-        </Stack>
+        </OverFlow>
         {/* end dropdown region */}
         <Divider>DROPDOWN</Divider>
 

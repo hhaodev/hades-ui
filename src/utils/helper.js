@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 
 function getElement(refOrEl) {
   if (!refOrEl) return document.body;
@@ -38,7 +38,7 @@ export function calculatePaddingR(padding = 16, refOrEl) {
 }
 
 export function useDisableScroll(condition = true, refOrEl = null) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = getElement(refOrEl) || document.body;
     if (!condition || !el) return;
 
@@ -58,16 +58,19 @@ export function useDisableScroll(condition = true, refOrEl = null) {
     };
 
     const scrollbarWidth = getScrollbarWidth(el);
-    if (scrollbarWidth > 0) {
-      el.style.paddingRight = `${scrollbarWidth}px`;
-    }
 
-    el.style.position = "fixed";
-    el.style.top = `-${scrollY}px`;
-    el.style.left = "0";
-    el.style.right = "0";
-    el.style.width = "100%";
-    el.style.overflow = "hidden";
+    requestAnimationFrame(() => {
+      if (scrollbarWidth > 0) {
+        el.style.paddingRight = `${scrollbarWidth}px`;
+      }
+
+      el.style.position = "fixed";
+      el.style.top = `-${scrollY}px`;
+      el.style.left = "0";
+      el.style.right = "0";
+      el.style.width = "100%";
+      el.style.overflow = "hidden";
+    });
 
     const focusableEls = [
       ...document.querySelectorAll(
@@ -118,10 +121,12 @@ export function disableBodyScrollSafe() {
     overflow: body.style.overflow,
     width: body.style.width,
     paddingRight: body.style.paddingRight,
+    transition: body.style.transition,
   };
 
   const scrollbarWidth =
     window.innerWidth - document.documentElement.clientWidth;
+  body.style.transition = "none";
   if (scrollbarWidth > 0) {
     body.style.paddingRight = `${scrollbarWidth}px`;
   }
@@ -150,11 +155,8 @@ export function disableBodyScrollSafe() {
     window.scrollTo(0, scrollY);
     focusableEls.forEach((el) => {
       const prev = previousTabIndexes.get(el);
-      if (prev === null) {
-        el.removeAttribute("tabindex");
-      } else {
-        el.setAttribute("tabindex", prev);
-      }
+      if (prev === null) el.removeAttribute("tabindex");
+      else el.setAttribute("tabindex", prev);
     });
   };
 }

@@ -10,6 +10,7 @@ let pushMessage = null;
 
 const maxMessage = 3;
 const defaultDuration = 5000;
+const prefixMessageId = "-hadesUI-message";
 
 export const message = {
   success: (opts) => showMessage({ ...opts, type: "success" }),
@@ -64,7 +65,8 @@ function MessageRoot({ onReady }) {
 
   const add = useCallback(
     (msg) => {
-      const id = idRef.current++;
+      const id = `$${prefixMessageId}-${idRef.current++}`;
+
       const duration = msg.duration ?? defaultDuration;
       const newMsg = { ...msg, id };
 

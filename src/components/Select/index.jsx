@@ -35,7 +35,6 @@ const Select = forwardRef(
     ref
   ) => {
     const [placement, setPlacement] = useState("");
-    const selected = options.find((opt) => opt.value === value);
     const menuRef = useRef(null);
     const itemRefs = useRef({});
     const timeoutRef = useRef();
@@ -44,6 +43,14 @@ const Select = forwardRef(
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [searchValueOrigin, setSearchValueOrigin] = useState("");
+    const [internalValue, setInternalValue] = useState();
+    const finalValue = value !== undefined ? value : internalValue;
+    const selected = options.find((opt) => opt.value === finalValue);
+
+    const setValue = (val) => {
+      onChange?.(val);
+      setInternalValue(val);
+    };
 
     useEffect(() => {
       if (!open && containerRef.current) {
@@ -214,7 +221,7 @@ const Select = forwardRef(
                         }}
                         onClick={(e) => {
                           e.preventDefault();
-                          onChange?.(opt.value);
+                          setValue(opt.value);
                           setOpen(false);
                         }}
                         checked={opt.value === value}
@@ -251,7 +258,7 @@ const Select = forwardRef(
                 e.stopPropagation();
                 if (disabled) return;
                 if (selected) {
-                  onChange?.("");
+                  setValue("");
                   onClear?.();
                   setOpen(false);
                 } else {

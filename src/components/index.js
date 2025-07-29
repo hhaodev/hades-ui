@@ -20,3 +20,5 @@ export * from "./Toast";
 export * from "./DatePicker";
 export * from "./Form";
 export * from "./Icon";
+export * from "./Tabs";
+export * from "./dnd";

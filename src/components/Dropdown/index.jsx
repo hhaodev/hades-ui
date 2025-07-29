@@ -1,23 +1,24 @@
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "@floating-ui/dom";
 import React, {
-  useRef,
-  useState,
-  useEffect,
-  useLayoutEffect,
   cloneElement,
   isValidElement,
+  useEffect,
   useId,
+  useLayoutEffect,
+  useRef,
+  useState,
 } from "react";
 import { createPortal } from "react-dom";
-import {
-  computePosition,
-  offset,
-  flip,
-  shift,
-  autoUpdate,
-} from "@floating-ui/dom";
 import Stack from "../Stack";
-import { DropdownMenu } from "./DropdownMenu";
 import { DropdownItem } from "./DropdownItem";
+import { DropdownMenu } from "./DropdownMenu";
+import { useSafeZone } from "./SafeAreaRegistry";
 
 function useClickLockRef(timeout = 250) {
   const lockRef = useRef(false);
@@ -114,6 +115,10 @@ export default function Dropdown({
     onOpenChange?.(value);
   };
 
+  useSafeZone(open, referenceRef, dropdownRef, () => {
+    setTimeout(() => setOpen(false), 0);
+  });
+
   useLayoutEffect(() => {
     if (!shouldRender || !referenceRef.current || !dropdownRef.current) return;
     const cleanup = autoUpdate(
@@ -169,20 +174,6 @@ export default function Dropdown({
       const timer = setTimeout(() => setShouldRender(false), 200);
       return () => clearTimeout(timer);
     }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClickOutside = (e) => {
-      if (
-        !referenceRef.current?.contains(e.target) &&
-        !dropdownRef.current?.contains(e.target)
-      ) {
-        setTimeout(() => setOpen(false), 0);
-      }
-    };
-    window.addEventListener("mousedown", handleClickOutside);
-    return () => window.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
   let triggerNode = children;

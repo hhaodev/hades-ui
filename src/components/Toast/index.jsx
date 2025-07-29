@@ -10,6 +10,7 @@ let addToast = null;
 
 const limitToast = 3;
 const defaultDuration = 5000;
+const prefixToastId = "-hadesUI-toast";
 
 export const toast = {
   success: (opts) => showToast({ ...opts, type: "success" }),
@@ -64,7 +65,7 @@ function ToastRoot({ onReady }) {
 
   const add = useCallback(
     (toast) => {
-      const id = idRef.current++;
+      const id = `$${prefixToastId}-${idRef.current++}`;
       const placement = toast.placement || "topRight";
       const duration = toast.duration ?? defaultDuration;
       const newToast = {
@@ -197,7 +198,7 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
         <div
           key="__stack-holder__"
           style={{
-            background: "rgba(0, 0, 0, 0.1)",
+            background: "rgba(0, 0, 0, 0.25)",
             borderRadius: 8,
             padding: "12px 16px",
             fontSize: 14,
