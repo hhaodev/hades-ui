@@ -15,6 +15,7 @@ export { default as DragDropTable } from "./DragDropTable";
 export { default as Input } from "./Input";
 export { default as UploadFile } from "./UploadFile";
 export { default as Link } from "./Link";
+export { default as RightClickMenu } from "./RightClickMenu";
 export * from "./Message";
 export * from "./Toast";
 export * from "./DatePicker";

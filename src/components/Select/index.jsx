@@ -113,7 +113,6 @@ const Select = forwardRef(
           width: "100%",
           borderRadius: 8,
           border: "1px solid var(--hadesui-border-color)",
-          padding: "0px 8px",
           fontSize: 14,
           height: 36,
           background: disabled
@@ -239,7 +238,7 @@ const Select = forwardRef(
             flex
             gap={8}
             align="center"
-            style={{ flex: 1, height: "100%", minWidth: 0 }}
+            style={{ flex: 1, height: "100%", minWidth: 0, padding: "0px 8px" }}
           >
             <Ellipsis
               key={selected ? "selectedlabel" : "placeholder"}

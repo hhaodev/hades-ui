@@ -18,6 +18,7 @@ import {
   OverFlow,
   Panel,
   ResizableBox,
+  RightClickMenu,
   SearchIcon,
   Select,
   Stack,
@@ -695,6 +696,15 @@ function App() {
 
         <Divider>Test Loading</Divider>
 
+        <RightClickMenu menu={menu}>
+          <div>right click here</div>
+          <div>right click here</div>
+          <div>right click here</div>
+          <div>right click here</div>
+          <div>right click here</div>
+          <div>right click here</div>
+        </RightClickMenu>
+
         {/* overflow region */}
         <Stack>VERTICAL OVERFLOW</Stack>
         <Stack>
@@ -764,8 +774,6 @@ function App() {
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
-              open={open}
-              onOpenChange={setOpen}
               popupRender={() => (
                 <Select
                   hasSearch

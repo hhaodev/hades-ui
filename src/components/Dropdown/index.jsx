@@ -94,6 +94,7 @@ export default function Dropdown({
   getPlacement,
   disabled = false,
   id,
+  useClickOutSide = true,
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -116,6 +117,7 @@ export default function Dropdown({
   };
 
   useSafeZone(open, referenceRef, dropdownRef, () => {
+    if (!useClickOutSide) return;
     setTimeout(() => setOpen(false), 0);
   });
 
