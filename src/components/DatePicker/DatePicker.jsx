@@ -31,6 +31,7 @@ const DatePicker = forwardRef(
     const [open, setOpen] = useState(false);
     const [valueInternal, setValueInternal] = useState(null);
     const containerRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
       if (!open && containerRef.current) {
@@ -59,7 +60,6 @@ const DatePicker = forwardRef(
           width: "100%",
           borderRadius: 8,
           border: "1px solid var(--hadesui-border-color)",
-          padding: "0px 8px",
           fontSize: 14,
           height: 36,
           background: disabled
@@ -81,19 +81,20 @@ const DatePicker = forwardRef(
         }}
       >
         <Dropdown
+          ref={dropdownRef}
           disabled={disabled}
           fixedWidthPopup={false}
           placement={placementProps}
-          open={open}
           onOpenChange={setOpen}
           getPlacement={setPlacement}
-          popupRender={() => (
+          menu={() => (
             <Calendar
               value={valueInternal}
               onSelect={(date) => {
                 setValueInternal(date);
                 onChange?.(date);
                 setOpen(false);
+                dropdownRef.current.hide();
               }}
               hasTimePicker={hasTimePicker}
               min={minDate}
@@ -106,7 +107,7 @@ const DatePicker = forwardRef(
             flex
             gap={8}
             align="center"
-            style={{ flex: 1, height: "100%", minWidth: 0 }}
+            style={{ flex: 1, height: "100%", minWidth: 0, padding: "0px 8px" }}
           >
             <Ellipsis
               style={{
@@ -137,9 +138,11 @@ const DatePicker = forwardRef(
                   onChange?.("");
                   onClear?.();
                   setValueInternal("");
-                  setOpen(false);
+                  dropdownRef.current.hide();
+                } else if (open) {
+                  dropdownRef.current.hide();
                 } else {
-                  setOpen((prev) => !prev);
+                  dropdownRef.current.show();
                 }
               }}
             >

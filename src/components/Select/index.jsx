@@ -39,6 +39,7 @@ const Select = forwardRef(
     const itemRefs = useRef({});
     const timeoutRef = useRef();
     const containerRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
@@ -134,13 +135,13 @@ const Select = forwardRef(
         }}
       >
         <Dropdown
+          ref={dropdownRef}
           disabled={disabled}
           fixedWidthPopup={popupWidthFull}
           placement={placementProps}
-          open={open}
           onOpenChange={setOpen}
           getPlacement={setPlacement}
-          popupRender={() => (
+          menu={() => (
             <Stack wfull>
               {hasSearch && (
                 <Stack
@@ -221,7 +222,7 @@ const Select = forwardRef(
                         onClick={(e) => {
                           e.preventDefault();
                           setValue(opt.value);
-                          setOpen(false);
+                          dropdownRef.current.hide();
                         }}
                         checked={opt.value === value}
                       >
@@ -259,9 +260,11 @@ const Select = forwardRef(
                 if (selected) {
                   setValue("");
                   onClear?.();
-                  setOpen(false);
+                  dropdownRef.current.hide();
+                } else if (open) {
+                  dropdownRef.current.hide();
                 } else {
-                  setOpen((prev) => !prev);
+                  dropdownRef.current.show();
                 }
               }}
               style={{

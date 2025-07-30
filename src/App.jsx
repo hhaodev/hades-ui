@@ -27,12 +27,11 @@ import {
   Tooltip,
   UploadFile,
 } from "./components";
-import { DropdownItem } from "./components/Dropdown/DropdownItem";
 import { useTheme } from "./theme/useTheme";
 
 const menu = [
   {
-    element: <Stack>text111111111111111111</Stack>,
+    element: <Stack>text1</Stack>,
     onClick: () => console.log("text 1"),
   },
   {
@@ -770,11 +769,11 @@ function App() {
             <Dropdown menu={menu} placement="left">
               <Button theme="default">LEFT</Button>
             </Dropdown>
-            <Dropdown popupRender={() => <DateRangePicker />}>
+            <Dropdown menu={<DateRangePicker />}>
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
-              popupRender={() => (
+              menu={
                 <Select
                   hasSearch
                   options={Array.from({ length: 5 }, (_, i) => {
@@ -783,7 +782,7 @@ function App() {
                   })}
                   placeholder="Select..."
                 />
-              )}
+              }
             >
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>

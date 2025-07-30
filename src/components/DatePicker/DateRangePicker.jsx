@@ -44,6 +44,8 @@ const DateRangePicker = forwardRef(
     const prevEnd = usePrevious(endDate);
 
     const containerRef = useRef(null);
+    const dropdownStartRef = useRef(null);
+    const dropdownEndRef = useRef(null);
 
     useEffect(() => {
       if (!isFocus && containerRef.current) {
@@ -143,14 +145,14 @@ const DateRangePicker = forwardRef(
           style={{ flex: 1, minWidth: 0, height: "100%" }}
         >
           <Dropdown
+            ref={dropdownStartRef}
             id="dropdown-date-range-picker"
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
-            open={openStart}
             onOpenChange={setOpenStart}
             getPlacement={setPlacement}
-            popupRender={() => (
+            menu={
               <Calendar
                 inRangePicker
                 hasTimePicker={hasTimePicker}
@@ -158,15 +160,15 @@ const DateRangePicker = forwardRef(
                 onSelect={(date) => {
                   setStartDate(date);
                   if (!endDate) {
-                    setOpenEnd(true);
-                    setOpenStart(false);
+                    dropdownEndRef.current.show();
+                    dropdownStartRef.current.hide();
                   } else {
-                    setOpenStart(false);
+                    dropdownStartRef.current.hide();
                   }
                 }}
                 max={endDate}
               />
-            )}
+            }
           >
             <Stack
               tabIndex={0}
@@ -221,14 +223,14 @@ const DateRangePicker = forwardRef(
             }}
           />
           <Dropdown
+            ref={dropdownEndRef}
             id="dropdown-date-range-picker"
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
-            open={openEnd}
             onOpenChange={setOpenEnd}
             getPlacement={setPlacement}
-            popupRender={() => (
+            menu={
               <Calendar
                 inRangePicker
                 hasTimePicker={hasTimePicker}
@@ -237,14 +239,15 @@ const DateRangePicker = forwardRef(
                   setEndDate(date);
                   if (!startDate) {
                     setOpenStart(true);
-                    setOpenEnd(false);
+                    dropdownStartRef.current.show();
+                    dropdownEndRef.current.hide();
                   } else {
-                    setOpenEnd(false);
+                    dropdownEndRef.current.hide();
                   }
                 }}
                 min={startDate}
               />
-            )}
+            }
           >
             <Stack
               tabIndex={0}
@@ -305,15 +308,15 @@ const DateRangePicker = forwardRef(
               setEndDate(null);
             }
             if (!startDate && (openEnd || openStart)) {
-              setOpenStart(false);
-              setOpenEnd(false);
+              dropdownStartRef.current.hide();
+              dropdownEndRef.current.hide();
             } else if (!openStart && !startDate) {
-              setOpenStart(true);
+              dropdownStartRef.current.show();
             } else if (!endDate && (openEnd || openStart)) {
-              setOpenStart(false);
-              setOpenEnd(false);
+              dropdownStartRef.current.hide();
+              dropdownEndRef.current.hide();
             } else if (!openEnd && !endDate) {
-              setOpenEnd(true);
+              dropdownEndRef.current.show();
             }
           }}
         >

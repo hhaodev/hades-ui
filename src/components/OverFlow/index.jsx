@@ -151,9 +151,8 @@ export default function OverFlow({ children, mode = "horizontal" }) {
             popupStyles={{
               width: "fit-content",
             }}
-            open={open}
             onOpenChange={setOpen}
-            popupRender={() => (
+            menu={() => (
               <Stack
                 style={{
                   background: "var(--hadesui-bg-color)",

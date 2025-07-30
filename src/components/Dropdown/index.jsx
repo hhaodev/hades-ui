@@ -7,9 +7,11 @@ import {
 } from "@floating-ui/dom";
 import React, {
   cloneElement,
+  forwardRef,
   isValidElement,
   useEffect,
   useId,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
@@ -82,21 +84,22 @@ function getInitialTransform(placement) {
   return "translate(0, 0)";
 }
 
-export default function Dropdown({
-  children,
-  menu,
-  placement = "bottom-start",
-  open: controlledOpen,
-  onOpenChange,
-  popupRender,
-  popupStyles,
-  fixedWidthPopup = true,
-  getPlacement,
-  disabled = false,
-  id,
-  useClickOutSide = true,
-}) {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+const Dropdown = forwardRef(function Dropdown(
+  {
+    id,
+    children,
+    menu,
+    placement = "bottom-start",
+    onOpenChange,
+    popupStyles,
+    getPlacement,
+    disabled = false,
+    useClickOutSide = true,
+    fixedWidthPopup = true,
+  },
+  ref
+) {
+  const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [actualPlacement, setActualPlacement] = useState(placement);
@@ -106,18 +109,19 @@ export default function Dropdown({
 
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
-  const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
   const acquireClickLock = useClickLockRef(200);
 
-  const setOpen = (value) => {
-    if (controlledOpen === undefined) {
-      setUncontrolledOpen(value);
-    }
-    onOpenChange?.(value);
-  };
+  useImperativeHandle(ref, () => ({
+    show: () => {
+      if (!disabled) setOpen(true);
+    },
+    hide: () => {
+      setOpen(false);
+    },
+    opening: open,
+  }));
 
-  useSafeZone(open, referenceRef, dropdownRef, () => {
-    if (!useClickOutSide) return;
+  useSafeZone(open && useClickOutSide, referenceRef, dropdownRef, () => {
     setTimeout(() => setOpen(false), 0);
   });
 
@@ -168,6 +172,7 @@ export default function Dropdown({
   }, [shouldRender, placement]);
 
   useEffect(() => {
+    onOpenChange?.(open);
     if (open) {
       setReady(false);
       setShouldRender(true);
@@ -177,27 +182,6 @@ export default function Dropdown({
       return () => clearTimeout(timer);
     }
   }, [open]);
-
-  let triggerNode = children;
-  if (isValidElement(children)) {
-    const triggerProps = {
-      "data-disabled-action": disabled ? "true" : "false",
-      onClick: (e) => {
-        if (disabled) return;
-        if (!acquireClickLock()) return;
-        e.stopPropagation();
-        children.props.onClick?.(e);
-        setOpen(open ? false : true);
-      },
-      ref: (el) => {
-        referenceRef.current = el;
-        const childRef = children.ref;
-        if (typeof childRef === "function") childRef(el);
-        else if (childRef) childRef.current = el;
-      },
-    };
-    triggerNode = cloneElement(children, triggerProps);
-  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -211,6 +195,52 @@ export default function Dropdown({
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  let triggerNode = children;
+  if (isValidElement(children)) {
+    const triggerProps = {
+      "data-disabled-action": disabled ? "true" : "false",
+      onClick: (e) => {
+        if (disabled) return;
+        if (!acquireClickLock()) return;
+        e.stopPropagation();
+        children.props.onClick?.(e);
+        setOpen((prev) => !prev);
+      },
+      ref: (el) => {
+        referenceRef.current = el;
+        const childRef = children.ref;
+        if (typeof childRef === "function") childRef(el);
+        else if (childRef) childRef.current = el;
+      },
+    };
+    triggerNode = cloneElement(children, triggerProps);
+  }
+
+  let menuContent = null;
+  if (typeof menu === "function") {
+    menuContent = menu(referenceRef);
+  } else if (React.isValidElement(menu)) {
+    menuContent = <DropdownMenu>{menu}</DropdownMenu>;
+  } else if (Array.isArray(menu) && menu.length > 0) {
+    menuContent = (
+      <DropdownMenu>
+        {menu.map((i, idx) => (
+          <DropdownItem
+            key={idx}
+            onClick={(e) => {
+              e.stopPropagation();
+              i?.onClick?.(e);
+              setOpen(false);
+            }}
+            checked={i.checked}
+          >
+            {i?.element}
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    );
+  }
 
   return (
     <>
@@ -227,7 +257,7 @@ export default function Dropdown({
                 boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
                 minWidth: 150,
                 width: fixedWidthPopup ? popupWidth : "fit-content",
-                ...(!popupRender ? { maxHeight: 400 } : {}),
+                maxHeight: "100%",
                 ...popupStyles,
                 overflow: "hidden",
                 overflowY: "auto",
@@ -241,34 +271,15 @@ export default function Dropdown({
                 zIndex: "var(--z-dropdown)",
               }}
             >
-              {popupRender ? (
-                popupRender(referenceRef)
-              ) : React.isValidElement(menu) ? (
-                <DropdownMenu>{menu}</DropdownMenu>
-              ) : Array.isArray(menu) && menu.length > 0 ? (
-                <DropdownMenu>
-                  {menu.map((i, idx) => (
-                    <DropdownItem
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        i?.onClick(e);
-                        setOpen(false);
-                      }}
-                      checked={i.checked}
-                    >
-                      {i?.element}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              ) : null}
+              {menuContent}
             </Stack>
           </Stack>,
           document.body
         )}
     </>
   );
-}
+});
 
 Dropdown.Menu = DropdownMenu;
 Dropdown.Item = DropdownItem;
+export default Dropdown;

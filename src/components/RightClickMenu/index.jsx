@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Dropdown from "../Dropdown";
 
 const RightClickMenu = ({ children, style = {}, menu }) => {
-  const [visible, setVisible] = useState(false);
   const triggerRef = useRef(null);
   const containerRef = useRef(null);
+  const dropdownRef = useRef(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
 
   const handleContextMenu = (e) => {
@@ -17,7 +17,7 @@ const RightClickMenu = ({ children, style = {}, menu }) => {
       y: e.clientY - containerRect.top,
     });
 
-    setVisible(true);
+    dropdownRef.current.show();
   };
 
   useLayoutEffect(() => {
@@ -41,7 +41,7 @@ const RightClickMenu = ({ children, style = {}, menu }) => {
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        setVisible(false);
+        dropdownRef.current.hide();
       }}
       onContextMenu={handleContextMenu}
       style={{
@@ -49,12 +49,7 @@ const RightClickMenu = ({ children, style = {}, menu }) => {
       }}
     >
       <div style={style}>{children}</div>
-      <Dropdown
-        open={visible}
-        onOpenChange={setVisible}
-        useClickOutSide={false}
-        menu={menu}
-      >
+      <Dropdown ref={dropdownRef} useClickOutSide={false} menu={menu}>
         <div ref={triggerRef} />
       </Dropdown>
     </div>
