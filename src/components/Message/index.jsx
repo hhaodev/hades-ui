@@ -17,6 +17,8 @@ export const message = {
   error: (opts) => showMessage({ ...opts, type: "error" }),
   warning: (opts) => showMessage({ ...opts, type: "warning" }),
   info: (opts) => showMessage({ ...opts, type: "info" }),
+  remove: () => {},
+  clearAll: () => {},
 };
 
 function initMessageRoot() {
@@ -24,7 +26,15 @@ function initMessageRoot() {
   div.id = "--hades-ui-box-message--";
   document.body.appendChild(div);
   root = ReactDOM.createRoot(div);
-  root.render(<MessageRoot onReady={(fn) => (pushMessage = fn)} />);
+  root.render(
+    <MessageRoot
+      onReady={(handlers) => {
+        pushMessage = handlers.add;
+        message.remove = handlers.removeMessage;
+        message.clearAll = handlers.clearAllMessage;
+      }}
+    />
+  );
 }
 
 function isValid() {
@@ -43,16 +53,23 @@ function showMessage(messageItem) {
   if (!root || !isValid()) {
     initMessageRoot();
   }
-  requestAnimationFrame(() => waitForPush(messageItem));
+  const id = `${prefixMessageId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)}`;
+  const newMessage = { ...messageItem, id };
+  requestAnimationFrame(() => waitForPush(newMessage));
 }
 
 function MessageRoot({ onReady }) {
   const [messages, setMessages] = useState([]);
-  const idRef = useRef(0);
   const timersRef = useRef({});
 
   useEffect(() => {
-    onReady(add);
+    onReady({
+      add,
+      removeMessage: remove,
+      clearAllMessage: clearAll,
+    });
   }, []);
 
   const remove = useCallback((id) => {
@@ -65,20 +82,24 @@ function MessageRoot({ onReady }) {
 
   const add = useCallback(
     (msg) => {
-      const id = `$${prefixMessageId}-${idRef.current++}`;
-
       const duration = msg.duration ?? defaultDuration;
-      const newMsg = { ...msg, id };
-
+      const newMsg = { ...msg, duration };
       setMessages((prev) => {
         const updated = [newMsg, ...prev];
         return updated.slice(0, maxMessage);
       });
-
-      timersRef.current[id] = setTimeout(() => remove(id), duration);
+      timersRef.current[message.id] = setTimeout(
+        () => remove(message.id),
+        duration
+      );
     },
     [remove]
   );
+
+  const clearAll = useCallback(() => {
+    setMessages([]);
+    timersRef.current = {};
+  }, []);
 
   return (
     <div

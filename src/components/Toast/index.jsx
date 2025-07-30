@@ -17,6 +17,8 @@ export const toast = {
   error: (opts) => showToast({ ...opts, type: "error" }),
   warning: (opts) => showToast({ ...opts, type: "warning" }),
   info: (opts) => showToast({ ...opts, type: "info" }),
+  remove: () => {},
+  clearAll: () => {},
 };
 
 function initToastRoot() {
@@ -24,7 +26,15 @@ function initToastRoot() {
   div.id = "--hades-ui-box-toast--";
   document.body.appendChild(div);
   root = ReactDOM.createRoot(div);
-  root.render(<ToastRoot onReady={(fn) => (addToast = fn)} />);
+  root.render(
+    <ToastRoot
+      onReady={(handlers) => {
+        addToast = handlers.add;
+        toast.remove = handlers.removeToast;
+        toast.clearAll = handlers.clearAllToast;
+      }}
+    />
+  );
 }
 
 function isToastRootValid() {
@@ -43,16 +53,24 @@ function showToast(toastItem) {
   if (!root || !isToastRootValid()) {
     initToastRoot();
   }
-  requestAnimationFrame(() => waitForAddToast(toastItem));
+  const id = `${prefixToastId}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)}`;
+  const newToast = { ...toastItem, id };
+  requestAnimationFrame(() => waitForAddToast(newToast));
+  return id;
 }
 
 function ToastRoot({ onReady }) {
   const [toasts, setToasts] = useState([]);
-  const idRef = useRef(0);
   const timersRef = useRef({});
 
   useEffect(() => {
-    onReady(add);
+    onReady({
+      add,
+      removeToast: remove,
+      clearAllToast: clearAll,
+    });
   }, []);
 
   const remove = useCallback((id) => {
@@ -65,12 +83,10 @@ function ToastRoot({ onReady }) {
 
   const add = useCallback(
     (toast) => {
-      const id = `$${prefixToastId}-${idRef.current++}`;
       const placement = toast.placement || "topRight";
       const duration = toast.duration ?? defaultDuration;
       const newToast = {
         ...toast,
-        id,
         placement,
         duration,
       };
@@ -83,8 +99,8 @@ function ToastRoot({ onReady }) {
       });
 
       if (duration !== 0) {
-        timersRef.current[id] = {
-          timeoutId: setTimeout(() => remove(id), duration),
+        timersRef.current[toast.id] = {
+          timeoutId: setTimeout(() => remove(toast.id), duration),
           startTime: Date.now(),
           remaining: duration,
         };
@@ -92,6 +108,10 @@ function ToastRoot({ onReady }) {
     },
     [remove]
   );
+  const clearAll = useCallback(() => {
+    setToasts([]);
+    timersRef.current = {};
+  }, []);
 
   const grouped = placements.reduce((acc, p) => ({ ...acc, [p]: [] }), {});
   for (const t of toasts) grouped[t.placement].push(t);

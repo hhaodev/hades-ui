@@ -108,6 +108,7 @@ function App() {
   const [placementPanel, setPlacementPanel] = useState("right");
   const [selectedValue, setSelectedValue] = useState("");
   const [file, setFile] = useState();
+  const [toastId, setToastId] = useState("");
   const fetchDataFromLocalStorage = () => {
     try {
       const stored = localStorage.getItem("data");
@@ -531,15 +532,32 @@ function App() {
           <Button
             theme="default"
             onClick={() => {
-              toast.success({
+              const toastId = toast.success({
                 title: "Notification!!!",
                 description: "Đây là notification không tự động tắt..",
                 placement: "topRight", // default
                 duration: 0, // 0 is don't auto closeable
               });
+              setToastId(toastId);
             }}
           >
             Make toast top right
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.remove(toastId);
+            }}
+          >
+            Remove toast
+          </Button>
+          <Button
+            theme="default"
+            onClick={() => {
+              toast.clearAll();
+            }}
+          >
+            Clear all toast
           </Button>
           <Button
             theme="default"
@@ -672,6 +690,7 @@ function App() {
           >
             Make long message
           </Button>
+          <Button onClick={() => message.clearAll()}>Clear all message</Button>
         </Stack>
 
         <Divider>Test Loading</Divider>
