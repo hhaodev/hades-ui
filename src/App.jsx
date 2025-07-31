@@ -341,111 +341,19 @@ function App() {
         />
         <ResizableBox>
           <Tabs defaultActive="tab1" tabPosition="top">
-            <Tabs.Item tabKey="tab1" title="Tab 1">
-              <Render title={1} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab2" title="Tab 2">
-              <Render title={2} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab3" title="Tab 3">
-              <Render title={3} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab4" title="Tab 4">
-              <Render title={4} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab5" title="Tab 5">
-              <Render title={5} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab6" title="Tab 6">
-              <Render title={6} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab7" title="Tab 7">
-              <Render title={7} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab8" title="Tab 8">
-              <Render title={8} />
-            </Tabs.Item>
+            <TabList />
           </Tabs>
         </ResizableBox>
         <Tabs defaultActive="tab2" tabPosition="bottom">
-          <Tabs.Item tabKey="tab1" title="Tab 1">
-            <Render title={1} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab 2">
-            <Render title={2} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab 3">
-            <Render title={3} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab 4">
-            <Render title={4} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab5" title="Tab 5">
-            <Render title={5} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab6" title="Tab 6">
-            <Render title={6} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab7" title="Tab 7">
-            <Render title={7} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab8" title="Tab 8">
-            <Render title={8} />
-          </Tabs.Item>
+          <TabList />
         </Tabs>
         <ResizableBox>
           <Tabs defaultActive="tab3" tabPosition="left">
-            <Tabs.Item tabKey="tab1" title="Tab 1">
-              <Render title={1} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab2" title="Tab 2">
-              <Render title={2} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab3" title="Tab 3">
-              <Render title={3} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab4" title="Tab 4">
-              <Render title={4} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab5" title="Tab 5">
-              <Render title={5} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab6" title="Tab 6">
-              <Render title={6} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab7" title="Tab 7">
-              <Render title={7} />
-            </Tabs.Item>
-            <Tabs.Item tabKey="tab8" title="Tab 8">
-              <Render title={8} />
-            </Tabs.Item>
+            <TabList />
           </Tabs>
         </ResizableBox>
         <Tabs defaultActive="tab4" tabPosition="right">
-          <Tabs.Item tabKey="tab1" title="Tab 1">
-            <Render title={1} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab 2">
-            <Render title={2} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab 3">
-            <Render title={3} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab 4">
-            <Render title={4} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab5" title="Tab 5">
-            <Render title={5} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab6" title="Tab 6">
-            <Render title={6} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab7" title="Tab 7">
-            <Render title={7} />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab8" title="Tab 8">
-            <Render title={8} />
-          </Tabs.Item>
+          <TabList />
         </Tabs>
 
         <Input placeholder="Nhập email" />
