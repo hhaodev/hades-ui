@@ -9,6 +9,9 @@ import {
 } from "react";
 import { MoreIcon } from "../Icon";
 import OverFlow from "../OverFlow";
+import Button from "../Button";
+import { DropdownMenu } from "../Dropdown/DropdownMenu";
+import { DropdownItem } from "../Dropdown/DropdownItem";
 
 function Tabs({
   children,
@@ -56,6 +59,7 @@ function Tabs({
   const containerRef = useRef(null);
   const indicatorRef = useRef(null);
   const contentRef = useRef(null);
+  const moreBtnRef = useRef(null);
   const tabRefs = useRef({});
   const hasMounted = useRef(false);
   const currentActiveRef = useRef(currentActive);
@@ -77,33 +81,41 @@ function Tabs({
   }, [currentActive, destroy]);
 
   const updateIndicator = () => {
-    const el = tabRefs.current[String(currentActiveRef.current)];
-    const activeKeyInclude = visibleKeys.current.includes(
-      currentActiveRef.current
-    );
     const indicator = indicatorRef.current;
     const container = containerRef.current;
-    if (!el || !indicator || !container || !activeKeyInclude) {
+    const moreBtn = moreBtnRef.current;
+
+    const currentKey = String(currentActiveRef.current);
+    const el = tabRefs.current[currentKey];
+    const isVertical = tabPosition === "left" || tabPosition === "right";
+
+    if (!indicator || !container) return;
+
+    const activeIsVisible = visibleKeys.current.includes(currentKey);
+
+    const targetEl = activeIsVisible ? el : moreBtn;
+
+    if (!targetEl) {
       indicator.style.display = "none";
       return;
     }
-    const isVertical = tabPosition === "left" || tabPosition === "right";
 
     if (isVertical) {
       indicator.style.left = "";
-      indicator.style.top = `${el.offsetTop}px`;
+      indicator.style.top = `${targetEl.offsetTop}px`;
       indicator.style.width = "2.5px";
-      indicator.style.height = `${el.offsetHeight}px`;
+      indicator.style.height = `${targetEl.offsetHeight}px`;
       indicator.style.right = tabPosition === "left" ? "0px" : "";
       indicator.style.left = tabPosition === "right" ? "0px" : "";
     } else {
-      indicator.style.left = `${el.offsetLeft}px`;
+      indicator.style.left = `${targetEl.offsetLeft}px`;
       indicator.style.top = "";
-      indicator.style.width = `${el.offsetWidth}px`;
+      indicator.style.width = `${targetEl.offsetWidth}px`;
       indicator.style.height = "2px";
       indicator.style.bottom = tabPosition === "top" ? "0px" : "";
       indicator.style.top = tabPosition === "bottom" ? "0px" : "";
     }
+
     indicator.style.display = "block";
 
     if (!hasMounted.current) {
@@ -114,26 +126,19 @@ function Tabs({
       });
     }
   };
-
   useLayoutEffect(() => {
-    setTimeout(
-      () => {
-        updateIndicator();
-      },
-      overflowKeysRef.current.length > 0 ? 250 : 0
-    );
+    setTimeout(() => {
+      updateIndicator();
+    }, 0);
   }, [currentActive, overflowKeysRef.current.length]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const observer = new ResizeObserver(() => {
-      setTimeout(
-        () => {
-          updateIndicator();
-        },
-        overflowKeysRef.current.length > 0 ? 250 : 0
-      );
+      setTimeout(() => {
+        updateIndicator();
+      }, 0);
     });
 
     observer.observe(containerRef.current);
@@ -237,6 +242,7 @@ function Tabs({
             overflowKeysRef.current.includes(currentActive);
           return (
             <div
+              ref={moreBtnRef}
               style={{
                 ...(tabPosition === "right" || tabPosition === "left"
                   ? {
@@ -249,14 +255,16 @@ function Tabs({
                 cursor: "pointer",
               }}
             >
-              <MoreIcon
-                color={
-                  activeKeyIncludesOverflow
-                    ? "var(--hadesui-blue-6)"
-                    : "currentColor"
-                }
-                size={20}
-              />
+              <Button theme="icon">
+                <MoreIcon
+                  color={
+                    activeKeyIncludesOverflow
+                      ? "var(--hadesui-blue-6)"
+                      : "currentColor"
+                  }
+                  size={14}
+                />
+              </Button>
             </div>
           );
         }}
@@ -268,6 +276,20 @@ function Tabs({
         }}
         getVisibleKeys={(items) => {
           visibleKeys.current = items;
+        }}
+        customPopup={({ items }) => {
+          return (
+            <DropdownMenu>
+              {items.map((item, index) => (
+                <DropdownItem
+                  onClick={(e) => item.props?.onClick?.(e)}
+                  key={index}
+                >
+                  {item}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          );
         }}
       >
         {panes.map((pane) => {

@@ -19,6 +19,7 @@ export default function OverFlow({
   style,
   getVisibleKeys,
   getOverflowKeys,
+  customPopup,
 }) {
   const containerRef = useRef(null);
   const measureRef = useRef(null);
@@ -167,32 +168,48 @@ export default function OverFlow({
 
         {overflowItems.length > 0 && (
           <Dropdown
+            trigger={["click", "hover"]}
             ref={dropdownRef}
             popupStyles={{
               width: "fit-content",
             }}
-            menu={() => (
-              <Stack
-                style={{
-                  background: "var(--hadesui-bg-color)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap,
-                  padding: 8,
-                }}
-              >
-                {overflowItems.map((item, i) =>
-                  React.cloneElement(item, {
-                    key: i,
-                    onClick: (...args) => {
-                      item.props?.onClick?.(...args);
-                      dropdownRef.current.hide();
-                    },
-                  })
-                )}
-              </Stack>
-            )}
+            menu={() =>
+              customPopup ? (
+                customPopup({
+                  items: overflowItems.map((item, i) =>
+                    React.cloneElement(item, {
+                      key: i,
+                      onClick: (...args) => {
+                        item.props?.onClick?.(...args);
+                        dropdownRef.current.hide();
+                      },
+                    })
+                  ),
+                  totalItemsCount: overflowItems.length,
+                })
+              ) : (
+                <Stack
+                  style={{
+                    background: "var(--hadesui-bg-color)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap,
+                    padding: 8,
+                  }}
+                >
+                  {overflowItems.map((item, i) =>
+                    React.cloneElement(item, {
+                      key: i,
+                      onClick: (...args) => {
+                        item.props?.onClick?.(...args);
+                        dropdownRef.current.hide();
+                      },
+                    })
+                  )}
+                </Stack>
+              )
+            }
           >
             {customAction ? (
               customAction?.()

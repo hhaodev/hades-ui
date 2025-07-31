@@ -96,6 +96,7 @@ const Dropdown = forwardRef(function Dropdown(
     disabled = false,
     useClickOutSide = true,
     fixedWidthPopup = true,
+    trigger = ["click"], // "hover" | "click" | "hover click"
   },
   ref
 ) {
@@ -110,6 +111,9 @@ const Dropdown = forwardRef(function Dropdown(
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
   const acquireClickLock = useClickLockRef(200);
+
+  const isHoverTrigger = trigger.includes("hover");
+  const isClickTrigger = trigger.includes("click");
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -201,11 +205,23 @@ const Dropdown = forwardRef(function Dropdown(
     const triggerProps = {
       "data-disabled-action": disabled ? "true" : "false",
       onClick: (e) => {
-        if (disabled) return;
+        if (!isClickTrigger || disabled) return;
         if (!acquireClickLock()) return;
         e.stopPropagation();
         children.props.onClick?.(e);
         setOpen((prev) => !prev);
+      },
+      onMouseEnter: () => {
+        if (!isHoverTrigger || disabled) return;
+        setOpen(true);
+      },
+      onMouseLeave: () => {
+        if (!isHoverTrigger || disabled) return;
+        setTimeout(() => {
+          if (!dropdownRef.current?.matches(":hover")) {
+            setOpen(false);
+          }
+        }, 150);
       },
       ref: (el) => {
         referenceRef.current = el;
@@ -269,6 +285,14 @@ const Dropdown = forwardRef(function Dropdown(
                 pointerEvents: open && ready ? "auto" : "none",
                 transition: "opacity 0.2s ease, transform 0.2s ease",
                 zIndex: "var(--z-dropdown)",
+              }}
+              onMouseLeave={(e) => {
+                if (!isHoverTrigger || disabled) return;
+                setTimeout(() => {
+                  if (!referenceRef.current?.matches(":hover")) {
+                    setOpen(false);
+                  }
+                }, 150);
               }}
             >
               {menuContent}
