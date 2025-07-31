@@ -1,11 +1,14 @@
 import {
-  useState,
   Children,
   isValidElement,
-  useRef,
+  useCallback,
+  useEffect,
   useLayoutEffect,
-  useId,
+  useRef,
+  useState,
 } from "react";
+import { MoreIcon } from "../Icon";
+import OverFlow from "../OverFlow";
 
 function Tabs({
   children,
@@ -15,30 +18,53 @@ function Tabs({
   destroy,
   tabPosition = "top",
 }) {
+  function flattenChildren(children) {
+    return Children.toArray(children).flatMap((child) => {
+      if (!isValidElement(child)) return [];
+
+      if (child.type?.displayName === "Tabs.Item") return [child];
+
+      if (
+        typeof child.type === "function" &&
+        child.type !== Tabs.Item &&
+        child.props
+      ) {
+        const rendered = child.type(child.props);
+        return flattenChildren(rendered);
+      }
+
+      if (child.props?.children) return flattenChildren(child.props.children);
+
+      return [];
+    });
+  }
+
+  const panes = flattenChildren(children);
+
+  const isControlled = active !== undefined;
+
+  const [internalActive, setInternalActive] = useState(
+    defaultActive ?? panes[0]?.props?.tabKey
+  );
+
+  const currentActive = isControlled ? active : internalActive;
+
+  const [mountedTabs, setMountedTabs] = useState(() => {
+    return destroy ? [] : [String(currentActive)];
+  });
+
   const containerRef = useRef(null);
   const indicatorRef = useRef(null);
   const contentRef = useRef(null);
   const tabRefs = useRef({});
-  const panes = Children.toArray(children).filter(isValidElement);
-
-  const isControlled = active !== undefined;
-  const [internalActive, setInternalActive] = useState(() => {
-    const fallback = panes[0]?.props?.tabKey;
-    return defaultActive ?? fallback;
-  });
-  const currentActive = isControlled ? active : internalActive;
-  const [mountedTabs, setMountedTabs] = useState(() => {
-    return destroy ? [] : [String(currentActive)];
-  });
-  const [contentHeight, setContentHeight] = useState(0);
-  const [hoveredKey, setHoveredKey] = useState(null);
   const hasMounted = useRef(false);
+  const currentActiveRef = useRef(currentActive);
+  const overflowKeysRef = useRef([]);
+  const visibleKeys = useRef([]);
 
-  useLayoutEffect(() => {
-    if (!isControlled && defaultActive !== undefined) {
-      setInternalActive(defaultActive);
-    }
-  }, [defaultActive, isControlled]);
+  useEffect(() => {
+    currentActiveRef.current = currentActive;
+  }, [currentActive]);
 
   useLayoutEffect(() => {
     if (!destroy) {
@@ -50,49 +76,72 @@ function Tabs({
     }
   }, [currentActive, destroy]);
 
-  useLayoutEffect(() => {
-    if (destroy && contentRef.current) {
-      const rect = contentRef.current.getBoundingClientRect();
-      setContentHeight(rect.height);
-    }
-  }, [currentActive, destroy]);
-
-  useLayoutEffect(() => {
-    const el = tabRefs.current[String(currentActive)];
+  const updateIndicator = () => {
+    const el = tabRefs.current[String(currentActiveRef.current)];
+    const activeKeyInclude = visibleKeys.current.includes(
+      currentActiveRef.current
+    );
     const indicator = indicatorRef.current;
     const container = containerRef.current;
-    if (!el || !indicator || !container) return;
+    if (!el || !indicator || !container || !activeKeyInclude) {
+      indicator.style.display = "none";
+      return;
+    }
+    const isVertical = tabPosition === "left" || tabPosition === "right";
 
-    const updateIndicator = () => {
-      const isVertical = tabPosition === "left" || tabPosition === "right";
+    if (isVertical) {
+      indicator.style.left = "";
+      indicator.style.top = `${el.offsetTop}px`;
+      indicator.style.width = "2.5px";
+      indicator.style.height = `${el.offsetHeight}px`;
+      indicator.style.right = tabPosition === "left" ? "0px" : "";
+      indicator.style.left = tabPosition === "right" ? "0px" : "";
+    } else {
+      indicator.style.left = `${el.offsetLeft}px`;
+      indicator.style.top = "";
+      indicator.style.width = `${el.offsetWidth}px`;
+      indicator.style.height = "2px";
+      indicator.style.bottom = tabPosition === "top" ? "0px" : "";
+      indicator.style.top = tabPosition === "bottom" ? "0px" : "";
+    }
+    indicator.style.display = "block";
 
-      if (isVertical) {
-        indicator.style.left = "";
-        indicator.style.top = `${el.offsetTop}px`;
-        indicator.style.width = "2.5px";
-        indicator.style.height = `${el.offsetHeight}px`;
-        indicator.style.right = tabPosition === "left" ? "0px" : "";
-        indicator.style.left = tabPosition === "right" ? "0px" : "";
-      } else {
-        indicator.style.left = `${el.offsetLeft}px`;
-        indicator.style.top = "";
-        indicator.style.width = `${el.offsetWidth}px`;
-        indicator.style.height = "2px";
-        indicator.style.bottom = tabPosition === "top" ? "0px" : "";
-        indicator.style.top = tabPosition === "bottom" ? "0px" : "";
-      }
+    if (!hasMounted.current) {
+      indicator.style.transition = "none";
+      requestAnimationFrame(() => {
+        hasMounted.current = true;
+        indicator.style.transition = "all 0.2s ease";
+      });
+    }
+  };
 
-      if (!hasMounted.current) {
-        indicator.style.transition = "none";
-        requestAnimationFrame(() => {
-          hasMounted.current = true;
-          indicator.style.transition = "all 0.2s ease";
-        });
-      }
+  useLayoutEffect(() => {
+    setTimeout(
+      () => {
+        updateIndicator();
+      },
+      overflowKeysRef.current.length > 0 ? 250 : 0
+    );
+  }, [currentActive, overflowKeysRef.current.length]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      setTimeout(
+        () => {
+          updateIndicator();
+        },
+        overflowKeysRef.current.length > 0 ? 250 : 0
+      );
+    });
+
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
     };
-
-    requestAnimationFrame(updateIndicator);
-  }, [currentActive, tabPosition, panes.length]);
+  }, []);
 
   const handleClick = (tabKey) => {
     if (tabKey === currentActive) return;
@@ -123,7 +172,10 @@ function Tabs({
     }),
   };
 
-  const tabItemStyle = (isActive, isHover) => ({
+  const tabItemStyle = (isActive) => ({
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     cursor: "pointer",
     fontSize: 14,
     color: isActive ? "var(--hadesui-blue-6)" : "var(--hadesui-text-color)",
@@ -136,7 +188,6 @@ function Tabs({
         ? "5px 10px 5px 5px"
         : "5px 5px 5px 10px",
     transition: "color 0.2s",
-    ...(isHover && !isActive ? { color: "var(--hadesui-blue-6)" } : {}),
   });
 
   const indicatorStyle = {
@@ -175,22 +226,82 @@ function Tabs({
   const tabList = (
     <div style={tabListStyle} ref={containerRef}>
       <div ref={indicatorRef} style={indicatorStyle} />
-      {panes.map((pane) => {
-        const key = String(pane.props.tabKey);
-        const isActive = key === String(currentActive);
-        return (
-          <div
-            key={key}
-            ref={(el) => (tabRefs.current[key] = el)}
-            style={tabItemStyle(isActive, key === hoveredKey)}
-            onClick={() => handleClick(pane.props.tabKey)}
-            onMouseEnter={() => setHoveredKey(key)}
-            onMouseLeave={() => setHoveredKey(null)}
-          >
-            {pane.props.title}
-          </div>
-        );
-      })}
+      <OverFlow
+        mode={
+          tabPosition === "right" || tabPosition === "left"
+            ? "vertical"
+            : "horizontal"
+        }
+        customAction={() => {
+          const activeKeyIncludesOverflow =
+            overflowKeysRef.current.includes(currentActive);
+          return (
+            <div
+              style={{
+                ...(tabPosition === "right" || tabPosition === "left"
+                  ? {
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: "0px 8px",
+                    }
+                  : { height: "100%", display: "flex", alignItems: "center" }),
+                cursor: "pointer",
+              }}
+            >
+              <MoreIcon
+                color={
+                  activeKeyIncludesOverflow
+                    ? "var(--hadesui-blue-6)"
+                    : "currentColor"
+                }
+                size={20}
+              />
+            </div>
+          );
+        }}
+        style={{
+          alignItems: tabPosition === "top" ? "start" : "end",
+        }}
+        getOverflowKeys={(items) => {
+          overflowKeysRef.current = items;
+        }}
+        getVisibleKeys={(items) => {
+          visibleKeys.current = items;
+        }}
+      >
+        {panes.map((pane) => {
+          const key = String(pane.props.tabKey);
+          const isActive = key === String(currentActive);
+          return (
+            <div
+              id={key}
+              key={key}
+              ref={(el) => {
+                if (el) {
+                  tabRefs.current[key] = el;
+                } else {
+                  delete tabRefs.current[key];
+                }
+              }}
+              style={tabItemStyle(isActive)}
+              onClick={() => handleClick(pane.props.tabKey)}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.target.style.color = "var(--hadesui-blue-6)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.target.style.color = "var(--hadesui-text-color)";
+                }
+              }}
+            >
+              {pane.props.title}
+            </div>
+          );
+        })}
+      </OverFlow>
     </div>
   );
 
@@ -198,6 +309,7 @@ function Tabs({
     <div
       style={{
         width: "100%",
+        height: "100%",
         backgroundColor: "var(--hadesui-bg-color)",
         display: "flex",
         flexDirection,
@@ -207,9 +319,10 @@ function Tabs({
       <div
         style={{
           width: "100%",
+          height: "100%",
+          overflow: "auto",
           fontSize: 14,
           color: "var(--hadesui-text-color)",
-          minHeight: destroy ? contentHeight : undefined,
           padding:
             tabPosition === "left" || tabPosition === "right"
               ? "10px"
@@ -228,4 +341,5 @@ function TabPane({ children }) {
 }
 
 Tabs.Item = TabPane;
+Tabs.Item.displayName = "Tabs.Item";
 export default Tabs;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   ChipTabs,
@@ -48,51 +48,25 @@ const menu = [
   },
 ];
 
-const Render1 = () => {
-  useEffect(() => {
-    console.log("render1");
+const Render = ({ title }) => {
+  const randomDivs = useMemo(() => {
+    const count = Math.floor(Math.random() * 5) + 1;
+    return Array.from({ length: count }, (_, i) => `Item ${i + 1}`);
   }, []);
-  return <div>Content render 1</div>;
-};
-const Render2 = () => {
+
   useEffect(() => {
-    console.log("render2");
-  }, []);
+    console.log(`Content render ${title}`);
+  }, [title]);
+
   return (
-    <>
-      <div>Content render 2</div>
-      <div>Content render 2</div>
-      <div>Content render 2</div>
-    </>
-  );
-};
-const Render3 = () => {
-  useEffect(() => {
-    console.log("render3");
-  }, []);
-  return (
-    <>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-      <div>Content render 3</div>
-    </>
-  );
-};
-const Render4 = () => {
-  useEffect(() => {
-    console.log("render4");
-  }, []);
-  return (
-    <>
-      <div>Content render 4</div>
-    </>
+    <div>
+      <div>{`Content render ${title}`}</div>
+      {randomDivs.map((item, index) => (
+        <div key={index} style={{ paddingLeft: 12 }}>
+          - {item}
+        </div>
+      ))}
+    </div>
   );
 };
 
@@ -194,6 +168,34 @@ function App() {
       }, delay);
     });
   }
+  const TabList = () => (
+    <>
+      <Tabs.Item tabKey="tab1" title="Tab 1">
+        <Render title={1} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab2" title="Tab 2">
+        <Render title={2} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab3" title="Tab 3">
+        <Render title={3} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab4" title="Tab 4">
+        <Render title={4} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab5" title="Tab 5">
+        <Render title={5} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab6" title="Tab 6">
+        <Render title={6} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab7" title="Tab 7">
+        <Render title={7} />
+      </Tabs.Item>
+      <Tabs.Item tabKey="tab8" title="Tab 8">
+        <Render title={8} />
+      </Tabs.Item>
+    </>
+  );
 
   return (
     <>
@@ -311,6 +313,20 @@ function App() {
           </Droppable>
         </DragDropProvider>
 
+        <ResizableBox>
+          <ChipTabs
+            tabs={[
+              { key: 1, title: "Tab 1" /*props....*/ },
+              { key: 2, title: "Tab 2" },
+              { key: 3, title: "Tab 3" },
+              { key: 4, title: "Tab 4" },
+            ]}
+            defaultActive={4}
+            onChange={(tab) => {
+              console.log(tab);
+            }}
+          />
+        </ResizableBox>
         <ChipTabs
           tabs={[
             { key: 1, title: "Tab 1" /*props....*/ },
@@ -323,72 +339,112 @@ function App() {
             console.log(tab);
           }}
         />
-        <ChipTabs
-          tabs={[
-            { key: 1, title: "Tab 1" /*props....*/ },
-            { key: 2, title: "Tab 2" },
-            { key: 3, title: "Tab 3" },
-            { key: 4, title: "Tab 4" },
-          ]}
-          defaultActive={4}
-          onChange={(tab) => {
-            console.log(tab);
-          }}
-        />
-        <Tabs defaultActive="tab1" tabPosition="top">
-          <Tabs.Item tabKey="tab1" title="Tab1">
-            <Render1 />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab2">
-            <Render2 />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab3">
-            <Render3 />
-          </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab4">
-            <Render4 />
-          </Tabs.Item>
-        </Tabs>
+        <ResizableBox>
+          <Tabs defaultActive="tab1" tabPosition="top">
+            <Tabs.Item tabKey="tab1" title="Tab 1">
+              <Render title={1} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab2" title="Tab 2">
+              <Render title={2} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab3" title="Tab 3">
+              <Render title={3} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab4" title="Tab 4">
+              <Render title={4} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab5" title="Tab 5">
+              <Render title={5} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab6" title="Tab 6">
+              <Render title={6} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab7" title="Tab 7">
+              <Render title={7} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab8" title="Tab 8">
+              <Render title={8} />
+            </Tabs.Item>
+          </Tabs>
+        </ResizableBox>
         <Tabs defaultActive="tab2" tabPosition="bottom">
-          <Tabs.Item tabKey="tab1" title="Tab1">
-            <Render1 />
+          <Tabs.Item tabKey="tab1" title="Tab 1">
+            <Render title={1} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab2">
-            <Render2 />
+          <Tabs.Item tabKey="tab2" title="Tab 2">
+            <Render title={2} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab3">
-            <Render3 />
+          <Tabs.Item tabKey="tab3" title="Tab 3">
+            <Render title={3} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab3">
-            <Render4 />
+          <Tabs.Item tabKey="tab4" title="Tab 4">
+            <Render title={4} />
           </Tabs.Item>
-        </Tabs>
-        <Tabs defaultActive="tab3" tabPosition="left">
-          <Tabs.Item tabKey="tab1" title="Tab1">
-            <Render1 />
+          <Tabs.Item tabKey="tab5" title="Tab 5">
+            <Render title={5} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab2">
-            <Render2 />
+          <Tabs.Item tabKey="tab6" title="Tab 6">
+            <Render title={6} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab3">
-            <Render3 />
+          <Tabs.Item tabKey="tab7" title="Tab 7">
+            <Render title={7} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab4">
-            <Render4 />
+          <Tabs.Item tabKey="tab8" title="Tab 8">
+            <Render title={8} />
           </Tabs.Item>
         </Tabs>
+        <ResizableBox>
+          <Tabs defaultActive="tab3" tabPosition="left">
+            <Tabs.Item tabKey="tab1" title="Tab 1">
+              <Render title={1} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab2" title="Tab 2">
+              <Render title={2} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab3" title="Tab 3">
+              <Render title={3} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab4" title="Tab 4">
+              <Render title={4} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab5" title="Tab 5">
+              <Render title={5} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab6" title="Tab 6">
+              <Render title={6} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab7" title="Tab 7">
+              <Render title={7} />
+            </Tabs.Item>
+            <Tabs.Item tabKey="tab8" title="Tab 8">
+              <Render title={8} />
+            </Tabs.Item>
+          </Tabs>
+        </ResizableBox>
         <Tabs defaultActive="tab4" tabPosition="right">
-          <Tabs.Item tabKey="tab1" title="Tab1">
-            <Render1 />
+          <Tabs.Item tabKey="tab1" title="Tab 1">
+            <Render title={1} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab2" title="Tab2">
-            <Render2 />
+          <Tabs.Item tabKey="tab2" title="Tab 2">
+            <Render title={2} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab3" title="Tab4">
-            <Render3 />
+          <Tabs.Item tabKey="tab3" title="Tab 3">
+            <Render title={3} />
           </Tabs.Item>
-          <Tabs.Item tabKey="tab4" title="Tab4">
-            <Render4 />
+          <Tabs.Item tabKey="tab4" title="Tab 4">
+            <Render title={4} />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab5" title="Tab 5">
+            <Render title={5} />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab6" title="Tab 6">
+            <Render title={6} />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab7" title="Tab 7">
+            <Render title={7} />
+          </Tabs.Item>
+          <Tabs.Item tabKey="tab8" title="Tab 8">
+            <Render title={8} />
           </Tabs.Item>
         </Tabs>
 
@@ -695,7 +751,7 @@ function App() {
 
         <Divider>Test Loading</Divider>
 
-        <RightClickMenu menu={menu}>
+        <RightClickMenu style={{ border: "1px dashed #ccc" }} menu={menu}>
           <div>right click here</div>
           <div>right click here</div>
           <div>right click here</div>

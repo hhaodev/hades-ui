@@ -315,7 +315,9 @@ function Calendar({
                 } `,
               }}
               onClick={() => {
-                if (!isDisabled) handleSelectDate(date);
+                if (!isDisabled && isCurrentMonth) {
+                  handleSelectDate(date);
+                }
               }}
               onMouseEnter={(e) => {
                 if (

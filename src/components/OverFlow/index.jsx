@@ -1,4 +1,10 @@
-import React, { useLayoutEffect, useRef, useState, useMemo } from "react";
+import React, {
+  useLayoutEffect,
+  useRef,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import Button from "../Button";
 import Dropdown from "../Dropdown";
 import Stack from "../Stack";
@@ -6,11 +12,18 @@ import { PlusIcon } from "../Icon";
 
 export const GAP = 10;
 
-export default function OverFlow({ children, mode = "horizontal" }) {
+export default function OverFlow({
+  children,
+  mode = "horizontal",
+  customAction,
+  style,
+  getVisibleKeys,
+  getOverflowKeys,
+}) {
   const containerRef = useRef(null);
   const measureRef = useRef(null);
   const moreFakeRef = useRef(null);
-  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const { gap, items } = useMemo(() => {
     let gap = GAP;
@@ -85,6 +98,11 @@ export default function OverFlow({ children, mode = "horizontal" }) {
     }
 
     setVisibleCount(fitCount);
+    const visibleItems = items.slice(0, fitCount);
+    const overflowItems = items.slice(fitCount);
+
+    getVisibleKeys?.(visibleItems.map((item) => item?.props?.id));
+    getOverflowKeys?.(overflowItems.map((item) => item?.props?.id));
   };
 
   useLayoutEffect(() => {
@@ -121,7 +139,7 @@ export default function OverFlow({ children, mode = "horizontal" }) {
           </div>
         ))}
         <div ref={moreFakeRef} style={{ flexShrink: 0 }}>
-          <Button>+99</Button>
+          {customAction ? customAction?.() : <Button>+99</Button>}
         </div>
       </div>
 
@@ -129,6 +147,8 @@ export default function OverFlow({ children, mode = "horizontal" }) {
       <div
         ref={containerRef}
         style={{
+          alignItems: "start",
+          ...style,
           display: "flex",
           flexDirection: mode === "horizontal" ? "row" : "column",
           [mode === "horizontal" ? "columnGap" : "rowGap"]: `${gap}px`,
@@ -136,7 +156,6 @@ export default function OverFlow({ children, mode = "horizontal" }) {
           overflow: "hidden",
           width: "100%",
           height: "100%",
-          alignItems: "start",
           padding: 1,
         }}
       >
@@ -148,10 +167,10 @@ export default function OverFlow({ children, mode = "horizontal" }) {
 
         {overflowItems.length > 0 && (
           <Dropdown
+            ref={dropdownRef}
             popupStyles={{
               width: "fit-content",
             }}
-            onOpenChange={setOpen}
             menu={() => (
               <Stack
                 style={{
@@ -168,16 +187,20 @@ export default function OverFlow({ children, mode = "horizontal" }) {
                     key: i,
                     onClick: (...args) => {
                       item.props?.onClick?.(...args);
-                      setOpen(false);
+                      dropdownRef.current.hide();
                     },
                   })
                 )}
               </Stack>
             )}
           >
-            <Button theme="default">
-              <PlusIcon /> {overflowItems.length}
-            </Button>
+            {customAction ? (
+              customAction?.()
+            ) : (
+              <Button theme="default">
+                <PlusIcon /> {overflowItems.length}
+              </Button>
+            )}
           </Dropdown>
         )}
       </div>

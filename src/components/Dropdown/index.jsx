@@ -255,7 +255,7 @@ const Dropdown = forwardRef(function Dropdown(
                 background: "var(--hadesui-bg-color)",
                 borderRadius: 8,
                 boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
-                minWidth: 150,
+                minWidth: 100,
                 width: fixedWidthPopup ? popupWidth : "fit-content",
                 maxHeight: "100%",
                 ...popupStyles,

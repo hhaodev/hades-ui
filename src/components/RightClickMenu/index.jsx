@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Dropdown from "../Dropdown";
 
 const RightClickMenu = ({ children, style = {}, menu }) => {
@@ -34,6 +34,17 @@ const RightClickMenu = ({ children, style = {}, menu }) => {
       opacity: 0,
     });
   }, [coords]);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (!containerRef.current.contains(e.target)) {
+        dropdownRef.current.hide();
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
 
   return (
     <div
