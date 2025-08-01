@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { formatDate } from "../../utils";
 import Dropdown from "../Dropdown";
 import Ellipsis from "../Ellipsis";
@@ -32,6 +32,9 @@ const DatePicker = forwardRef(
     const [valueInternal, setValueInternal] = useState(null);
     const containerRef = useRef(null);
     const dropdownRef = useRef(null);
+
+    const idGene = useId();
+    const id = `dropdown-date-picker-${idGene}`;
 
     useEffect(() => {
       if (!open && containerRef.current) {
@@ -81,6 +84,7 @@ const DatePicker = forwardRef(
         }}
       >
         <Dropdown
+          id={id}
           ref={dropdownRef}
           disabled={disabled}
           fixedWidthPopup={false}
@@ -125,13 +129,14 @@ const DatePicker = forwardRef(
                 : placeholder}
             </Ellipsis>
             <Stack
+              data-toggle-for={id}
               style={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 color: "var(--hadesui-placeholder-color)",
               }}
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
                 if (valueInternal) {

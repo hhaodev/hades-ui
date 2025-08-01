@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { formatDate, usePrevious } from "../../utils";
 import Divider from "../Divider";
 import Dropdown from "../Dropdown";
@@ -46,6 +46,9 @@ const DateRangePicker = forwardRef(
     const containerRef = useRef(null);
     const dropdownStartRef = useRef(null);
     const dropdownEndRef = useRef(null);
+
+    const idGene = useId();
+    const id = `dropdown-date-range-picker-${idGene}`;
 
     useEffect(() => {
       if (!isFocus && containerRef.current) {
@@ -146,7 +149,7 @@ const DateRangePicker = forwardRef(
         >
           <Dropdown
             ref={dropdownStartRef}
-            id="dropdown-date-range-picker"
+            id={id}
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
@@ -224,7 +227,7 @@ const DateRangePicker = forwardRef(
           />
           <Dropdown
             ref={dropdownEndRef}
-            id="dropdown-date-range-picker"
+            id={id}
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
@@ -294,13 +297,14 @@ const DateRangePicker = forwardRef(
           </Dropdown>
         </Stack>
         <Stack
+          data-toggle-for={id}
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             color: "var(--hadesui-placeholder-color)",
           }}
-          onMouseDown={(e) => {
+          onClick={(e) => {
             e.stopPropagation();
             if (disabled) return;
             if (endDate && startDate) {

@@ -115,6 +115,8 @@ const Dropdown = forwardRef(function Dropdown(
   const isHoverTrigger = trigger.includes("hover");
   const isClickTrigger = trigger.includes("click");
 
+  const drdId = id ?? `dropdown-menu-${actualPlacement}-${dropdownId}`;
+
   useImperativeHandle(ref, () => ({
     show: () => {
       if (!disabled) setOpen(true);
@@ -125,9 +127,15 @@ const Dropdown = forwardRef(function Dropdown(
     opening: open,
   }));
 
-  useSafeZone(open && useClickOutSide, referenceRef, dropdownRef, () => {
-    setTimeout(() => setOpen(false), 0);
-  });
+  useSafeZone(
+    open && useClickOutSide,
+    referenceRef,
+    dropdownRef,
+    () => {
+      setTimeout(() => setOpen(false), 0);
+    },
+    { id: drdId }
+  );
 
   useLayoutEffect(() => {
     if (!shouldRender || !referenceRef.current || !dropdownRef.current) return;
@@ -264,7 +272,7 @@ const Dropdown = forwardRef(function Dropdown(
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack id={id ?? `dropdown-menu-${actualPlacement}-${dropdownId}`}>
+          <Stack id={drdId}>
             <Stack
               ref={dropdownRef}
               style={{

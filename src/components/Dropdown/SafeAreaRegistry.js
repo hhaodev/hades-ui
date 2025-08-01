@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 function createSafeZoneManager() {
   const zones = [];
@@ -66,18 +66,46 @@ function createSafeZoneManager() {
 
 const safeZoneManager = createSafeZoneManager();
 
-export function useSafeZone(open, referenceRef, popupRef, onClose) {
+export function useSafeZone(
+  open,
+  referenceRef,
+  popupRef,
+  onClose,
+  options = {}
+) {
+  const { id } = options;
+  const dropdownIds = useMemo(
+    () => (Array.isArray(id) ? id : id ? [id] : []),
+    [id]
+  );
+
   useEffect(() => {
     if (!open) return;
 
     const zone = {
-      contains: (el) =>
-        (referenceRef.current && referenceRef.current.contains(el)) ||
-        (popupRef.current && popupRef.current.contains(el)),
+      contains: (el) => {
+        const inRef =
+          (referenceRef.current && referenceRef.current.contains(el)) ||
+          (popupRef.current && popupRef.current.contains(el));
+
+        if (inRef) return true;
+
+        if (dropdownIds.length > 0 && el instanceof Element) {
+          const closest = el.closest("[data-toggle-for]");
+          if (closest) {
+            const attr = closest.getAttribute("data-toggle-for");
+            if (attr && dropdownIds.includes(attr)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      },
     };
 
     const id = safeZoneManager.registerZone(zone, onClose);
 
     return () => safeZoneManager.unregisterZone(id);
-  }, [open, referenceRef, popupRef, onClose]);
+  }, [open, referenceRef, popupRef, onClose, dropdownIds]);
 }

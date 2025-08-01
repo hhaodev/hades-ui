@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -47,6 +48,9 @@ const Select = forwardRef(
     const [internalValue, setInternalValue] = useState();
     const finalValue = value !== undefined ? value : internalValue;
     const selected = options.find((opt) => opt.value === finalValue);
+
+    const idGene = useId();
+    const id = `dropdown-select-${idGene}`;
 
     const setValue = (val) => {
       onChange?.(val);
@@ -135,6 +139,7 @@ const Select = forwardRef(
         }}
       >
         <Dropdown
+          id={id}
           ref={dropdownRef}
           disabled={disabled}
           fixedWidthPopup={popupWidthFull}
@@ -254,7 +259,8 @@ const Select = forwardRef(
               {selected ? selected.label : placeholder}
             </Ellipsis>
             <Stack
-              onMouseDown={(e) => {
+              data-toggle-for={id}
+              onClick={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
                 if (selected) {
