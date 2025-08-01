@@ -282,11 +282,11 @@ function Calendar({
             <Stack
               style={{
                 padding:
-                  !isMinMaxSelect && (isDisabled || (isInRangHover && !today))
+                  !isMinMaxSelect && (isDisabled || isInRangHover) && !today
                     ? "12px"
                     : "10px",
                 margin:
-                  !isMinMaxSelect && (isDisabled || (isInRangHover && !today))
+                  !isMinMaxSelect && (isDisabled || isInRangHover) && !today
                     ? "0px"
                     : "2px",
                 textAlign: "center",

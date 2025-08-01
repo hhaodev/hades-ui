@@ -16,6 +16,8 @@ export { default as Input } from "./Input";
 export { default as UploadFile } from "./UploadFile";
 export { default as Link } from "./Link";
 export { default as RightClickMenu } from "./RightClickMenu";
+export { default as Table } from "./Table";
+export { default as Checkbox } from "./Checkbox";
 export * from "./Message";
 export * from "./Toast";
 export * from "./DatePicker";

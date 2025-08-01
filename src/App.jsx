@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Button,
+  Checkbox,
   ChipTabs,
   DatePicker,
   DateRangePicker,
@@ -22,6 +23,7 @@ import {
   SearchIcon,
   Select,
   Stack,
+  Table,
   Tabs,
   toast,
   Tooltip,
@@ -238,7 +240,7 @@ function App() {
         {/* end theme region */}
         <DragDropTable data={data} onChange={handleMove} />
         <UploadFile multiple onChange={setFile} />
-        <DragDropProvider onDragEnd={(props) => console.log(props)}>
+        {/* <DragDropProvider onDragEnd={(props) => console.log(props)}>
           <Droppable droppableId="board" acceptType="column">
             <div style={{ display: "flex", gap: 8 }}>
               <Draggable
@@ -327,8 +329,27 @@ function App() {
               </Draggable>
             </div>
           </Droppable>
-        </DragDropProvider>
-
+        </DragDropProvider> */}
+        <Table
+          checkable
+          columns={Array.from({ length: 4 }, (_, i) => ({
+            title: `Column test ${i + 1}`,
+            dataIndex: `col${i + 1}`,
+            width: 400,
+          }))}
+          data={Array.from({ length: 10 }, (_, i) => ({
+            key: (i + 1).toString(),
+            ...Object.fromEntries(
+              Array.from({ length: 14 }, (_, j) => [
+                `col${j + 1}`,
+                `Data col${j + 1}`,
+              ])
+            ),
+          }))}
+          onCheck={(items) => {
+            console.log(items);
+          }}
+        />
         <ResizableBox>
           <ChipTabs
             tabs={[
@@ -413,13 +434,14 @@ function App() {
             <Input placeholder="Input number ..." type="number" />
           </Form.Item>
 
-          <Form.Item label="Chọn file" name="file" rules={[{ required: true }]}>
-            <UploadFile
+          <Form.Item label="Checkbox" name="check" rules={[{ required: true }]}>
+            {/* <UploadFile
               view
               accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
               multiple
               maxSize={1 * 1024 * 1024}
-            />
+            /> */}
+            <Checkbox />
           </Form.Item>
 
           <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
@@ -457,6 +479,7 @@ function App() {
                 age: 54,
                 select: "30000000000000",
                 file: file,
+                check: true,
               })
             }
           >

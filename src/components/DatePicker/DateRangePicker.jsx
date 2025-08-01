@@ -310,6 +310,8 @@ const DateRangePicker = forwardRef(
             if (endDate && startDate) {
               setStartDate(null);
               setEndDate(null);
+              dropdownStartRef.current.hide();
+              dropdownEndRef.current.hide();
             }
             if (!startDate && (openEnd || openStart)) {
               dropdownStartRef.current.hide();
