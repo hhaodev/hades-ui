@@ -346,12 +346,14 @@ function App() {
                   numeric: true,
                 }),
               fixed: "left",
+              searchable: true,
             },
             {
               title: "Email",
               dataIndex: "email",
               key: "email",
               sortable: true,
+              searchable: true,
             },
             {
               title: "Created At",
@@ -372,6 +374,20 @@ function App() {
               sorter: (a, b) => {
                 const order = { active: 0, pending: 1, inactive: 2, banned: 3 };
                 return (order[a.status] ?? 99) - (order[b.status] ?? 99);
+              },
+              filters: [
+                { text: "Active", value: "active" },
+                { text: "Pending", value: "pending" },
+                { text: "Inactive", value: "inactive" },
+                { text: "Banned", value: "banned" },
+                { text: "Not Active", value: "notActive" },
+              ],
+              onFilter: (value, record) => {
+                // custom filter
+                if (value === "notActive") {
+                  return ["inactive", "banned"].includes(record.status);
+                }
+                return record.status === value;
               },
             },
             {

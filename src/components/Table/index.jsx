@@ -9,11 +9,22 @@ import React, {
 import Ellipsis from "../Ellipsis";
 import Checkbox from "../Checkbox";
 import SortIcon from "../SortIcon";
+import { CloseIcon, FilterIcon, SearchIcon } from "../Icon";
+import Dropdown from "../Dropdown";
+import Button from "../Button";
+import Input from "../Input";
 
 const SELECT_COL_W = 40;
-const MIN_W_COL = 60;
+const MIN_W_COL = 100;
 const ROW_HEIGHT = 40;
 const BUFFER_ROWS = 10;
+
+function getTextFromNode(node) {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(getTextFromNode).join("");
+  if (React.isValidElement(node)) return getTextFromNode(node.props.children);
+  return "";
+}
 
 function estimateTextWidth(text, font = "600 14px system-ui") {
   if (typeof document === "undefined") return 100;
@@ -23,6 +34,116 @@ function estimateTextWidth(text, font = "600 14px system-ui") {
   ctx.font = font;
   return ctx.measureText(text).width;
 }
+
+const FilterPanel = React.memo(
+  ({ col, currentFilter = { search: "", selected: [] }, onApply }) => {
+    const [localSearch, setLocalSearch] = useState(currentFilter.search);
+    const [localSelected, setLocalSelected] = useState(currentFilter.selected);
+
+    const toggleOption = (value) => {
+      setLocalSelected((prev) => {
+        if (prev.includes(value)) {
+          return prev.filter((v) => v !== value);
+        } else {
+          return [...prev, value];
+        }
+      });
+    };
+
+    const handleApply = () => {
+      onApply?.({ search: localSearch, selected: localSelected });
+    };
+
+    const handleClear = () => {
+      setLocalSearch("");
+      setLocalSelected(new Set());
+    };
+
+    return (
+      <div
+        style={{
+          width: 150,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {col.searchable && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>Search</div>
+            <Input
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleApply();
+              }}
+              placeholder={`Search ${getTextFromNode(col.title)}`}
+              prefix={
+                <Button theme="icon" onClick={() => {}}>
+                  <SearchIcon size={16} />
+                </Button>
+              }
+              suffix={
+                localSearch ? (
+                  <Button theme="icon" onClick={() => setLocalSearch("")}>
+                    <CloseIcon />
+                  </Button>
+                ) : null
+              }
+            />
+          </div>
+        )}
+        {col.filters && Array.isArray(col.filters) && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>Filters</div>
+            <div
+              style={{
+                maxHeight: 140,
+                overflowY: "auto",
+                border: "1px solid var(--hadesui-border-color)",
+                borderRadius: 4,
+                padding: 6,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              {col.filters.map((f) => (
+                <div
+                  key={String(f.value)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                  onClick={() => toggleOption(f.value)}
+                >
+                  <Checkbox
+                    value={localSelected.includes(f.value)}
+                    onChange={() => toggleOption(f.value)}
+                  />
+                  <span>{f.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <Button size="small" onClick={handleClear} theme="text">
+            Clear
+          </Button>
+          <Button size="small" onClick={handleApply}>
+            Apply
+          </Button>
+        </div>
+      </div>
+    );
+  }
+);
+FilterPanel.displayName = "FilterPanel";
 
 const SelectHeaderCell = React.memo(
   ({ allChecked, someChecked, toggleAll }) => (
@@ -53,7 +174,10 @@ const HeaderCell = React.memo(
     handleSort,
     handleMouseDown,
     index,
+    currentFilter,
+    onFilterApply,
   }) => {
+    const dropdownRef = useRef();
     const flexStyle = useMemo(
       () => (isLastColumn ? { flex: "1 1 auto" } : { flex: `0 0 ${width}px` }),
       [isLastColumn, width]
@@ -71,6 +195,22 @@ const HeaderCell = React.memo(
           : {},
       [col.fixed, leftOffset]
     );
+
+    const filterState = currentFilter[col.id] ?? { search: "", selected: [] };
+
+    const { hasFilter, filterIconColor } = useMemo(() => {
+      const active =
+        (col.searchable && filterState.search?.trim() !== "") ||
+        (col.filters &&
+          Array.isArray(filterState.selected) &&
+          filterState.selected.length > 0);
+      return {
+        hasFilter: active,
+        filterIconColor: active
+          ? "var(--hadesui-blue-6)"
+          : "var(--hadesui-text2-color)",
+      };
+    }, [col.searchable, col.filters, filterState.search, filterState.selected]);
 
     return (
       <div
@@ -97,6 +237,51 @@ const HeaderCell = React.memo(
             isActive={sortConfig.key === col.dataIndex}
             activeDirection={sortConfig.direction}
           />
+        )}
+        {(col.searchable || col.filters) && (
+          <Dropdown
+            ref={dropdownRef}
+            fixedWidthPopup={false}
+            placement="bottom-end"
+            menu={
+              <FilterPanel
+                col={col}
+                currentFilter={currentFilter[col.id]}
+                onApply={({ search, selected }) => {
+                  onFilterApply(col, {
+                    search,
+                    selected: Array.from(selected),
+                  });
+                  dropdownRef.current.hide();
+                }}
+              />
+            }
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FilterIcon size={18} color={filterIconColor} />
+              {hasFilter && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--hadesui-blue-6)",
+                  }}
+                />
+              )}
+            </div>
+          </Dropdown>
         )}
         {col.resize && (
           <div
@@ -146,6 +331,8 @@ const Header = React.memo(
     handleSort,
     handleMouseDown,
     totalWidth,
+    onFilterApply,
+    currentFilter,
   }) => {
     const headerStyle = useMemo(
       () => ({
@@ -179,6 +366,8 @@ const Header = React.memo(
             handleSort={handleSort}
             handleMouseDown={handleMouseDown}
             index={i}
+            onFilterApply={onFilterApply}
+            currentFilter={currentFilter}
           />
         ))}
       </div>
@@ -327,6 +516,34 @@ const Table = ({
   const [sortCache] = useState(() => new Map()); // key: `${key}-${direction}` -> sorted array
   const [scrollTop, setScrollTop] = useState(0);
 
+  const [columnFilters, setColumnFilters] = useState({});
+
+  const onFilterApply = useCallback((col, filter) => {
+    setColumnFilters((prev) => ({
+      ...prev,
+      [col.id]: {
+        search: filter.search ?? "",
+        selected: Array.isArray(filter.selected)
+          ? filter.selected
+          : [...(filter.selected ?? [])],
+      },
+    }));
+  }, []);
+
+  const defaultCompare = useCallback((a, b, key) => {
+    const va = a[key];
+    const vb = b[key];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (va === vb) return 0;
+    if (typeof va === "number" && typeof vb === "number") return va - vb;
+    return String(va).localeCompare(String(vb), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  }, []);
+
   const startIndex = useMemo(
     () => Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS),
     [scrollTop]
@@ -336,17 +553,6 @@ const Table = ({
     const visibleRows = Math.ceil(containerHeight / ROW_HEIGHT) + BUFFER_ROWS;
     return Math.min(data.length, startIndex + visibleRows);
   }, [containerHeight, startIndex, data.length]);
-
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key || !sortConfig.direction) return data;
-    const cacheKey = `${sortConfig.key}-${sortConfig.direction}`;
-    return sortCache.get(cacheKey) ?? data;
-  }, [sortConfig, data, sortCache]);
-  const visibleData = useMemo(() => {
-    return sortedData.slice(startIndex, endIndex);
-  }, [sortedData, startIndex, endIndex]);
-
-  const totalHeight = useMemo(() => data.length * ROW_HEIGHT, [data.length]);
 
   const allChecked = useMemo(
     () => selectedKeys.length === data.length && data.length > 0,
@@ -366,6 +572,7 @@ const Table = ({
 
   const toggleRow = useCallback(
     (key) => {
+      if (!checkable) return;
       setSelectedKeys((prev) => {
         const exists = prev.includes(key);
         const next = exists ? prev.filter((k) => k !== key) : [...prev, key];
@@ -374,7 +581,7 @@ const Table = ({
         return next;
       });
     },
-    [data, rowKey, onCheck]
+    [data, rowKey, onCheck, checkable]
   );
 
   const baseColumns = useMemo(() => {
@@ -424,6 +631,76 @@ const Table = ({
     selectedSet,
     toggleRow,
   ]);
+
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    return data.filter((item) => {
+      for (const col of columns) {
+        const f = columnFilters[col.id];
+        if (!f) continue;
+
+        if (col.filters && Array.isArray(f.selected) && f.selected.length) {
+          const passesAny = f.selected.some((val) => {
+            if (typeof col.onFilter === "function") {
+              return col.onFilter(val, item);
+            }
+            return item[col.dataIndex] === val;
+          });
+          if (!passesAny) return false;
+        }
+
+        if (col.searchable && f.search && f.search.trim() !== "") {
+          const target = String(item[col.dataIndex] ?? "").toLowerCase();
+          if (!target.includes(f.search.trim().toLowerCase())) {
+            return false;
+          }
+        }
+      }
+      return true;
+    });
+  }, [data, columns, columnFilters]);
+
+  const sortedData = useMemo(() => {
+    const source = filteredData;
+    if (!sortConfig.key || !sortConfig.direction) return source;
+    const cacheKey = `${sortConfig.key}-${
+      sortConfig.direction
+    }-${JSON.stringify(Object.entries(columnFilters).sort())}`;
+
+    if (sortCache.has(cacheKey)) return sortCache.get(cacheKey);
+
+    const col = columns.find((c) => c.dataIndex === sortConfig.key);
+    const base = [...source];
+    const comparator = (a, b) => {
+      let cmp = 0;
+      if (col && typeof col.sorter === "function") {
+        cmp = col.sorter(a, b);
+      } else {
+        cmp = defaultCompare(a, b, sortConfig.key);
+      }
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    };
+    const sorted = base.sort(comparator);
+    sortCache.set(cacheKey, sorted);
+    return sorted;
+  }, [
+    filteredData,
+    sortConfig,
+    sortCache,
+    columns,
+    defaultCompare,
+    columnFilters,
+  ]);
+
+  const visibleData = useMemo(() => {
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, startIndex, endIndex]);
+
+  const totalHeight = useMemo(
+    () => filteredData.length * ROW_HEIGHT,
+    [filteredData.length]
+  );
 
   useLayoutEffect(() => {
     if (columns.length === 0) {
@@ -588,20 +865,6 @@ const Table = ({
     };
   }, [handleMouseMove, handleMouseUp]);
 
-  const defaultCompare = useCallback((a, b, key) => {
-    const va = a[key];
-    const vb = b[key];
-    if (va == null && vb == null) return 0;
-    if (va == null) return 1;
-    if (vb == null) return -1;
-    if (va === vb) return 0;
-    if (typeof va === "number" && typeof vb === "number") return va - vb;
-    return String(va).localeCompare(String(vb), undefined, {
-      numeric: true,
-      sensitivity: "base",
-    });
-  }, []);
-
   const handleSort = useCallback(
     (col) => {
       if (!col.sortable) return;
@@ -668,37 +931,55 @@ const Table = ({
         handleSort={handleSort}
         handleMouseDown={handleMouseDown}
         totalWidth={totalWidth}
+        onFilterApply={onFilterApply}
+        currentFilter={columnFilters}
       />
-      <div
-        style={{
-          height: totalHeight,
-          position: "relative",
-        }}
-      >
+      {visibleData?.length === 0 ? (
         <div
           style={{
-            position: "absolute",
-            top: startIndex * ROW_HEIGHT,
+            position: "sticky",
+            left: 0,
+            padding: 12,
+            textAlign: "center",
+            fontSize: 14,
+            color: "var(--hadesui-text2-color)",
             width: "100%",
           }}
         >
-          {visibleData.map((item, index) => (
-            <Row
-              key={item[rowKey] ?? startIndex + index}
-              item={item}
-              rowIdx={startIndex + index}
-              columns={columns}
-              widths={widths}
-              selected={selectedSet.has(item[rowKey])}
-              toggleRow={toggleRow}
-              leftOffsets={leftOffsets}
-              rowKey={rowKey}
-              totalWidth={totalWidth}
-              checkable={checkable}
-            />
-          ))}
+          No item to show here.
         </div>
-      </div>
+      ) : (
+        <div
+          style={{
+            height: totalHeight,
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: startIndex * ROW_HEIGHT,
+              width: "100%",
+            }}
+          >
+            {visibleData.map((item, index) => (
+              <Row
+                key={item[rowKey] ?? startIndex + index}
+                item={item}
+                rowIdx={startIndex + index}
+                columns={columns}
+                widths={widths}
+                selected={selectedSet.has(item[rowKey])}
+                toggleRow={toggleRow}
+                leftOffsets={leftOffsets}
+                rowKey={rowKey}
+                totalWidth={totalWidth}
+                checkable={checkable}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
