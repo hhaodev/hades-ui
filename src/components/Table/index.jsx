@@ -56,7 +56,7 @@ const FilterPanel = React.memo(
 
     const handleClear = () => {
       setLocalSearch("");
-      setLocalSelected(new Set());
+      setLocalSelected([]);
     };
 
     return (
@@ -499,6 +499,7 @@ const Table = ({
   rowKey = "id",
   onCheck,
   checkable,
+  loading,
   style = {},
 }) => {
   const containerRef = useRef(null);
@@ -528,6 +529,8 @@ const Table = ({
           : [...(filter.selected ?? [])],
       },
     }));
+    containerRef.current.scrollTop = 0;
+    setScrollTop(0);
   }, []);
 
   const defaultCompare = useCallback((a, b, key) => {
@@ -934,7 +937,7 @@ const Table = ({
         onFilterApply={onFilterApply}
         currentFilter={columnFilters}
       />
-      {visibleData?.length === 0 ? (
+      {loading && (
         <div
           style={{
             position: "sticky",
@@ -946,39 +949,58 @@ const Table = ({
             width: "100%",
           }}
         >
-          No item to show here.
+          Loading...
         </div>
-      ) : (
-        <div
-          style={{
-            height: totalHeight,
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: startIndex * ROW_HEIGHT,
-              width: "100%",
-            }}
-          >
-            {visibleData.map((item, index) => (
-              <Row
-                key={item[rowKey] ?? startIndex + index}
-                item={item}
-                rowIdx={startIndex + index}
-                columns={columns}
-                widths={widths}
-                selected={selectedSet.has(item[rowKey])}
-                toggleRow={toggleRow}
-                leftOffsets={leftOffsets}
-                rowKey={rowKey}
-                totalWidth={totalWidth}
-                checkable={checkable}
-              />
-            ))}
-          </div>
-        </div>
+      )}
+      {!loading && (
+        <React.Fragment>
+          {visibleData?.length === 0 ? (
+            <div
+              style={{
+                position: "sticky",
+                left: 0,
+                padding: 12,
+                textAlign: "center",
+                fontSize: 14,
+                color: "var(--hadesui-text2-color)",
+                width: "100%",
+              }}
+            >
+              No item to show here.
+            </div>
+          ) : (
+            <div
+              style={{
+                height: totalHeight,
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: startIndex * ROW_HEIGHT,
+                  width: "100%",
+                }}
+              >
+                {visibleData.map((item, index) => (
+                  <Row
+                    key={item[rowKey] ?? startIndex + index}
+                    item={item}
+                    rowIdx={startIndex + index}
+                    columns={columns}
+                    widths={widths}
+                    selected={selectedSet.has(item[rowKey])}
+                    toggleRow={toggleRow}
+                    leftOffsets={leftOffsets}
+                    rowKey={rowKey}
+                    totalWidth={totalWidth}
+                    checkable={checkable}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </React.Fragment>
       )}
     </div>
   );
