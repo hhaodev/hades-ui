@@ -28,6 +28,7 @@ import {
   toast,
   Tooltip,
   UploadFile,
+  XIcon,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
 
@@ -332,27 +333,169 @@ function App() {
         </DragDropProvider> */}
         <Table
           checkable
-          columns={Array.from({ length: 5 }, (_, i) => ({
-            title: `Column test ${i + 1}`,
-            dataIndex: `col${i + 1}`,
-            render: (text, rowData, rowIndex) => {
-              console.log("🚀 ~ rowIndex:", rowIndex);
-              return <span>{text}</span>;
+          columns={[
+            {
+              title: <span style={{ color: "red" }}>Name</span>,
+              dataIndex: "name",
+              key: "name",
+              render: (v) => <span style={{ color: "red" }}>{v}</span>,
+              sortable: true,
+              sorter: (a, b) =>
+                String(a.name).localeCompare(String(b.name), undefined, {
+                  sensitivity: "base",
+                  numeric: true,
+                }),
+              fixed: "left",
             },
-            sortable: i === 0 || i === 1,
-          }))}
-          data={Array.from({ length: 10000 }, (_, i) => ({
-            id: (i + 1).toString(),
-            ...Object.fromEntries(
-              Array.from({ length: 5 }, (_, j) => [
-                `col${j + 1}`,
-                Math.random().toString(36).substring(2, 8),
-              ])
-            ),
-          }))}
+            {
+              title: "Email",
+              dataIndex: "email",
+              key: "email",
+              sortable: true,
+            },
+            {
+              title: "Created At",
+              dataIndex: "createdAt",
+              key: "createdAt",
+              render: (v) => <span>{new Date(v).toLocaleDateString()}</span>,
+              sortable: true,
+              sorter: (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
+            },
+            {
+              title: "Status",
+              dataIndex: "status",
+              key: "status",
+              // ví dụ custom active > pending > inactive > banned
+              sortable: true,
+              sorter: (a, b) => {
+                const order = { active: 0, pending: 1, inactive: 2, banned: 3 };
+                return (order[a.status] ?? 99) - (order[b.status] ?? 99);
+              },
+            },
+            {
+              title: "Amount",
+              dataIndex: "amount",
+              key: "amount",
+              render: (v) => (
+                <span>{typeof v === "number" ? v.toFixed(2) : v}</span>
+              ),
+              sortable: true,
+              sorter: (a, b) => {
+                const va = a.amount ?? 0;
+                const vb = b.amount ?? 0;
+                return va - vb;
+              },
+            },
+            ...Array.from({ length: 5 }, (_, i) => {
+              const dataIndex = `col${i + 1}`;
+              return {
+                title: `Tag ${i + 1}`,
+                dataIndex,
+                key: dataIndex,
+                render: (v) => <span>{v}</span>,
+                // ví dụ có thể sort alphabetical:
+                sortable: true,
+                sorter: (a, b) =>
+                  String(a[dataIndex]).localeCompare(
+                    String(b[dataIndex]),
+                    undefined,
+                    {
+                      sensitivity: "base",
+                    }
+                  ),
+              };
+            }),
+          ]}
+          data={(() => {
+            const rand = ((s) => {
+              let a = s;
+              return () => {
+                a |= 0;
+                a = (a + 0x6d2b79f5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+              };
+            })(42);
+            const firstNames = [
+              "Linh",
+              "An",
+              "Minh",
+              "Huy",
+              "Thu",
+              "Trang",
+              "Hoa",
+              "Quang",
+              "Hà",
+              "Vy",
+            ];
+            const lastNames = [
+              "Nguyễn",
+              "Trần",
+              "Lê",
+              "Phạm",
+              "Hoàng",
+              "Phan",
+              "Vũ",
+              "Đặng",
+              "Bùi",
+              "Đỗ",
+            ];
+            const tags = ["alpha", "beta", "gamma", "delta", "epsilon"];
+            const now = Date.now();
+            const oneYear = 365 * 24 * 60 * 60 * 1000;
+
+            const normal = (mean = 120, sd = 30) => {
+              const u = 1 - rand();
+              const v = 1 - rand();
+              const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+              return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
+            };
+
+            return Array.from({ length: 10000 }, (_, i) => {
+              const id = (i + 1).toString(); // rowkey
+              const key = (i + 1).toString(); // rowkey
+              const first = firstNames[Math.floor(rand() * firstNames.length)];
+              const last = lastNames[Math.floor(rand() * lastNames.length)];
+              const name = `${first} ${last}`;
+              const email = `${first.toLowerCase()}.${last.toLowerCase()}${Math.floor(
+                rand() * 100
+              )}@example.com`;
+              const createdAt = new Date(
+                now - Math.floor(rand() * oneYear)
+              ).toISOString();
+              const p = rand();
+              const status =
+                p < 0.7
+                  ? "active"
+                  : p < 0.85
+                  ? "pending"
+                  : p < 0.95
+                  ? "inactive"
+                  : "banned";
+              const amount = normal();
+              return {
+                id,
+                key,
+                name,
+                email,
+                createdAt,
+                status,
+                amount,
+                col1: tags[Math.floor(rand() * tags.length)],
+                col2: tags[Math.floor(rand() * tags.length)],
+                col3: tags[Math.floor(rand() * tags.length)],
+                col4: tags[Math.floor(rand() * tags.length)],
+                col5: tags[Math.floor(rand() * tags.length)],
+              };
+            });
+          })()}
           onCheck={(items) => {
             console.log(items);
           }}
+          rowKey="key" //id để biết từng row là khác nhau
           style={{
             maxHeight: "400px",
           }}

@@ -91,7 +91,7 @@ const Ellipsis = forwardRef(
         offset={offset}
         placement={placement}
         trigger={trigger}
-        tooltip={isOverflowing ? localRef.current?.textContent : null}
+        tooltip={isOverflowing ? children : null}
       >
         {(tooltipRef, events) => (
           <Stack

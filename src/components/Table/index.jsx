@@ -35,9 +35,9 @@ const SelectHeaderCell = React.memo(
 );
 SelectHeaderCell.displayName = "SelectHeaderCell";
 
-const SelectCell = React.memo(({ item, rowKey, selectedKeys, toggleRow }) => {
+const SelectCell = React.memo(({ item, rowKey, selectedSet, toggleRow }) => {
   const key = item[rowKey];
-  const selected = selectedKeys.includes(key);
+  const selected = selectedSet.has(key);
   return <Checkbox onChange={() => toggleRow(key)} value={selected} />;
 });
 SelectCell.displayName = "SelectCell";
@@ -86,6 +86,7 @@ const HeaderCell = React.memo(
           gap: 8,
           alignItems: "center",
           justifyContent: "center",
+          cursor: col.sortable ? "pointer" : "default",
           ...stickyStyle,
         }}
         onClick={() => handleSort(col)}
@@ -111,6 +112,13 @@ const HeaderCell = React.memo(
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              transition: "background 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--hadesui-blue-6)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
             }}
           >
             <div
@@ -152,7 +160,6 @@ const Header = React.memo(
         borderBottom: "1px solid var(--hadesui-border-color)",
         background: "var(--hadesui-bg-color)",
         fontWeight: 600,
-        userSelect: "none",
         zIndex: 3,
       }),
       [totalWidth]
@@ -315,12 +322,15 @@ const Table = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const [selectedKeys, setSelectedKeys] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const selectedSet = useMemo(() => new Set(selectedKeys), [selectedKeys]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null }); // direction: "asc"|"desc"|null
+  const [sortCache] = useState(() => new Map()); // key: `${key}-${direction}` -> sorted array
   const [scrollTop, setScrollTop] = useState(0);
 
-  const startIndex = useMemo(() => {
-    return Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS);
-  }, [scrollTop]);
+  const startIndex = useMemo(
+    () => Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS),
+    [scrollTop]
+  );
 
   const endIndex = useMemo(() => {
     const visibleRows = Math.ceil(containerHeight / ROW_HEIGHT) + BUFFER_ROWS;
@@ -329,20 +339,9 @@ const Table = ({
 
   const sortedData = useMemo(() => {
     if (!sortConfig.key || !sortConfig.direction) return data;
-    const sorted = [...data].sort((a, b) => {
-      const valA = a[sortConfig.key];
-      const valB = b[sortConfig.key];
-      if (valA == null) return 1;
-      if (valB == null) return -1;
-      if (valA === valB) return 0;
-      if (sortConfig.direction === "asc") {
-        return valA > valB ? 1 : -1;
-      }
-      return valA < valB ? 1 : -1;
-    });
-    return sorted;
-  }, [data, sortConfig]);
-
+    const cacheKey = `${sortConfig.key}-${sortConfig.direction}`;
+    return sortCache.get(cacheKey) ?? data;
+  }, [sortConfig, data, sortCache]);
   const visibleData = useMemo(() => {
     return sortedData.slice(startIndex, endIndex);
   }, [sortedData, startIndex, endIndex]);
@@ -362,8 +361,7 @@ const Table = ({
   const toggleAll = useCallback(() => {
     const newKeys = allChecked ? [] : data.map((d) => d[rowKey]);
     setSelectedKeys(newKeys);
-    const selectedRows = allChecked ? [] : data;
-    onCheck?.(selectedRows);
+    onCheck?.(allChecked ? [] : data);
   }, [allChecked, data, rowKey, onCheck]);
 
   const toggleRow = useCallback(
@@ -408,7 +406,7 @@ const Table = ({
           <SelectCell
             item={item}
             rowKey={rowKey}
-            selectedKeys={selectedKeys}
+            selectedSet={selectedSet}
             toggleRow={toggleRow}
           />
         ),
@@ -423,7 +421,7 @@ const Table = ({
     someChecked,
     toggleAll,
     rowKey,
-    selectedKeys,
+    selectedSet,
     toggleRow,
   ]);
 
@@ -432,12 +430,9 @@ const Table = ({
       setBaseWidths([]);
       return;
     }
-
     const padding = 24;
     const result = columns.map((col) => {
-      if (col.id === "__select__") {
-        return SELECT_COL_W;
-      }
+      if (col.id === "__select__") return SELECT_COL_W;
       if (typeof col.width === "number") return col.width;
       let w = estimateTextWidth(col.title || "", "600 14px");
       for (let j = 0; j < Math.min(3, data.length); j++) {
@@ -453,10 +448,8 @@ const Table = ({
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     const update = () => {
-      const width = containerRef.current?.clientWidth || 0;
-      const height = containerRef.current?.clientHeight || 0;
-      setContainerWidth(width);
-      setContainerHeight(height);
+      setContainerWidth(containerRef.current.clientWidth || 0);
+      setContainerHeight(containerRef.current.clientHeight || 0);
     };
     update();
     const ro = new ResizeObserver(update);
@@ -537,24 +530,6 @@ const Table = ({
     return offsets;
   }, [columns, widths]);
 
-  const handleMouseDown = useCallback(
-    (e, idx) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (columns[idx]?.disableResize) return;
-      startX.current = e.clientX;
-      resizingIdx.current = idx;
-      const current = computeWidths(columns);
-      startWidths.current = current.reduce((acc, w, i) => {
-        acc[i] = w;
-        return acc;
-      }, {});
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    },
-    [columns, computeWidths]
-  );
-
   const handleMouseMove = useCallback(
     (e) => {
       if (resizingIdx.current === null) return;
@@ -580,6 +555,24 @@ const Table = ({
     document.removeEventListener("mouseup", handleMouseUp);
   }, [handleMouseMove]);
 
+  const handleMouseDown = useCallback(
+    (e, idx) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (columns[idx]?.disableResize) return;
+      startX.current = e.clientX;
+      resizingIdx.current = idx;
+      const current = computeWidths(columns);
+      startWidths.current = current.reduce((acc, w, i) => {
+        acc[i] = w;
+        return acc;
+      }, {});
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [columns, computeWidths, handleMouseMove, handleMouseUp]
+  );
+
   useEffect(() => {
     const block = (e) => {
       if (resizingIdx.current != null) e.preventDefault();
@@ -595,21 +588,57 @@ const Table = ({
     };
   }, [handleMouseMove, handleMouseUp]);
 
-  const handleSort = useCallback((col) => {
-    if (!col.sortable) return;
-    setSortConfig((prev) => {
-      if (prev.key === col.dataIndex) {
-        if (prev.direction === "asc") {
-          return { key: col.dataIndex, direction: "desc" };
-        } else if (prev.direction === "desc") {
-          return { key: null, direction: null };
-        } else {
-          return { key: col.dataIndex, direction: "asc" };
-        }
-      }
-      return { key: col.dataIndex, direction: "asc" };
+  const defaultCompare = useCallback((a, b, key) => {
+    const va = a[key];
+    const vb = b[key];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (va === vb) return 0;
+    if (typeof va === "number" && typeof vb === "number") return va - vb;
+    return String(va).localeCompare(String(vb), undefined, {
+      numeric: true,
+      sensitivity: "base",
     });
   }, []);
+
+  const handleSort = useCallback(
+    (col) => {
+      if (!col.sortable) return;
+      setSortConfig((prev) => {
+        let next;
+        if (prev.key === col.dataIndex) {
+          if (prev.direction === "asc")
+            next = { key: col.dataIndex, direction: "desc" };
+          else if (prev.direction === "desc")
+            next = { key: null, direction: null };
+          else next = { key: col.dataIndex, direction: "asc" };
+        } else {
+          next = { key: col.dataIndex, direction: "asc" };
+        }
+
+        if (next.key && next.direction) {
+          const cacheKey = `${next.key}-${next.direction}`;
+          if (!sortCache.has(cacheKey)) {
+            const base = [...data];
+            const comparator = (a, b) => {
+              let cmp = 0;
+              if (typeof col.sorter === "function") {
+                cmp = col.sorter(a, b);
+              } else {
+                cmp = defaultCompare(a, b, next.key);
+              }
+              return next.direction === "asc" ? cmp : -cmp;
+            };
+            const sorted = [...base].sort(comparator);
+            sortCache.set(cacheKey, sorted);
+          }
+        }
+        return next;
+      });
+    },
+    [data, defaultCompare, sortCache]
+  );
 
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
@@ -660,7 +689,7 @@ const Table = ({
               rowIdx={startIndex + index}
               columns={columns}
               widths={widths}
-              selected={selectedKeys.includes(item[rowKey])}
+              selected={selectedSet.has(item[rowKey])}
               toggleRow={toggleRow}
               leftOffsets={leftOffsets}
               rowKey={rowKey}
