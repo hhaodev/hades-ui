@@ -29,31 +29,30 @@ const Checkbox = ({
       aria-checked={checked}
       aria-disabled={disabled}
       style={{
-        width: 14,
-        height: 14,
+        width: 15,
+        height: 15,
         border: "1px solid var(--hadesui-border-color)",
         borderRadius: 3,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: disabled ? "not-allowed" : "pointer",
-        background: checked ? "var(--hadesui-blue-6)" : "white",
-        position: "relative",
+        background: checked ? "var(--hadesui-blue-6)" : "transparent",
         flexShrink: 0,
         userSelect: "none",
       }}
       {...rest}
     >
       {checked && (
-        <span style={{ color: "white", fontSize: 10, userSelect: "none" }}>
+        <span style={{ color: "white", fontSize: 11, userSelect: "none" }}>
           ✓
         </span>
       )}
       {!checked && indeterminate && (
         <div
           style={{
-            width: 8,
-            height: 8,
+            width: 7,
+            height: 7,
             background: "var(--hadesui-blue-6)",
             borderRadius: 2,
           }}

@@ -332,22 +332,29 @@ function App() {
         </DragDropProvider> */}
         <Table
           checkable
-          columns={Array.from({ length: 4 }, (_, i) => ({
+          columns={Array.from({ length: 5 }, (_, i) => ({
             title: `Column test ${i + 1}`,
             dataIndex: `col${i + 1}`,
-            width: 400,
+            render: (text, rowData, rowIndex) => {
+              console.log("🚀 ~ rowIndex:", rowIndex);
+              return <span>{text}</span>;
+            },
+            sortable: i === 0 || i === 1,
           }))}
-          data={Array.from({ length: 10 }, (_, i) => ({
-            key: (i + 1).toString(),
+          data={Array.from({ length: 10000 }, (_, i) => ({
+            id: (i + 1).toString(),
             ...Object.fromEntries(
-              Array.from({ length: 14 }, (_, j) => [
+              Array.from({ length: 5 }, (_, j) => [
                 `col${j + 1}`,
-                `Data col${j + 1}`,
+                Math.random().toString(36).substring(2, 8),
               ])
             ),
           }))}
           onCheck={(items) => {
             console.log(items);
+          }}
+          style={{
+            maxHeight: "400px",
           }}
         />
         <ResizableBox>
