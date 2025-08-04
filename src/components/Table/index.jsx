@@ -701,6 +701,7 @@ const Table = ({
 
   const filteredData = useMemo(() => {
     if (!data || data.length === 0) return [];
+    if (!hasActiveFilters) return data;
 
     return data.filter((item) => {
       for (const col of columns) {
@@ -730,7 +731,7 @@ const Table = ({
       }
       return true;
     });
-  }, [data, columns, columnFilters]);
+  }, [data, columns, columnFilters, hasActiveFilters]);
 
   useLayoutEffect(() => {
     if (!sortConfig.key || !sortConfig.direction || filteredData.length === 0) {
@@ -778,8 +779,8 @@ const Table = ({
   }, [sortedData, startIndex, endIndex]);
 
   const totalHeight = useMemo(
-    () => filteredData.length * ROW_HEIGHT,
-    [filteredData.length]
+    () => sortedData.length * ROW_HEIGHT,
+    [sortedData]
   );
 
   useLayoutEffect(() => {
