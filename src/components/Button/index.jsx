@@ -8,6 +8,7 @@ const Button = forwardRef(
       children,
       theme = "primary", // 'primary' | 'default' | 'link' | 'text' | 'dashed' | 'icon'
       disabled = false,
+      size = "medium",
       loading = false,
       onClick,
       className = "",
@@ -46,6 +47,7 @@ const Button = forwardRef(
         className={cn(
           "hds-btn",
           `hds-btn-${theme}`,
+          `hds-btn-${size}`,
           { "hds-btn-disabled": isDisabled },
           { "hds-btn-loading": loading },
           className

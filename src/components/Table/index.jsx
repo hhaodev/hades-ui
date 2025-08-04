@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  startTransition,
 } from "react";
 import Ellipsis from "../Ellipsis";
 import Checkbox from "../Checkbox";
@@ -13,18 +14,13 @@ import { CloseIcon, FilterIcon, SearchIcon } from "../Icon";
 import Dropdown from "../Dropdown";
 import Button from "../Button";
 import Input from "../Input";
+import { getTextFromNode } from "../../utils";
+import SortWorker from "../../sortWorker.js?worker";
 
 const SELECT_COL_W = 40;
 const MIN_W_COL = 100;
 const ROW_HEIGHT = 40;
 const BUFFER_ROWS = 10;
-
-function getTextFromNode(node) {
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(getTextFromNode).join("");
-  if (React.isValidElement(node)) return getTextFromNode(node.props.children);
-  return "";
-}
 
 function estimateTextWidth(text, font = "600 14px system-ui") {
   if (typeof document === "undefined") return 100;
@@ -67,7 +63,6 @@ const FilterPanel = React.memo(
           flexDirection: "column",
           gap: 12,
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         {col.searchable && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -99,14 +94,14 @@ const FilterPanel = React.memo(
             <div style={{ fontSize: 13, fontWeight: 600 }}>Filters</div>
             <div
               style={{
-                maxHeight: 140,
+                maxHeight: 200,
                 overflowY: "auto",
                 border: "1px solid var(--hadesui-border-color)",
                 borderRadius: 4,
                 padding: 6,
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 4,
               }}
             >
               {col.filters.map((f) => (
@@ -125,7 +120,18 @@ const FilterPanel = React.memo(
                     value={localSelected.includes(f.value)}
                     onChange={() => toggleOption(f.value)}
                   />
-                  <span>{f.text}</span>
+                  <span
+                    style={{
+                      background: localSelected.includes(f.value)
+                        ? "var(--hadesui-bg-selected-color)"
+                        : "transparent",
+                      padding: "4px",
+                      width: "100%",
+                      borderRadius: 6,
+                    }}
+                  >
+                    {f.text}
+                  </span>
                 </div>
               ))}
             </div>
@@ -133,7 +139,7 @@ const FilterPanel = React.memo(
         )}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <Button size="small" onClick={handleClear} theme="text">
-            Clear
+            Reset
           </Button>
           <Button size="small" onClick={handleApply}>
             Apply
@@ -178,6 +184,9 @@ const HeaderCell = React.memo(
     onFilterApply,
   }) => {
     const dropdownRef = useRef();
+    const [tempFilter, setTempFilter] = useState(
+      currentFilter ?? { search: "", selected: [] }
+    );
     const flexStyle = useMemo(
       () => (isLastColumn ? { flex: "1 1 auto" } : { flex: `0 0 ${width}px` }),
       [isLastColumn, width]
@@ -196,12 +205,12 @@ const HeaderCell = React.memo(
       [col.fixed, leftOffset]
     );
 
-    const filterState = currentFilter[col.id] ?? { search: "", selected: [] };
+    const filterState = currentFilter ?? { search: "", selected: [] };
 
     const { hasFilter, filterIconColor } = useMemo(() => {
       const active =
         (col.searchable && filterState.search?.trim() !== "") ||
-        (col.filters &&
+        ((col.filters || col.filterDropdown) &&
           Array.isArray(filterState.selected) &&
           filterState.selected.length > 0);
       return {
@@ -210,7 +219,13 @@ const HeaderCell = React.memo(
           ? "var(--hadesui-blue-6)"
           : "var(--hadesui-text2-color)",
       };
-    }, [col.searchable, col.filters, filterState.search, filterState.selected]);
+    }, [
+      col.searchable,
+      col.filters,
+      col.filterDropdown,
+      filterState.search,
+      filterState.selected,
+    ]);
 
     return (
       <div
@@ -238,49 +253,79 @@ const HeaderCell = React.memo(
             activeDirection={sortConfig.direction}
           />
         )}
-        {(col.searchable || col.filters) && (
+        {(col.searchable || col.filters || col.filterDropdown) && (
           <Dropdown
             ref={dropdownRef}
             fixedWidthPopup={false}
             placement="bottom-end"
             menu={
-              <FilterPanel
-                col={col}
-                currentFilter={currentFilter[col.id]}
-                onApply={({ search, selected }) => {
-                  onFilterApply(col, {
-                    search,
-                    selected: Array.from(selected),
-                  });
-                  dropdownRef.current.hide();
-                }}
-              />
-            }
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FilterIcon size={18} color={filterIconColor} />
-              {hasFilter && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "var(--hadesui-blue-6)",
+              col.filterDropdown ? (
+                col.filterDropdown({
+                  setSelectedKeys: (keys) => {
+                    setTempFilter((prev) => ({
+                      ...prev,
+                      selected: Array.isArray(keys) ? keys : [],
+                    }));
+                  },
+                  selectedKeys: tempFilter,
+                  confirm: () => {
+                    onFilterApply(col, {
+                      selected: Array.from(tempFilter.selected),
+                    });
+                    dropdownRef.current.hide();
+                  },
+                  clearFilters: () => {
+                    setTempFilter((prev) => ({
+                      ...prev,
+                      selected: [],
+                    }));
+                  },
+                })
+              ) : (
+                <FilterPanel
+                  col={col}
+                  currentFilter={currentFilter}
+                  onApply={({ search, selected }) => {
+                    onFilterApply(col, {
+                      search,
+                      selected: Array.from(selected),
+                    });
+                    dropdownRef.current.hide();
                   }}
                 />
-              )}
-            </div>
+              )
+            }
+          >
+            <Button
+              theme="icon"
+              style={{
+                padding: "1px 0px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}
+              >
+                <FilterIcon size={18} color={filterIconColor} />
+                {hasFilter && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "var(--hadesui-blue-6)",
+                    }}
+                  />
+                )}
+              </div>
+            </Button>
           </Dropdown>
         )}
         {col.resize && (
@@ -367,7 +412,7 @@ const Header = React.memo(
             handleMouseDown={handleMouseDown}
             index={i}
             onFilterApply={onFilterApply}
-            currentFilter={currentFilter}
+            currentFilter={currentFilter[col.id]}
           />
         ))}
       </div>
@@ -418,12 +463,7 @@ const Cell = React.memo(
     );
 
     return (
-      <div
-        style={flexStyle}
-        onClick={(e) => {
-          if (isSelectCol) e.stopPropagation();
-        }}
-      >
+      <div style={flexStyle}>
         {isSelectCol ? (
           typeof col.render === "function" ? (
             col.render(null, item, rowIdx)
@@ -499,7 +539,8 @@ const Table = ({
   rowKey = "id",
   onCheck,
   checkable,
-  loading,
+  // loading = true,
+  loading = false,
   style = {},
 }) => {
   const containerRef = useRef(null);
@@ -518,6 +559,22 @@ const Table = ({
   const [scrollTop, setScrollTop] = useState(0);
 
   const [columnFilters, setColumnFilters] = useState({});
+  const [sorting, setSorting] = useState(false);
+  const [sortedData, setSortedData] = useState([]);
+  const sortWorkerRef = useRef(null);
+
+  useEffect(() => {
+    sortWorkerRef.current = new SortWorker();
+    sortWorkerRef.current.onmessage = (e) => {
+      const { cacheKey, sorted } = e.data;
+      startTransition(() => {
+        sortCache.set(cacheKey, sorted);
+        setSortedData(sorted);
+      });
+      setSorting(false);
+    };
+    return () => sortWorkerRef.current?.terminate();
+  }, []);
 
   const onFilterApply = useCallback((col, filter) => {
     setColumnFilters((prev) => ({
@@ -546,6 +603,13 @@ const Table = ({
       sensitivity: "base",
     });
   }, []);
+
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(columnFilters).some(
+      (filter) =>
+        filter.search !== "" || (filter.selected && filter.selected.length > 0)
+    );
+  }, [columnFilters]);
 
   const startIndex = useMemo(
     () => Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS),
@@ -643,7 +707,11 @@ const Table = ({
         const f = columnFilters[col.id];
         if (!f) continue;
 
-        if (col.filters && Array.isArray(f.selected) && f.selected.length) {
+        if (
+          (col.filters || col.filterDropdown) &&
+          Array.isArray(f.selected) &&
+          f.selected.length
+        ) {
           const passesAny = f.selected.some((val) => {
             if (typeof col.onFilter === "function") {
               return col.onFilter(val, item);
@@ -664,36 +732,45 @@ const Table = ({
     });
   }, [data, columns, columnFilters]);
 
-  const sortedData = useMemo(() => {
-    const source = filteredData;
-    if (!sortConfig.key || !sortConfig.direction) return source;
-    const cacheKey = `${sortConfig.key}-${
-      sortConfig.direction
-    }-${JSON.stringify(Object.entries(columnFilters).sort())}`;
+  useLayoutEffect(() => {
+    if (!sortConfig.key || !sortConfig.direction || filteredData.length === 0) {
+      setSortedData(filteredData);
+      return;
+    }
 
-    if (sortCache.has(cacheKey)) return sortCache.get(cacheKey);
+    const cacheKey = hasActiveFilters
+      ? `${sortConfig.key}-${sortConfig.direction}-${JSON.stringify(
+          Object.entries(columnFilters).sort()
+        )}`
+      : `${sortConfig.key}-${sortConfig.direction}`;
 
-    const col = columns.find((c) => c.dataIndex === sortConfig.key);
-    const base = [...source];
-    const comparator = (a, b) => {
-      let cmp = 0;
-      if (col && typeof col.sorter === "function") {
-        cmp = col.sorter(a, b);
-      } else {
-        cmp = defaultCompare(a, b, sortConfig.key);
-      }
-      return sortConfig.direction === "asc" ? cmp : -cmp;
-    };
-    const sorted = base.sort(comparator);
-    sortCache.set(cacheKey, sorted);
-    return sorted;
+    if (sortCache.has(cacheKey)) {
+      setSortedData(sortCache.get(cacheKey));
+    } else {
+      setSorting(true);
+      sortWorkerRef.current?.postMessage({
+        type: "sort",
+        data: filteredData,
+        key: sortConfig.key,
+        direction: sortConfig.direction,
+        sorterFnString:
+          typeof columns.find((c) => c.dataIndex === sortConfig.key)?.sorter ===
+          "function"
+            ? columns
+                .find((c) => c.dataIndex === sortConfig.key)
+                ?.sorter.toString()
+            : defaultCompare.toString(),
+        cacheKey,
+      });
+    }
   }, [
     filteredData,
     sortConfig,
-    sortCache,
-    columns,
-    defaultCompare,
+    hasActiveFilters,
     columnFilters,
+    sortCache,
+    defaultCompare,
+    columns,
   ]);
 
   const visibleData = useMemo(() => {
@@ -716,9 +793,23 @@ const Table = ({
       if (typeof col.width === "number") return col.width;
       let w = estimateTextWidth(col.title || "", "600 14px");
       for (let j = 0; j < Math.min(3, data.length); j++) {
-        const cell = data[j][col.dataIndex];
-        if (cell != null)
-          w = Math.max(w, estimateTextWidth(String(cell), "400 14px"));
+        let cellContent;
+        if (col.render) {
+          cellContent = col.render(data[j][col.dataIndex], data[j], j);
+          if (typeof cellContent === "string") {
+            w = Math.max(w, estimateTextWidth(cellContent, "400 14px"));
+          } else if (typeof cellContent === "number" || cellContent == null) {
+            w = Math.max(w, estimateTextWidth(String(cellContent), "400 14px"));
+          } else {
+            const textContent = getTextFromNode(cellContent);
+            w = Math.max(w, estimateTextWidth(textContent, "400 14px"));
+          }
+        } else {
+          const cell = data[j][col.dataIndex];
+          if (cell != null) {
+            w = Math.max(w, estimateTextWidth(String(cell), "400 14px"));
+          }
+        }
       }
       return Math.ceil(w + padding);
     });
@@ -794,6 +885,7 @@ const Table = ({
     () => computeWidths(columns),
     [computeWidths, columns]
   );
+
   const totalWidth = useMemo(() => widths.reduce((a, b) => a + b, 0), [widths]);
 
   const leftOffsets = useMemo(() => {
@@ -868,43 +960,18 @@ const Table = ({
     };
   }, [handleMouseMove, handleMouseUp]);
 
-  const handleSort = useCallback(
-    (col) => {
-      if (!col.sortable) return;
-      setSortConfig((prev) => {
-        let next;
-        if (prev.key === col.dataIndex) {
-          if (prev.direction === "asc")
-            next = { key: col.dataIndex, direction: "desc" };
-          else if (prev.direction === "desc")
-            next = { key: null, direction: null };
-          else next = { key: col.dataIndex, direction: "asc" };
-        } else {
-          next = { key: col.dataIndex, direction: "asc" };
-        }
-
-        if (next.key && next.direction) {
-          const cacheKey = `${next.key}-${next.direction}`;
-          if (!sortCache.has(cacheKey)) {
-            const base = [...data];
-            const comparator = (a, b) => {
-              let cmp = 0;
-              if (typeof col.sorter === "function") {
-                cmp = col.sorter(a, b);
-              } else {
-                cmp = defaultCompare(a, b, next.key);
-              }
-              return next.direction === "asc" ? cmp : -cmp;
-            };
-            const sorted = [...base].sort(comparator);
-            sortCache.set(cacheKey, sorted);
-          }
-        }
-        return next;
-      });
-    },
-    [data, defaultCompare, sortCache]
-  );
+  const handleSort = useCallback((col) => {
+    if (!col.sortable) return;
+    setSortConfig((prev) => {
+      if (prev.key === col.dataIndex) {
+        if (prev.direction === "asc")
+          return { key: col.dataIndex, direction: "desc" };
+        if (prev.direction === "desc") return { key: null, direction: null };
+        return { key: col.dataIndex, direction: "asc" };
+      }
+      return { key: col.dataIndex, direction: "asc" };
+    });
+  }, []);
 
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
@@ -914,51 +981,45 @@ const Table = ({
 
   return (
     <div
-      ref={containerRef}
       style={{
-        border: "1px solid var(--hadesui-border-color)",
+        position: "relative",
+        overflow: "hidden",
         borderRadius: 6,
-        overflowX: "auto",
-        overflowY: "auto",
-        fontSize: 14,
-        maxHeight: "100vh",
-        ...style,
       }}
-      onScroll={handleScroll}
     >
-      <Header
-        columns={columns}
-        widths={widths}
-        leftOffsets={leftOffsets}
-        sortConfig={sortConfig}
-        handleSort={handleSort}
-        handleMouseDown={handleMouseDown}
-        totalWidth={totalWidth}
-        onFilterApply={onFilterApply}
-        currentFilter={columnFilters}
-      />
-      {loading && (
-        <div
-          style={{
-            position: "sticky",
-            left: 0,
-            padding: 12,
-            textAlign: "center",
-            fontSize: 14,
-            color: "var(--hadesui-text2-color)",
-            width: "100%",
-          }}
-        >
-          Loading...
-        </div>
-      )}
-      {!loading && (
+      <div
+        ref={containerRef}
+        style={{
+          position: "relative",
+          border: "1px solid var(--hadesui-border-color)",
+          borderRadius: 6,
+          overflowX: loading ? "hidden" : "auto",
+          overflowY: loading ? "hidden" : "auto",
+          fontSize: 14,
+          maxHeight: "100vh",
+          pointerEvents: loading ? "all" : "auto",
+          ...style,
+        }}
+        onScroll={handleScroll}
+      >
+        <Header
+          columns={columns}
+          widths={widths}
+          leftOffsets={leftOffsets}
+          sortConfig={sortConfig}
+          handleSort={handleSort}
+          handleMouseDown={handleMouseDown}
+          totalWidth={totalWidth}
+          onFilterApply={onFilterApply}
+          currentFilter={columnFilters}
+        />
         <React.Fragment>
           {visibleData?.length === 0 ? (
             <div
               style={{
                 position: "sticky",
                 left: 0,
+                height: "100%",
                 padding: 12,
                 textAlign: "center",
                 fontSize: 14,
@@ -1001,6 +1062,50 @@ const Table = ({
             </div>
           )}
         </React.Fragment>
+      </div>
+      {(loading || sorting) && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.3)",
+            backdropFilter: "blur(1px)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+            pointerEvents: "all",
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              border: "5px solid transparent",
+              borderTopColor: "var(--hadesui-gray-1)",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 14,
+              color: "var(--hadesui-gray-1)",
+            }}
+          >
+            Loading...
+          </div>
+
+          <style>
+            {`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+            `}
+          </style>
+        </div>
       )}
     </div>
   );

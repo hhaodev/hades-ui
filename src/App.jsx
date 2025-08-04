@@ -31,6 +31,7 @@ import {
   XIcon,
 } from "./components";
 import { useTheme } from "./theme/useTheme";
+import { formatDate } from "./utils";
 
 const menu = [
   {
@@ -359,11 +360,74 @@ function App() {
               title: "Created At",
               dataIndex: "createdAt",
               key: "createdAt",
-              render: (v) => <span>{new Date(v).toLocaleDateString()}</span>,
+              render: (v) => <span>{formatDate(v, "DD-MM-YYYY")}</span>,
               sortable: true,
               sorter: (a, b) =>
                 new Date(a.createdAt).getTime() -
                 new Date(b.createdAt).getTime(),
+              filterDropdown: ({
+                setSelectedKeys,
+                selectedKeys,
+                confirm,
+                clearFilters,
+              }) => {
+                return (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                      padding: 8,
+                      width: "250px",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>
+                      Custom filter
+                    </div>
+                    <DateRangePicker
+                      value={selectedKeys?.selected[0]}
+                      onChange={(value) =>
+                        setSelectedKeys(
+                          value ? [{ start: value.start, end: value.end }] : [] // required array => return array[0] at value in OnFilter
+                        )
+                      }
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <Button
+                        theme="text"
+                        onClick={() => clearFilters()}
+                        size="small"
+                      >
+                        Reset
+                      </Button>
+                      <Button onClick={() => confirm()} size="small">
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                );
+              },
+              onFilter: (value, record) => {
+                // value expected: { start: string|Date, end: string|Date }
+                if (!value || !value.start || !value.end) return true;
+
+                const recordDate = new Date(record.createdAt);
+                if (isNaN(recordDate.getTime())) return false;
+
+                const startDay = new Date(value.start);
+                startDay.setHours(0, 0, 0, 0);
+
+                const endDay = new Date(value.end);
+                endDay.setHours(23, 59, 59, 999);
+
+                return recordDate >= startDay && recordDate <= endDay;
+              },
             },
             {
               title: "Status",
@@ -411,16 +475,7 @@ function App() {
                 dataIndex,
                 key: dataIndex,
                 render: (v) => <span>{v}</span>,
-                // ví dụ có thể sort alphabetical:
                 sortable: true,
-                sorter: (a, b) =>
-                  String(a[dataIndex]).localeCompare(
-                    String(b[dataIndex]),
-                    undefined,
-                    {
-                      sensitivity: "base",
-                    }
-                  ),
               };
             }),
           ]}
@@ -470,7 +525,7 @@ function App() {
               return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
             };
 
-            return Array.from({ length: 10000 }, (_, i) => {
+            return Array.from({ length: 100000 }, (_, i) => {
               const id = (i + 1).toString(); // rowkey
               const key = (i + 1).toString(); // rowkey
               const first = firstNames[Math.floor(rand() * firstNames.length)];

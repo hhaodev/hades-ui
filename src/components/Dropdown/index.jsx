@@ -272,7 +272,7 @@ const Dropdown = forwardRef(function Dropdown(
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack id={drdId}>
+          <Stack onClick={(e) => e.stopPropagation()} id={drdId}>
             <Stack
               ref={dropdownRef}
               style={{

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 
 function getElement(refOrEl) {
   if (!refOrEl) return document.body;
@@ -159,4 +159,11 @@ export function disableBodyScrollSafe() {
       else el.setAttribute("tabindex", prev);
     });
   };
+}
+
+export function getTextFromNode(node) {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(getTextFromNode).join("");
+  if (React.isValidElement(node)) return getTextFromNode(node.props.children);
+  return "";
 }

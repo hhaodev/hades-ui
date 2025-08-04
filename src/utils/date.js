@@ -126,8 +126,15 @@ const monthsFull = [
 ];
 const monthsShort = monthsFull.map((m) => m.slice(0, 3));
 
-export const formatDate = (date, format = DEFAULT_FORMAT) => {
-  if (!(date instanceof Date) || isNaN(date)) return "";
+export const formatDate = (input, format = DEFAULT_FORMAT) => {
+  let date;
+  if (input instanceof Date) {
+    date = input;
+  } else if (typeof input === "string" || typeof input === "number") {
+    date = new Date(input);
+  } else {
+    return "";
+  }
 
   const pad = (num) => String(num).padStart(2, "0");
   const hours24 = date.getHours();
