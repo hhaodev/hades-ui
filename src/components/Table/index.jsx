@@ -989,15 +989,15 @@ const Table = ({
     >
       <div
         ref={containerRef}
+        inert={loading || sorting ? "" : undefined}
         style={{
           position: "relative",
           border: "1px solid var(--hadesui-border-color)",
           borderRadius: 6,
-          overflowX: loading ? "hidden" : "auto",
-          overflowY: loading ? "hidden" : "auto",
+          overflowX: "auto",
+          overflowY: "auto",
           fontSize: 14,
           maxHeight: "100vh",
-          pointerEvents: loading ? "all" : "auto",
           ...style,
         }}
         onScroll={handleScroll}
