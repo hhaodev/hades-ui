@@ -37,16 +37,19 @@ const Checkbox = ({
         alignItems: "center",
         justifyContent: "center",
         cursor: disabled ? "not-allowed" : "pointer",
-        background: checked ? "var(--hadesui-blue-6)" : "transparent",
+        background: checked
+          ? "var(--hadesui-blue-6)"
+          : "var(--hadesui-bg-checkbox)",
         flexShrink: 0,
         userSelect: "none",
+        overflow: "hidden",
       }}
       {...rest}
     >
       {checked && (
-        <span style={{ color: "white", fontSize: 11, userSelect: "none" }}>
+        <div style={{ color: "white", fontSize: 11, userSelect: "none" }}>
           ✓
-        </span>
+        </div>
       )}
       {!checked && indeterminate && (
         <div

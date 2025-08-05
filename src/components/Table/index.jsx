@@ -184,6 +184,7 @@ const HeaderCell = React.memo(
     onFilterApply,
   }) => {
     const dropdownRef = useRef();
+    const [isHovered, setIsHovered] = useState(false);
     const [tempFilter, setTempFilter] = useState(
       currentFilter ?? { search: "", selected: [] }
     );
@@ -199,7 +200,7 @@ const HeaderCell = React.memo(
               position: "sticky",
               left: leftOffset,
               zIndex: 3,
-              background: "var(--hadesui-bg-color)",
+              // background: "var(--hadesui-bg-color)",
             }
           : {},
       [col.fixed, leftOffset]
@@ -234,7 +235,10 @@ const HeaderCell = React.memo(
           minWidth: isSelectCol ? SELECT_COL_W : MIN_W_COL,
           padding: "8px 12px",
           boxSizing: "border-box",
-          borderRight: "1px solid var(--hadesui-border-color)",
+          // borderRight: "1px solid var(--hadesui-border-color)",
+          background: isHovered
+            ? "var(--hadesui-bg-header-table-hovered)"
+            : "var(--hadesui-bg-header-table)",
           position: "relative",
           overflow: "hidden",
           display: "flex",
@@ -242,9 +246,12 @@ const HeaderCell = React.memo(
           alignItems: "center",
           justifyContent: "center",
           cursor: col.sortable ? "pointer" : "default",
+          transition: "background 0.2s ease",
           ...stickyStyle,
         }}
-        onClick={() => handleSort(col)}
+        onClick={() => !isSelectCol && handleSort(col)}
+        onMouseEnter={() => !isSelectCol && setIsHovered(true)}
+        onMouseLeave={() => !isSelectCol && setIsHovered(false)}
       >
         {isSelectCol ? col.title : <Ellipsis>{col.title}</Ellipsis>}
         {col.sortable && (
@@ -355,7 +362,7 @@ const HeaderCell = React.memo(
               style={{
                 width: 2,
                 height: "60%",
-                background: "var(--hadesui-bg-selected-color)",
+                background: "var(--hadesui-bg-resize)",
                 borderRadius: 1,
               }}
             />
@@ -429,6 +436,7 @@ const Cell = React.memo(
     width,
     isSelectCol,
     selected,
+    hovered,
     leftOffset,
     isLastColumn,
   }) => {
@@ -439,12 +447,13 @@ const Cell = React.memo(
               position: "sticky",
               left: leftOffset,
               zIndex: 2,
-              background: selected
-                ? "var(--hadesui-bg-selected-color)"
-                : "var(--hadesui-bg-color)",
+              background:
+                selected || hovered
+                  ? "var(--hadesui-bg-selected-color)"
+                  : "var(--hadesui-bg-color)",
             }
           : {},
-      [col.fixed, leftOffset, selected]
+      [col.fixed, leftOffset, selected, hovered]
     );
 
     const flexStyle = useMemo(
@@ -453,10 +462,11 @@ const Cell = React.memo(
         minWidth: isSelectCol ? SELECT_COL_W : MIN_W_COL,
         padding: "8px 12px",
         boxSizing: "border-box",
-        borderRight: "1px solid var(--hadesui-border-color)",
+        // borderRight: "1px solid var(--hadesui-border-color)",
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
+        transition: "background 0.2s ease",
         ...stickyStyle,
       }),
       [isSelectCol, width, stickyStyle, isLastColumn]
@@ -494,6 +504,7 @@ const Row = React.memo(
     totalWidth,
     checkable,
   }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const rowStyle = useMemo(
       () => ({
         display: "flex",
@@ -504,16 +515,22 @@ const Row = React.memo(
         minHeight: ROW_HEIGHT,
         maxHeight: ROW_HEIGHT,
         borderBottom: "1px solid var(--hadesui-border-color)",
-        background: selected
-          ? "var(--hadesui-bg-selected-color)"
-          : "var(--hadesui-bg-color)",
+        background:
+          selected || isHovered
+            ? "var(--hadesui-bg-selected-color)"
+            : "var(--hadesui-bg-color)",
         cursor: checkable ? "pointer" : "default",
+        transition: "background 0.2s ease",
       }),
-      [selected, totalWidth, checkable]
+      [selected, totalWidth, checkable, isHovered]
     );
 
     return (
-      <div style={rowStyle} onClick={() => toggleRow(item[rowKey])}>
+      <div
+        style={rowStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {columns.map((col, i) => (
           <Cell
             key={col.id}
@@ -523,6 +540,7 @@ const Row = React.memo(
             width={widths[i]}
             isSelectCol={col.id === "__select__"}
             selected={selected}
+            hovered={isHovered}
             leftOffset={leftOffsets[i]}
             isLastColumn={i === columns.length - 1}
           />
@@ -985,7 +1003,9 @@ const Table = ({
       style={{
         position: "relative",
         overflow: "hidden",
-        borderRadius: 6,
+        borderRadius: 8,
+        boxShadow: "0 1px 8px var(--hadesui-boxshadow-color)",
+        // border: "1px solid var(--hadesui-border-color)",
       }}
     >
       <div
@@ -993,8 +1013,6 @@ const Table = ({
         inert={loading || sorting ? "" : undefined}
         style={{
           position: "relative",
-          border: "1px solid var(--hadesui-border-color)",
-          borderRadius: 6,
           overflowX: "auto",
           overflowY: "auto",
           fontSize: 14,

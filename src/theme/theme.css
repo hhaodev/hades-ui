@@ -149,7 +149,11 @@ html.light {
     --hadesui-bg-chip-tab-color: var(--hadesui-gray-4);
     --hadesui-bg-chip-tab-hover: var(--hadesui-gray-5);
     --hadesui-bg-nav-color: var(--hadesui-gray-1-5);
-    --hadesui-bg-selected-color: var(--hadesui-gray-4);
+    --hadesui-bg-selected-color: var(--hadesui-gray-3);
+    --hadesui-bg-header-table: #eeeeee;
+    --hadesui-bg-header-table-hovered: #e6e6e6;
+    --hadesui-bg-checkbox: var(--hadesui-gray-1);
+    --hadesui-bg-resize: var(--hadesui-gray-5)
 }
 
 /* ===== Dark Mode Overrides ===== */
@@ -180,7 +184,11 @@ html.dark {
     --hadesui-bg-chip-tab-color: var(--hadesui-gray-10);
     --hadesui-bg-chip-tab-hover: var(--hadesui-gray-8-5);
     --hadesui-bg-nav-color: var(--hadesui-gray-10);
-    --hadesui-bg-selected-color: var(--hadesui-gray-8-5);
+    --hadesui-bg-selected-color: #303030;
+    --hadesui-bg-header-table: #333333;
+    --hadesui-bg-header-table-hovered: #3a3a3a;
+    --hadesui-bg-checkbox: var(--hadesui-gray-9);
+    --hadesui-bg-resize: var(--hadesui-gray-8-5)
 }
 
 /* ===== Global Styles (using tokens) ===== */
