@@ -184,7 +184,6 @@ const HeaderCell = React.memo(
     onFilterApply,
   }) => {
     const dropdownRef = useRef();
-    const [isHovered, setIsHovered] = useState(false);
     const [tempFilter, setTempFilter] = useState(
       currentFilter ?? { search: "", selected: [] }
     );
@@ -236,9 +235,7 @@ const HeaderCell = React.memo(
           padding: "8px 12px",
           boxSizing: "border-box",
           // borderRight: "1px solid var(--hadesui-border-color)",
-          background: isHovered
-            ? "var(--hadesui-bg-header-table-hovered)"
-            : "var(--hadesui-bg-header-table)",
+          background: "var(--hadesui-bg-header-table)",
           position: "relative",
           overflow: "hidden",
           display: "flex",
@@ -250,8 +247,15 @@ const HeaderCell = React.memo(
           ...stickyStyle,
         }}
         onClick={() => !isSelectCol && handleSort(col)}
-        onMouseEnter={() => !isSelectCol && setIsHovered(true)}
-        onMouseLeave={() => !isSelectCol && setIsHovered(false)}
+        onMouseEnter={(e) => {
+          if (isSelectCol) return;
+          e.currentTarget.style.background =
+            "var(--hadesui-bg-header-table-hovered)";
+        }}
+        onMouseLeave={(e) => {
+          if (isSelectCol) return;
+          e.currentTarget.style.background = "var(--hadesui-bg-header-table)";
+        }}
       >
         {isSelectCol ? col.title : <Ellipsis>{col.title}</Ellipsis>}
         {col.sortable && (
@@ -498,9 +502,7 @@ const Row = React.memo(
     columns,
     widths,
     selected,
-    toggleRow,
     leftOffsets,
-    rowKey,
     totalWidth,
     checkable,
   }) => {
@@ -1070,9 +1072,7 @@ const Table = ({
                     columns={columns}
                     widths={widths}
                     selected={selectedSet.has(item[rowKey])}
-                    toggleRow={toggleRow}
                     leftOffsets={leftOffsets}
-                    rowKey={rowKey}
                     totalWidth={totalWidth}
                     checkable={checkable}
                   />

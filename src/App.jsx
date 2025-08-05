@@ -260,7 +260,6 @@ function App() {
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
-                padding: 8,
                 width: "250px",
               }}
             >
