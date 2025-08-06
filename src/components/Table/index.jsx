@@ -687,7 +687,7 @@ const Table = ({
       setSelectedKeys((prev) => {
         let next;
         if (checkable === "radio") {
-          next = [key];
+          next = prev[0] === key ? [] : [key];
         } else {
           const exists = prev.includes(key);
           next = exists ? prev.filter((k) => k !== key) : [...prev, key];
