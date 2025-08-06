@@ -241,6 +241,12 @@ function App() {
         searchable: true,
       },
       {
+        title: "Description",
+        dataIndex: "description",
+        key: "Description",
+        maxRowText: 4,
+      },
+      {
         title: "Created At",
         dataIndex: "createdAt",
         key: "createdAt",
@@ -406,7 +412,7 @@ function App() {
       return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
     };
 
-    return Array.from({ length: 100000 }, (_, i) => {
+    return Array.from({ length: 10000 }, (_, i) => {
       const id = (i + 1).toString();
       const key = id;
       const first = firstNames[Math.floor(rand() * firstNames.length)];
@@ -429,6 +435,20 @@ function App() {
           : "banned";
       const amount = normal();
 
+      const longText = [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "Phasellus nec iaculis mauris.",
+        "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices.",
+        "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices.",
+        "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices.",
+      ];
+      const description =
+        i % 5 === 0
+          ? longText.join(" ")
+          : i % 3 === 0
+          ? longText[0]
+          : longText[0].slice(0, 20);
+
       return {
         id,
         key,
@@ -437,6 +457,7 @@ function App() {
         createdAt,
         status,
         amount,
+        description,
         col1: tags[Math.floor(rand() * tags.length)],
         col2: tags[Math.floor(rand() * tags.length)],
         col3: tags[Math.floor(rand() * tags.length)],
@@ -570,7 +591,7 @@ function App() {
           }}
           rowKey="key" //id để biết từng row là khác nhau
           style={{
-            maxHeight: "400px",
+            maxHeight: "500px",
           }}
         />
         <ResizableBox>

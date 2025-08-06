@@ -483,7 +483,7 @@ const Cell = React.memo(
             col.render(null, item, rowIdx)
           ) : null
         ) : (
-          <Ellipsis>
+          <Ellipsis row={col.maxRowText ?? 1}>
             {typeof col.render === "function"
               ? col.render(item[col.dataIndex], item, rowIdx)
               : item[col.dataIndex]}
@@ -505,8 +505,20 @@ const Row = React.memo(
     leftOffsets,
     totalWidth,
     checkable,
+    measureRow,
   }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const rowRef = useRef(null);
+
+    useLayoutEffect(() => {
+      if (rowRef.current) {
+        measureRow(
+          rowIdx,
+          rowRef.current.getBoundingClientRect().height || ROW_HEIGHT
+        );
+      }
+    }, [rowIdx, measureRow, widths]);
+
     const rowStyle = useMemo(
       () => ({
         display: "flex",
@@ -515,7 +527,7 @@ const Row = React.memo(
             ? totalWidth
             : "100%",
         minHeight: ROW_HEIGHT,
-        maxHeight: ROW_HEIGHT,
+        height: "100%",
         borderBottom: "1px solid var(--hadesui-border-color)",
         background:
           selected || isHovered
@@ -529,6 +541,7 @@ const Row = React.memo(
 
     return (
       <div
+        ref={rowRef}
         style={rowStyle}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -583,6 +596,23 @@ const Table = ({
   const [sortedData, setSortedData] = useState([]);
   const sortWorkerRef = useRef(null);
 
+  const rowHeightsRef = useRef({});
+  const [rowHeightsVersion, setRowHeightsVersion] = useState(0);
+  const rafRef = useRef(null);
+
+  const measureRow = useCallback((index, height) => {
+    if (rowHeightsRef.current[index] !== height) {
+      rowHeightsRef.current[index] = height;
+
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = null;
+          setRowHeightsVersion((v) => v + 1);
+        });
+      }
+    }
+  }, []);
+
   useEffect(() => {
     sortWorkerRef.current = new SortWorker();
     sortWorkerRef.current.onmessage = (e) => {
@@ -630,16 +660,6 @@ const Table = ({
         filter.search !== "" || (filter.selected && filter.selected.length > 0)
     );
   }, [columnFilters]);
-
-  const startIndex = useMemo(
-    () => Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS),
-    [scrollTop]
-  );
-
-  const endIndex = useMemo(() => {
-    const visibleRows = Math.ceil(containerHeight / ROW_HEIGHT) + BUFFER_ROWS;
-    return Math.min(data.length, startIndex + visibleRows);
-  }, [containerHeight, startIndex, data.length]);
 
   const allChecked = useMemo(
     () => selectedKeys.length === data.length && data.length > 0,
@@ -794,26 +814,29 @@ const Table = ({
     columns,
   ]);
 
-  const visibleData = useMemo(() => {
-    return sortedData.slice(startIndex, endIndex);
-  }, [sortedData, startIndex, endIndex]);
-
-  const totalHeight = useMemo(
-    () => sortedData.length * ROW_HEIGHT,
-    [sortedData]
-  );
-
   useLayoutEffect(() => {
-    if (columns.length === 0) {
+    if (!containerRef.current || columns.length === 0) {
       setBaseWidths([]);
       return;
     }
+
+    const MIN_W_COL = 100;
+    const MAX_W_COL = 400;
+
+    const containerW = containerRef.current.clientWidth || 0;
     const padding = 24;
-    const result = columns.map((col) => {
+
+    let measured = columns.map((col) => {
       if (col.id === "__select__") return SELECT_COL_W;
-      if (typeof col.width === "number") return col.width;
+
+      if (typeof col.width === "number") {
+        const minW = col.minWidth ?? MIN_W_COL;
+        const maxW = col.maxWidth ?? MAX_W_COL;
+        return Math.min(maxW, Math.max(minW, col.width));
+      }
+
       let w = estimateTextWidth(col.title || "", "600 14px");
-      for (let j = 0; j < Math.min(3, data.length); j++) {
+      for (let j = 0; j < Math.min(10, data.length); j++) {
         let cellContent;
         if (col.render) {
           cellContent = col.render(data[j][col.dataIndex], data[j], j);
@@ -832,9 +855,31 @@ const Table = ({
           }
         }
       }
-      return Math.ceil(w + padding);
+
+      return Math.min(MAX_W_COL, Math.max(MIN_W_COL, Math.ceil(w + padding)));
     });
-    setBaseWidths(result);
+
+    let total = measured.reduce((a, b) => a + b, 0);
+    if (total <= containerW) {
+      setBaseWidths(measured);
+      return;
+    }
+
+    let overSize = total - containerW;
+    let adjustableCols = measured
+      .map((w, i) => ({ i, w, extra: w - MIN_W_COL }))
+      .filter((c) => c.extra > 0);
+
+    let totalExtra = adjustableCols.reduce((a, b) => a + b.extra, 0);
+
+    if (totalExtra > 0) {
+      adjustableCols.forEach((c) => {
+        const reduceBy = Math.round((c.extra / totalExtra) * overSize);
+        measured[c.i] = Math.max(MIN_W_COL, c.w - reduceBy);
+      });
+    }
+
+    setBaseWidths(measured);
   }, [columns, data]);
 
   useLayoutEffect(() => {
@@ -1000,6 +1045,50 @@ const Table = ({
     }
   }, []);
 
+  function findIndexForOffset(positions, offset) {
+    let low = 0,
+      high = positions.length - 1;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      if (positions[mid] < offset) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
+  }
+
+  const positions = useMemo(() => {
+    let acc = 0;
+    const arr = [];
+    for (let i = 0; i < sortedData.length; i++) {
+      arr[i] = acc;
+      acc += rowHeightsRef.current[i] ?? ROW_HEIGHT;
+    }
+    return arr;
+  }, [sortedData, rowHeightsVersion]);
+
+  const totalHeight =
+    positions[positions.length - 1] +
+    (rowHeightsRef.current[sortedData.length - 1] ?? ROW_HEIGHT);
+
+  const startIndex = useMemo(() => {
+    return Math.max(0, findIndexForOffset(positions, scrollTop) - BUFFER_ROWS);
+  }, [positions, scrollTop]);
+
+  const endIndex = useMemo(() => {
+    const lastVisible = findIndexForOffset(
+      positions,
+      scrollTop + containerHeight
+    );
+    return Math.min(sortedData.length, lastVisible + BUFFER_ROWS);
+  }, [positions, scrollTop, containerHeight, sortedData]);
+
+  const visibleData = useMemo(() => {
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, startIndex, endIndex]);
+
   return (
     <div
       style={{
@@ -1060,7 +1149,7 @@ const Table = ({
               <div
                 style={{
                   position: "absolute",
-                  top: startIndex * ROW_HEIGHT,
+                  top: positions[startIndex] ?? 0,
                   width: "100%",
                 }}
               >
@@ -1075,6 +1164,7 @@ const Table = ({
                     leftOffsets={leftOffsets}
                     totalWidth={totalWidth}
                     checkable={checkable}
+                    measureRow={measureRow}
                   />
                 ))}
               </div>
