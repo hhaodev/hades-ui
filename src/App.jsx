@@ -220,6 +220,13 @@ function App() {
   const columns = useMemo(() => {
     return [
       {
+        title: "STT",
+        key: "stt",
+        render: (_, __, index) => <span>{index + 1}</span>,
+        minWidth: 60,
+        width: 60,
+      },
+      {
         title: <span style={{ color: "red" }}>Name</span>,
         dataIndex: "name",
         key: "name",
@@ -583,7 +590,7 @@ function App() {
           </Droppable>
         </DragDropProvider> */}
         <Table
-          checkable
+          checkable="radio" //radio || true || checkbox // default === true === checkbox
           columns={columns}
           data={dataTable}
           onCheck={(items) => {

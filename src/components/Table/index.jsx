@@ -162,11 +162,15 @@ const SelectHeaderCell = React.memo(
 );
 SelectHeaderCell.displayName = "SelectHeaderCell";
 
-const SelectCell = React.memo(({ item, rowKey, selectedSet, toggleRow }) => {
-  const key = item[rowKey];
-  const selected = selectedSet.has(key);
-  return <Checkbox onChange={() => toggleRow(key)} value={selected} />;
-});
+const SelectCell = React.memo(
+  ({ type, item, rowKey, selectedSet, toggleRow }) => {
+    const key = item[rowKey];
+    const selected = selectedSet.has(key);
+    return (
+      <Checkbox type={type} onChange={() => toggleRow(key)} value={selected} />
+    );
+  }
+);
 SelectCell.displayName = "SelectCell";
 
 const HeaderCell = React.memo(
@@ -231,7 +235,7 @@ const HeaderCell = React.memo(
       <div
         style={{
           ...flexStyle,
-          minWidth: isSelectCol ? SELECT_COL_W : MIN_W_COL,
+          minWidth: isSelectCol ? SELECT_COL_W : undefined,
           padding: "8px 12px",
           boxSizing: "border-box",
           // borderRight: "1px solid var(--hadesui-border-color)",
@@ -463,7 +467,7 @@ const Cell = React.memo(
     const flexStyle = useMemo(
       () => ({
         ...(isLastColumn ? { flex: "1 1 auto" } : { flex: `0 0 ${width}px` }),
-        minWidth: isSelectCol ? SELECT_COL_W : MIN_W_COL,
+        minWidth: isSelectCol ? SELECT_COL_W : undefined,
         padding: "8px 12px",
         boxSizing: "border-box",
         // borderRight: "1px solid var(--hadesui-border-color)",
@@ -681,8 +685,13 @@ const Table = ({
     (key) => {
       if (!checkable) return;
       setSelectedKeys((prev) => {
-        const exists = prev.includes(key);
-        const next = exists ? prev.filter((k) => k !== key) : [...prev, key];
+        let next;
+        if (checkable === "radio") {
+          next = [key];
+        } else {
+          const exists = prev.includes(key);
+          next = exists ? prev.filter((k) => k !== key) : [...prev, key];
+        }
         const selectedRows = data.filter((d) => next.includes(d[rowKey]));
         onCheck?.(selectedRows);
         return next;
@@ -709,7 +718,7 @@ const Table = ({
         id: "__select__",
         width: SELECT_COL_W,
         fixed: "left",
-        title: (
+        title: (checkable !== "radio" || checkable === "checkbox") && (
           <SelectHeaderCell
             allChecked={allChecked}
             someChecked={someChecked}
@@ -718,6 +727,7 @@ const Table = ({
         ),
         render: (_, item) => (
           <SelectCell
+            type={checkable !== "radio" ? "checkbox" : "radio"}
             item={item}
             rowKey={rowKey}
             selectedSet={selectedSet}
@@ -830,7 +840,9 @@ const Table = ({
       if (col.id === "__select__") return SELECT_COL_W;
 
       if (typeof col.width === "number") {
-        const minW = col.minWidth ?? MIN_W_COL;
+        const minW =
+          (col.minWidth || col.width < MIN_W_COL ? col.width : undefined) ??
+          MIN_W_COL;
         const maxW = col.maxWidth ?? MAX_W_COL;
         return Math.min(maxW, Math.max(minW, col.width));
       }

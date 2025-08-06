@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 const Checkbox = ({
+  type = "checkbox", // "checkbox" | "radio"
   value,
   defaultValue = false,
   indeterminate = false,
@@ -22,36 +23,49 @@ const Checkbox = ({
     onChange?.(!checked);
   };
 
+  const isRadio = type === "radio";
+
   return (
     <div
       onClick={toggle}
-      role="checkbox"
+      role={isRadio ? "radio" : "checkbox"}
       aria-checked={checked}
       aria-disabled={disabled}
       style={{
-        width: 15,
-        height: 15,
+        width: isRadio ? 16 : 15,
+        height: isRadio ? 16 : 15,
         border: "1px solid var(--hadesui-border-color)",
-        borderRadius: 3,
+        borderRadius: isRadio ? "50%" : 3,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: disabled ? "not-allowed" : "pointer",
-        background: checked
-          ? "var(--hadesui-blue-6)"
-          : "var(--hadesui-bg-checkbox)",
+        background:
+          checked && !isRadio
+            ? "var(--hadesui-blue-6)"
+            : "var(--hadesui-bg-checkbox)",
         flexShrink: 0,
         userSelect: "none",
         overflow: "hidden",
       }}
       {...rest}
     >
-      {checked && (
+      {checked && !isRadio && (
         <div style={{ color: "white", fontSize: 11, userSelect: "none" }}>
           ✓
         </div>
       )}
-      {!checked && indeterminate && (
+      {checked && isRadio && (
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            background: "var(--hadesui-blue-6)",
+            borderRadius: "50%",
+          }}
+        />
+      )}
+      {!checked && !isRadio && indeterminate && (
         <div
           style={{
             width: 7,
