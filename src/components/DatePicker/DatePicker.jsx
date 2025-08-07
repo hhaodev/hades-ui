@@ -31,7 +31,6 @@ const DatePicker = forwardRef(
     const [open, setOpen] = useState(false);
     const [valueInternal, setValueInternal] = useState(null);
     const containerRef = useRef(null);
-    const dropdownRef = useRef(null);
 
     const idGene = useId();
     const id = `dropdown-date-picker-${idGene}`;
@@ -85,11 +84,11 @@ const DatePicker = forwardRef(
       >
         <Dropdown
           id={id}
-          ref={dropdownRef}
+          open={open}
+          onOpenChange={setOpen}
           disabled={disabled}
           fixedWidthPopup={false}
           placement={placementProps}
-          onOpenChange={setOpen}
           getPlacement={setPlacement}
           menu={() => (
             <Calendar
@@ -98,7 +97,6 @@ const DatePicker = forwardRef(
                 setValueInternal(date);
                 onChange?.(date);
                 setOpen(false);
-                dropdownRef.current.hide();
               }}
               hasTimePicker={hasTimePicker}
               min={minDate}
@@ -143,11 +141,11 @@ const DatePicker = forwardRef(
                   onChange?.("");
                   onClear?.();
                   setValueInternal("");
-                  dropdownRef.current.hide();
+                  setOpen(false);
                 } else if (open) {
-                  dropdownRef.current.hide();
+                  setOpen(false);
                 } else {
-                  dropdownRef.current.show();
+                  setOpen(true);
                 }
               }}
             >

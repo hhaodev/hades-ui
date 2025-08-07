@@ -17,25 +17,11 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useMergedState } from "../../utils";
 import Stack from "../Stack";
 import { DropdownItem } from "./DropdownItem";
 import { DropdownMenu } from "./DropdownMenu";
 import { useSafeZone } from "./SafeAreaRegistry";
-
-function useClickLockRef(timeout = 250) {
-  const lockRef = useRef(false);
-
-  const acquire = () => {
-    if (lockRef.current) return false;
-    lockRef.current = true;
-    setTimeout(() => {
-      lockRef.current = false;
-    }, timeout);
-    return true;
-  };
-
-  return acquire;
-}
 
 function getFallbackPlacements(basePlacement) {
   const [side, align = "center"] = basePlacement.split("-");
@@ -90,6 +76,7 @@ const Dropdown = forwardRef(function Dropdown(
     children,
     menu,
     placement = "bottom-start",
+    open: controlledOpen,
     onOpenChange,
     popupStyles,
     getPlacement,
@@ -100,7 +87,10 @@ const Dropdown = forwardRef(function Dropdown(
   },
   ref
 ) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useMergedState(false, {
+    value: controlledOpen,
+    onChange: onOpenChange,
+  });
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [actualPlacement, setActualPlacement] = useState(placement);
@@ -113,7 +103,6 @@ const Dropdown = forwardRef(function Dropdown(
   const timer1 = useRef(null);
   const timer2 = useRef(null);
   const cleanupRef = useRef(null);
-  const acquireClickLock = useClickLockRef(200);
 
   const isHoverTrigger = trigger.includes("hover");
   const isClickTrigger = trigger.includes("click");
@@ -202,7 +191,6 @@ const Dropdown = forwardRef(function Dropdown(
   };
 
   useEffect(() => {
-    onOpenChange?.(open);
     if (open) {
       show();
     } else {
@@ -237,10 +225,9 @@ const Dropdown = forwardRef(function Dropdown(
       "data-disabled-action": disabled ? "true" : "false",
       onClick: (e) => {
         if (!isClickTrigger || disabled) return;
-        if (!acquireClickLock()) return;
         e.stopPropagation();
         children.props.onClick?.(e);
-        setOpen((prev) => !prev);
+        setOpen(open ? false : true);
       },
       onMouseEnter: () => {
         if (!isHoverTrigger || disabled) return;

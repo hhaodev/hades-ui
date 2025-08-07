@@ -1,18 +1,21 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useMergedState } from "../../utils";
 
 function isValidKey(value) {
   return value !== undefined && value !== null;
 }
 
 const ChipTabs = ({ tabs = [], defaultActive, active, onChange }) => {
-  const id = useId();
-  const isControlled = active !== undefined;
-  const [internalActive, setInternalActive] = useState(() =>
-    isValidKey(defaultActive)
+  const [currentActive, setCurrentActive] = useMergedState(undefined, {
+    value: active,
+    defaultValue: isValidKey(defaultActive)
       ? String(defaultActive)
-      : String(tabs[0]?.key ?? "")
-  );
-  const currentActive = isControlled ? String(active) : internalActive;
+      : String(tabs[0]?.key ?? ""),
+    onChange: (val) => {
+      const tab = tabs.find((t) => String(t.key) === val);
+      onChange?.(tab);
+    },
+  });
 
   const currentActiveRef = useRef(currentActive);
   const containerRef = useRef(null);
@@ -120,8 +123,7 @@ const ChipTabs = ({ tabs = [], defaultActive, active, onChange }) => {
             onClick={(e) => {
               if (isSelected) return;
               e.currentTarget.style.backgroundColor = "transparent";
-              if (!isControlled) setInternalActive(key);
-              onChange?.(tab);
+              setCurrentActive(key);
             }}
             onMouseEnter={(e) => {
               if (!isSelected)

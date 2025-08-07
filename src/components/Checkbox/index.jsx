@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMergedState } from "../../utils";
 
 const Checkbox = ({
   type = "checkbox", // "checkbox" | "radio"
@@ -9,18 +9,16 @@ const Checkbox = ({
   disabled = false,
   ...rest
 }) => {
-  const isControlled = value !== undefined;
-  const [internal, setInternal] = useState(defaultValue);
-  const checked = isControlled ? value : internal;
+  const [checked, setChecked] = useMergedState(false, {
+    value,
+    defaultValue,
+    onChange,
+  });
 
   const toggle = (e) => {
     e.stopPropagation();
     if (disabled) return;
-
-    if (!isControlled) {
-      setInternal(!internal);
-    }
-    onChange?.(!checked);
+    setChecked(!checked);
   };
 
   const isRadio = type === "radio";

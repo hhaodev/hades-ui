@@ -1,17 +1,17 @@
 import {
   Children,
   isValidElement,
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from "react";
+import { useMergedState } from "../../utils";
+import Button from "../Button";
+import { DropdownItem } from "../Dropdown/DropdownItem";
+import { DropdownMenu } from "../Dropdown/DropdownMenu";
 import { MoreIcon } from "../Icon";
 import OverFlow from "../OverFlow";
-import Button from "../Button";
-import { DropdownMenu } from "../Dropdown/DropdownMenu";
-import { DropdownItem } from "../Dropdown/DropdownItem";
 
 function Tabs({
   children,
@@ -44,13 +44,11 @@ function Tabs({
 
   const panes = flattenChildren(children);
 
-  const isControlled = active !== undefined;
-
-  const [internalActive, setInternalActive] = useState(
-    defaultActive ?? panes[0]?.props?.tabKey
-  );
-
-  const currentActive = isControlled ? active : internalActive;
+  const [currentActive, setCurrentActive] = useMergedState(undefined, {
+    value: active,
+    defaultValue: defaultActive ?? panes[0]?.props?.tabKey,
+    onChange,
+  });
 
   const [mountedTabs, setMountedTabs] = useState(() => {
     return destroy ? [] : [String(currentActive)];
@@ -150,8 +148,7 @@ function Tabs({
 
   const handleClick = (tabKey) => {
     if (tabKey === currentActive) return;
-    if (!isControlled) setInternalActive(tabKey);
-    onChange?.(tabKey);
+    setCurrentActive(tabKey);
   };
 
   const flexDirection =

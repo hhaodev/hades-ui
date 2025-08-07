@@ -6,7 +6,9 @@ import {
   useRef,
   useState,
 } from "react";
+import { useMergedState } from "../../utils";
 import Button from "../Button";
+import Divider from "../Divider";
 import Dropdown from "../Dropdown";
 import { DropdownItem } from "../Dropdown/DropdownItem";
 import { DropdownMenu } from "../Dropdown/DropdownMenu";
@@ -14,7 +16,6 @@ import Ellipsis from "../Ellipsis";
 import { CloseIcon, DownIcon, SearchIcon, UpIcon, XIcon } from "../Icon";
 import Input from "../Input";
 import Stack from "../Stack";
-import Divider from "../Divider";
 
 const Select = forwardRef(
   (
@@ -45,17 +46,15 @@ const Select = forwardRef(
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [searchValueOrigin, setSearchValueOrigin] = useState("");
-    const [internalValue, setInternalValue] = useState();
-    const finalValue = value !== undefined ? value : internalValue;
+    const [finalValue, setValue] = useMergedState(undefined, {
+      value,
+      onChange,
+    });
+
     const selected = options.find((opt) => opt.value === finalValue);
 
     const idGene = useId();
     const id = `dropdown-select-${idGene}`;
-
-    const setValue = (val) => {
-      onChange?.(val);
-      setInternalValue(val);
-    };
 
     useEffect(() => {
       if (!open && containerRef.current) {
@@ -229,7 +228,7 @@ const Select = forwardRef(
                           setValue(opt.value);
                           dropdownRef.current.hide();
                         }}
-                        checked={opt.value === value}
+                        checked={opt.value === finalValue}
                       >
                         {opt.label}
                       </DropdownItem>

@@ -44,8 +44,6 @@ const DateRangePicker = forwardRef(
     const prevEnd = usePrevious(endDate);
 
     const containerRef = useRef(null);
-    const dropdownStartRef = useRef(null);
-    const dropdownEndRef = useRef(null);
 
     const idGene = useId();
     const id = `dropdown-date-range-picker-${idGene}`;
@@ -148,11 +146,11 @@ const DateRangePicker = forwardRef(
           style={{ flex: 1, minWidth: 0, height: "100%" }}
         >
           <Dropdown
-            ref={dropdownStartRef}
             id={id}
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
+            open={openStart}
             onOpenChange={setOpenStart}
             getPlacement={setPlacement}
             menu={
@@ -163,10 +161,10 @@ const DateRangePicker = forwardRef(
                 onSelect={(date) => {
                   setStartDate(date);
                   if (!endDate) {
-                    dropdownEndRef.current.show();
-                    dropdownStartRef.current.hide();
+                    setOpenEnd(true);
+                    setOpenStart(false);
                   } else {
-                    dropdownStartRef.current.hide();
+                    setOpenStart(false);
                   }
                 }}
                 max={endDate}
@@ -226,11 +224,11 @@ const DateRangePicker = forwardRef(
             }}
           />
           <Dropdown
-            ref={dropdownEndRef}
             id={id}
             disabled={disabled}
             fixedWidthPopup={false}
             placement={placementProps}
+            open={openEnd}
             onOpenChange={setOpenEnd}
             getPlacement={setPlacement}
             menu={
@@ -242,10 +240,9 @@ const DateRangePicker = forwardRef(
                   setEndDate(date);
                   if (!startDate) {
                     setOpenStart(true);
-                    dropdownStartRef.current.show();
-                    dropdownEndRef.current.hide();
+                    setOpenEnd(false);
                   } else {
-                    dropdownEndRef.current.hide();
+                    setOpenEnd(false);
                   }
                 }}
                 min={startDate}
@@ -310,19 +307,19 @@ const DateRangePicker = forwardRef(
             if (endDate && startDate) {
               setStartDate(null);
               setEndDate(null);
-              dropdownStartRef.current.hide();
-              dropdownEndRef.current.hide();
+              setOpenStart(false);
+              setOpenEnd(false);
             }
             if (!startDate && (openEnd || openStart)) {
-              dropdownStartRef.current.hide();
-              dropdownEndRef.current.hide();
+              setOpenStart(false);
+              setOpenEnd(false);
             } else if (!openStart && !startDate) {
-              dropdownStartRef.current.show();
+              setOpenStart(true);
             } else if (!endDate && (openEnd || openStart)) {
-              dropdownStartRef.current.hide();
-              dropdownEndRef.current.hide();
+              setOpenStart(false);
+              setOpenEnd(false);
             } else if (!openEnd && !endDate) {
-              dropdownEndRef.current.show();
+              setOpenEnd(false);
             }
           }}
         >
