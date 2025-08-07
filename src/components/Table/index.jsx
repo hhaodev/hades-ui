@@ -261,7 +261,13 @@ const HeaderCell = React.memo(
           e.currentTarget.style.background = "var(--hadesui-bg-header-table)";
         }}
       >
-        {isSelectCol ? col.title : <Ellipsis>{col.title}</Ellipsis>}
+        {isSelectCol ? (
+          col.title
+        ) : (
+          <Ellipsis style={{ width: "100%", textAlign: col.align ?? "start" }}>
+            {col.title}
+          </Ellipsis>
+        )}
         {col.sortable && (
           <SortIcon
             isActive={sortConfig.key === col.dataIndex}
@@ -473,6 +479,7 @@ const Cell = React.memo(
         // borderRight: "1px solid var(--hadesui-border-color)",
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
         overflow: "hidden",
         transition: "background 0.2s ease",
         ...stickyStyle,
@@ -487,7 +494,10 @@ const Cell = React.memo(
             col.render(null, item, rowIdx)
           ) : null
         ) : (
-          <Ellipsis row={col.maxRowText ?? 1}>
+          <Ellipsis
+            style={{ width: "100%", textAlign: col.align ?? "start" }}
+            row={col.maxRowText ?? 1}
+          >
             {typeof col.render === "function"
               ? col.render(item[col.dataIndex], item, rowIdx)
               : item[col.dataIndex]}
@@ -841,9 +851,9 @@ const Table = ({
 
       if (typeof col.width === "number") {
         const minW =
-          (col.minWidth || col.width < MIN_W_COL ? col.width : undefined) ??
+          (col.minWidth ?? col.width < MIN_W_COL ? col.width : undefined) ||
           MIN_W_COL;
-        const maxW = col.maxWidth ?? MAX_W_COL;
+        const maxW = col.maxWidth || MAX_W_COL;
         return Math.min(maxW, Math.max(minW, col.width));
       }
 
@@ -914,7 +924,7 @@ const Table = ({
       let flexBaseSum = 0;
 
       cols.forEach((col, i) => {
-        const minW = col.minWidth || MIN_W_COL;
+        const minW = (col.minWidth ?? col.width) || MIN_W_COL;
         const maxW = col.maxWidth ?? Infinity;
         const effectiveMinW = Math.min(minW, maxW);
 
@@ -987,7 +997,7 @@ const Table = ({
       const idx = resizingIdx.current;
       const col = columns[idx];
       if (!col) return;
-      const minW = col.minWidth || MIN_W_COL;
+      const minW = (col.minWidth ?? col.width) || MIN_W_COL;
       const maxW = col.maxWidth || Infinity;
       setFixedWidths(() => {
         const next = { ...startWidths.current };

@@ -278,38 +278,38 @@ const Dropdown = forwardRef(function Dropdown(
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack onClick={(e) => e.stopPropagation()} id={drdId}>
-            <Stack
-              ref={dropdownRef}
-              style={{
-                background: "var(--hadesui-bg-color)",
-                borderRadius: 8,
-                boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
-                minWidth: 100,
-                width: fixedWidthPopup ? popupWidth : "fit-content",
-                maxHeight: "100%",
-                ...popupStyles,
-                overflow: "hidden",
-                overflowY: "auto",
-                opacity: visible ? 1 : 0,
-                transform: visible
-                  ? "translate(0, 0)"
-                  : getInitialTransform(actualPlacement),
-                pointerEvents: visible ? "auto" : "none",
-                transition: "opacity 0.2s ease, transform 0.2s ease",
-                zIndex: "var(--z-dropdown)",
-              }}
-              onMouseEnter={() => {
-                if (!isHoverTrigger || disabled) return;
-                setOpen(true);
-              }}
-              onMouseLeave={() => {
-                if (!isHoverTrigger || disabled) return;
-                setOpen(false);
-              }}
-            >
-              {menuContent}
-            </Stack>
+          <Stack
+            onClick={(e) => e.stopPropagation()}
+            id={drdId}
+            ref={dropdownRef}
+            style={{
+              background: "var(--hadesui-bg-color)",
+              borderRadius: 8,
+              boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
+              minWidth: 100,
+              width: fixedWidthPopup ? popupWidth : "fit-content",
+              maxHeight: "100%",
+              ...popupStyles,
+              overflow: "hidden",
+              overflowY: "auto",
+              opacity: visible ? 1 : 0,
+              transform: visible
+                ? "translate(0, 0)"
+                : getInitialTransform(actualPlacement),
+              pointerEvents: visible ? "auto" : "none",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              zIndex: "var(--z-dropdown)",
+            }}
+            onMouseEnter={() => {
+              if (!isHoverTrigger || disabled) return;
+              setOpen(true);
+            }}
+            onMouseLeave={() => {
+              if (!isHoverTrigger || disabled) return;
+              setOpen(false);
+            }}
+          >
+            {menuContent}
           </Stack>,
           document.body
         )}

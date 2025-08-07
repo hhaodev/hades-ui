@@ -1,42 +1,21 @@
-import React, {
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "@floating-ui/dom";
+import {
+  cloneElement,
+  forwardRef,
+  Fragment,
+  isValidElement,
+  useEffect,
   useRef,
   useState,
-  useEffect,
-  forwardRef,
-  isValidElement,
-  cloneElement,
-  Fragment,
 } from "react";
 import { createPortal } from "react-dom";
-import {
-  computePosition,
-  offset,
-  flip,
-  shift,
-  autoUpdate,
-} from "@floating-ui/dom";
 import Stack from "../Stack";
-
-function TooltipPortal({ children }) {
-  const portalNodeRef = useRef(null);
-
-  if (!portalNodeRef.current) {
-    const div = document.createElement("div");
-    div.setAttribute("data-tooltip-portal", "true");
-    document.body?.appendChild(div);
-    portalNodeRef.current = div;
-  }
-
-  useEffect(() => {
-    return () => {
-      if (portalNodeRef.current) {
-        document.body?.removeChild(portalNodeRef.current);
-      }
-    };
-  }, []);
-
-  return createPortal(children, portalNodeRef.current);
-}
 
 function getInitialTransform(placement) {
   if (placement.startsWith("top")) return "translateY(8px)";
@@ -204,8 +183,9 @@ const Tooltip = forwardRef(
     return (
       <>
         {triggerNode}
-        {shouldRender && tooltip && (
-          <TooltipPortal>
+        {shouldRender &&
+          tooltip &&
+          createPortal(
             <Stack
               ref={tooltipRef}
               onMouseEnter={trigger === "hover" ? show : undefined}
@@ -234,9 +214,9 @@ const Tooltip = forwardRef(
               onClick={(e) => e.stopPropagation()}
             >
               {tooltip}
-            </Stack>
-          </TooltipPortal>
-        )}
+            </Stack>,
+            document.body
+          )}
       </>
     );
   }

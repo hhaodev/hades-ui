@@ -111,7 +111,8 @@ const Ellipsis = forwardRef(
             onBlur={events.onBlur}
             style={{
               display: "inline-block",
-              width: "100%",
+              width: "fit-content",
+              maxWidth: "100%",
               overflow: "hidden",
               textOverflow: "ellipsis",
               fontSize: 14,

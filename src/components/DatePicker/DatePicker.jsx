@@ -113,6 +113,7 @@ const DatePicker = forwardRef(
           >
             <Ellipsis
               style={{
+                width: "100%",
                 color: disabled
                   ? "inherit"
                   : valueInternal

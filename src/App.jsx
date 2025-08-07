@@ -223,14 +223,14 @@ function App() {
         title: "STT",
         key: "stt",
         render: (_, __, index) => <span>{index + 1}</span>,
-        minWidth: 60,
         width: 60,
+        align: "center",
       },
       {
-        title: <span style={{ color: "red" }}>Name</span>,
+        title: <span>Name</span>,
         dataIndex: "name",
         key: "name",
-        render: (v) => <span style={{ color: "red" }}>{v}</span>,
+        render: (v) => <span>{v}</span>,
         sortable: true,
         sorter: (a, b) =>
           String(a.name).localeCompare(String(b.name), undefined, {
@@ -239,6 +239,7 @@ function App() {
           }),
         fixed: "left",
         searchable: true,
+        align: "center",
       },
       {
         title: "Email",

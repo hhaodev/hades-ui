@@ -141,7 +141,7 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
     position: "fixed",
     [isTop ? "top" : "bottom"]: 0,
     [isRight ? "right" : "left"]: 0,
-    display: "flex",
+    display: items.length > 0 ? "flex" : "none",
     flexDirection: isTop ? "column" : "column-reverse",
     gap: 14,
     cursor: "default",

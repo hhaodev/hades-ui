@@ -248,6 +248,7 @@ const Select = forwardRef(
             <Ellipsis
               key={selected ? "selectedlabel" : "placeholder"}
               style={{
+                width: "100%",
                 color: disabled
                   ? "inherit"
                   : selected
