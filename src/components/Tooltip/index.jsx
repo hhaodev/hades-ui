@@ -218,7 +218,7 @@ const Tooltip = forwardRef(
                 fontSize: 13,
                 lineHeight: "18px",
                 borderRadius: 4,
-                maxWidth: "calc(100vw - 20px)",
+                maxWidth: "50%",
                 wordWrap: "break-word",
                 whiteSpace: "normal",
                 pointerEvents: "auto",

@@ -101,7 +101,7 @@ const Dropdown = forwardRef(function Dropdown(
   ref
 ) {
   const [open, setOpen] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [actualPlacement, setActualPlacement] = useState(placement);
   const [popupWidth, setPopupWidth] = useState(0);
@@ -110,6 +110,9 @@ const Dropdown = forwardRef(function Dropdown(
 
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
+  const timer1 = useRef(null);
+  const timer2 = useRef(null);
+  const cleanupRef = useRef(null);
   const acquireClickLock = useClickLockRef(200);
 
   const isHoverTrigger = trigger.includes("hover");
@@ -175,23 +178,35 @@ const Dropdown = forwardRef(function Dropdown(
           }
           getPlacement?.(resolvedPlacement);
           setActualPlacement(resolvedPlacement);
-          setTimeout(() => setReady(true), 100);
         });
       }
     );
-
-    return cleanup;
+    cleanupRef.current = cleanup;
+    return () => cleanup();
   }, [shouldRender, placement]);
+
+  const show = () => {
+    clearTimeout(timer1.current);
+    clearTimeout(timer2.current);
+    timer1.current = setTimeout(() => {
+      setShouldRender(true);
+      setTimeout(() => setVisible(true), 100);
+    }, 0);
+  };
+
+  const hide = () => {
+    clearTimeout(timer1.current);
+    clearTimeout(timer2.current);
+    timer1.current = setTimeout(() => setShouldRender(false), 200);
+    timer2.current = setTimeout(() => setVisible(false), 100);
+  };
 
   useEffect(() => {
     onOpenChange?.(open);
     if (open) {
-      setReady(false);
-      setShouldRender(true);
+      show();
     } else {
-      setReady(false);
-      const timer = setTimeout(() => setShouldRender(false), 200);
-      return () => clearTimeout(timer);
+      hide();
     }
   }, [open]);
 
@@ -205,6 +220,14 @@ const Dropdown = forwardRef(function Dropdown(
 
     return () => {
       window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer1.current);
+      clearTimeout(timer2.current);
+      cleanupRef.current?.();
     };
   }, []);
 
@@ -225,11 +248,7 @@ const Dropdown = forwardRef(function Dropdown(
       },
       onMouseLeave: () => {
         if (!isHoverTrigger || disabled) return;
-        setTimeout(() => {
-          if (!dropdownRef.current?.matches(":hover")) {
-            setOpen(false);
-          }
-        }, 150);
+        setOpen(false);
       },
       ref: (el) => {
         referenceRef.current = el;
@@ -285,22 +304,21 @@ const Dropdown = forwardRef(function Dropdown(
                 ...popupStyles,
                 overflow: "hidden",
                 overflowY: "auto",
-                opacity: open && ready ? 1 : 0,
-                transform:
-                  open && ready
-                    ? "translate(0, 0)"
-                    : getInitialTransform(actualPlacement),
-                pointerEvents: open && ready ? "auto" : "none",
+                opacity: visible ? 1 : 0,
+                transform: visible
+                  ? "translate(0, 0)"
+                  : getInitialTransform(actualPlacement),
+                pointerEvents: visible ? "auto" : "none",
                 transition: "opacity 0.2s ease, transform 0.2s ease",
                 zIndex: "var(--z-dropdown)",
               }}
-              onMouseLeave={(e) => {
+              onMouseEnter={() => {
                 if (!isHoverTrigger || disabled) return;
-                setTimeout(() => {
-                  if (!referenceRef.current?.matches(":hover")) {
-                    setOpen(false);
-                  }
-                }, 150);
+                setOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (!isHoverTrigger || disabled) return;
+                setOpen(false);
               }}
             >
               {menuContent}
