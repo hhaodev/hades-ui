@@ -1,5 +1,5 @@
-import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { formatDate } from "../../utils";
+import { forwardRef, useEffect, useId, useMemo, useRef, useState } from "react";
+import { formatDate, toDate, useMergedState, usePrevious } from "../../utils";
 import Dropdown from "../Dropdown";
 import Ellipsis from "../Ellipsis";
 import { DownIcon, UpIcon, XIcon } from "../Icon";
@@ -9,8 +9,9 @@ import Calendar from "./Calender";
 const DatePicker = forwardRef(
   (
     {
-      value,
+      value: valueProps,
       onChange,
+      onFocus,
       onBlur,
       name,
       placeholder = "Select date...",
@@ -29,20 +30,35 @@ const DatePicker = forwardRef(
   ) => {
     const [placement, setPlacement] = useState("");
     const [open, setOpen] = useState(false);
-    const [valueInternal, setValueInternal] = useState(null);
+    const dateMemo = useMemo(() => toDate(valueProps), [valueProps]);
+    const [finalValue, setFinalValue] = useMergedState(null, {
+      value: dateMemo,
+      onChange,
+    });
+
+    const prevDate = usePrevious(finalValue);
+
+    const [isEnter, setIsEnter] = useState(false);
     const containerRef = useRef(null);
 
     const idGene = useId();
     const id = `dropdown-date-picker-${idGene}`;
 
     useEffect(() => {
-      if (!open && containerRef.current) {
+      const isChanged = finalValue?.getTime() !== prevDate?.getTime();
+      if (isChanged) {
+        onChange(finalValue);
+      }
+    }, [finalValue]);
+
+    useEffect(() => {
+      if (!open && containerRef.current && !isEnter) {
         const el = containerRef.current;
         if (!disabled) {
           el.style.borderColor = "var(--hadesui-border-color)";
         }
       }
-    }, [open]);
+    }, [open, disabled, isEnter]);
 
     return (
       <Stack
@@ -51,7 +67,7 @@ const DatePicker = forwardRef(
           if (typeof ref === "function") ref(el);
           else if (ref) ref.current = el;
         }}
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
         data-border-red-error={rest["data-border-red-error"]}
         data-disabled-action={disabled}
         flex
@@ -81,6 +97,15 @@ const DatePicker = forwardRef(
             e.currentTarget.style.borderColor = "var(--hadesui-border-color)";
           }
         }}
+        onFocus={(e) => {
+          onFocus?.(e);
+          setIsEnter(true);
+        }}
+        onBlur={(e) => {
+          onBlur?.(e);
+          setIsEnter(false);
+        }}
+        {...rest}
       >
         <Dropdown
           id={id}
@@ -91,17 +116,19 @@ const DatePicker = forwardRef(
           placement={placementProps}
           getPlacement={setPlacement}
           menu={() => (
-            <Calendar
-              value={valueInternal}
-              onSelect={(date) => {
-                setValueInternal(date);
-                onChange?.(date);
-                setOpen(false);
-              }}
-              hasTimePicker={hasTimePicker}
-              min={minDate}
-              max={maxDate}
-            />
+            <div onPointerDownCapture={(e) => e.preventDefault()}>
+              <Calendar
+                value={finalValue}
+                onSelect={(date) => {
+                  setFinalValue(date);
+                  setIsEnter(false);
+                  setOpen(false);
+                }}
+                hasTimePicker={hasTimePicker}
+                min={minDate}
+                max={maxDate}
+              />
+            </div>
           )}
         >
           <Stack
@@ -116,15 +143,15 @@ const DatePicker = forwardRef(
                 width: "100%",
                 color: disabled
                   ? "inherit"
-                  : valueInternal
+                  : finalValue
                   ? "var(--hadesui-text-color)"
                   : "var(--hadesui-placeholder-color)",
               }}
             >
-              {valueInternal
+              {finalValue
                 ? customRender
-                  ? customRender(valueInternal)
-                  : formatDate(valueInternal, format)
+                  ? customRender(finalValue)
+                  : formatDate(finalValue, format)
                 : placeholder}
             </Ellipsis>
             <Stack
@@ -138,10 +165,9 @@ const DatePicker = forwardRef(
               onClick={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
-                if (valueInternal) {
-                  onChange?.("");
+                if (finalValue) {
+                  setFinalValue(null);
                   onClear?.();
-                  setValueInternal("");
                   setOpen(false);
                 } else if (open) {
                   setOpen(false);
@@ -150,7 +176,7 @@ const DatePicker = forwardRef(
                 }
               }}
             >
-              {valueInternal ? (
+              {finalValue ? (
                 <XIcon />
               ) : open && !placement.startsWith("top") ? (
                 <UpIcon />

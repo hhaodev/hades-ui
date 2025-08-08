@@ -335,6 +335,7 @@ const renderNoItem = () => (
         height: "100%",
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
         color: "var(--hadesui-text-color)",
       }}
     >

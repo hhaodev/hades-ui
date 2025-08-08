@@ -29,6 +29,7 @@ const Checkbox = ({
       role={isRadio ? "radio" : "checkbox"}
       aria-checked={checked}
       aria-disabled={disabled}
+      tabIndex={disabled ? -1 : 0}
       style={{
         width: isRadio ? 16 : 15,
         height: isRadio ? 16 : 15,

@@ -4,6 +4,7 @@ import { DoubleLeftIcon, DoubleRightIcon, LeftIcon, RightIcon } from "../Icon";
 import Stack from "../Stack";
 import TimePicker from "./TimePicker";
 import Divider from "../Divider";
+import { toDate } from "../../utils";
 
 function Calendar({
   value,
@@ -16,15 +17,15 @@ function Calendar({
   inRangePicker,
 }) {
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(
-    value ? new Date(value) : null
-  );
-  const [selectedTime, setSelectedTime] = useState(
-    value ? new Date(value) : null
-  );
-
+  const initialDate = toDate(value);
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [selectedTime, setSelectedTime] = useState(initialDate);
   const [currentMonth, setCurrentMonth] = useState(
-    new Date((value || today).getFullYear(), (value || today).getMonth(), 1)
+    new Date(
+      (initialDate || today).getFullYear(),
+      (initialDate || today).getMonth(),
+      1
+    )
   );
   const [mode, setMode] = useState("date");
 

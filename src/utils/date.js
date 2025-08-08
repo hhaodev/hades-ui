@@ -192,3 +192,22 @@ export const formatDate = (input, format = DEFAULT_FORMAT) => {
 
   return result;
 };
+
+export const toDate = (v) => {
+  if (v == null) return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+
+  if (typeof v === "string") {
+    const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const d = new Date(v);
+    return isNaN(d) ? null : d;
+  }
+
+  if (typeof v === "number") {
+    const d = new Date(v);
+    return isNaN(d) ? null : d;
+  }
+
+  return null;
+};

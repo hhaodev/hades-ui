@@ -11,7 +11,7 @@
 .divider::after {
     content: "";
     flex: 1;
-    border-top: 1px solid var(--hadesui-divider-color);
+    border-top: 1px solid var(--divider-color, var(--hadesui-divider-color));
 }
 
 .divider-dashed::before,

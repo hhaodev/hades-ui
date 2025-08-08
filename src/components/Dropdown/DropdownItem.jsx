@@ -16,7 +16,7 @@ export const DropdownItem = forwardRef(
     ref
   ) => {
     const defaultBg = "var(--hadesui-bg-color)";
-    const hoverBg = "var(--hadesui-bg-btn-text)";
+    const hoverBg = "var(--hadesui-bg-selected-color)";
 
     const handleMouseEnter = (e) => {
       if (!checked) {

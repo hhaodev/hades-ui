@@ -100,7 +100,6 @@ function App() {
   const [openModal3, setOpenModal3] = useState(false);
   const [openPanel, setOpenPanel] = useState(false);
   const [placementPanel, setPlacementPanel] = useState("right");
-  const [selectedValue, setSelectedValue] = useState("");
   const [file, setFile] = useState();
   const [toastId, setToastId] = useState("");
   const fetchDataFromLocalStorage = () => {
@@ -646,7 +645,6 @@ function App() {
           <TabList />
         </Tabs>
 
-        <Input placeholder="Nhập email" />
         <Form
           form={form}
           onFinish={(values) => {
@@ -686,50 +684,73 @@ function App() {
             <Input placeholder="Input number ..." type="number" />
           </Form.Item>
 
-          <Form.Item label="Checkbox" name="check" rules={[{ required: true }]}>
-            {/* <UploadFile
-              view
+          <Form.Item label="Checkbox" name="file" rules={[{ required: true }]}>
+            <UploadFile
               accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
               multiple
               maxSize={1 * 1024 * 1024}
-            /> */}
-            <Checkbox />
+            />
           </Form.Item>
 
           <Form.Item label="Chọn số" name="select" rules={[{ required: true }]}>
             <Select
               hasSearch
-              options={Array.from({ length: 5 }, (_, i) => {
-                const val = `${i + 1}0000000000000`.toString();
-                return { label: val, value: val };
+              options={Array.from({ length: 20 }, (_, i) => {
+                const val = `item ${i + 1}`.toString();
+                return { label: val, value: i + 1 };
               })}
               placeholder="Select..."
             />
           </Form.Item>
+          <Form.Item
+            label="Chọn số nhiều"
+            name="selectmultiple"
+            rules={[{ required: true }]}
+          >
+            <Select
+              hasSearch
+              options={Array.from({ length: 20 }, (_, i) => {
+                const val = `item ${i + 1}`.toString();
+                return { label: val, value: i + 1 };
+              })}
+              multiple
+              placeholder="Select multiple..."
+            />
+          </Form.Item>
 
-          {/* <Form.Item label="Chọn ngày" name="date" rules={[{ required: true }]}>
-            <DateRangePicker />
-          </Form.Item> */}
+          <Form.Item
+            label="Chọn ngày"
+            name="daterange"
+            rules={[{ required: true }]}
+          >
+            <DateRangePicker
+              hasTimePicker
+              format={"ddd, MMMM D, YYYY [at] hh:mm:ss A"}
+            />
+          </Form.Item>
+          <Form.Item label="Chọn ngày" name="date" rules={[{ required: true }]}>
+            <DatePicker />
+          </Form.Item>
+          <Form.Item label="Check" name="check" rules={[{ required: true }]}>
+            <Checkbox />
+          </Form.Item>
 
           <Button type="submit">Submit</Button>
         </Form>
-        <DateRangePicker
-          hasTimePicker
-          format={"ddd, MMMM D, YYYY [at] hh:mm:ss A"}
-        />
-        <DatePicker />
 
         <Stack flexCol gap={8}>
           <Button
             onClick={() =>
               form.setFieldsValue({
-                date: {
+                daterange: {
                   start: "2025-07-22T17:00:00.000Z",
                   end: "2025-07-26T17:00:00.000Z",
                 },
+                date: "2025-07-22T17:00:00.000Z",
                 email: "test@gmail.com",
                 age: 54,
-                select: "30000000000000",
+                select: 15,
+                selectmultiple: [4, 2, 3],
                 file: file,
                 check: true,
               })

@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { formatDate, usePrevious } from "../../utils";
+import { formatDate, toDate, usePrevious } from "../../utils";
 import Divider from "../Divider";
 import Dropdown from "../Dropdown";
 import Ellipsis from "../Ellipsis";
@@ -12,6 +12,7 @@ const DateRangePicker = forwardRef(
     {
       value,
       onChange,
+      onFocus,
       onBlur,
       name,
       disabled = false,
@@ -31,14 +32,14 @@ const DateRangePicker = forwardRef(
     const [placement, setPlacement] = useState(placementProps);
     const [openStart, setOpenStart] = useState(false);
     const [openEnd, setOpenEnd] = useState(false);
+    const [isEnter, setIsEnter] = useState(false);
+
     const [startDate, setStartDate] = useState(
-      value?.start ? new Date(value?.start) : null
+      value?.start ? toDate(value?.start) : null
     );
     const [endDate, setEndDate] = useState(
-      value?.end ? new Date(value?.end) : null
+      value?.end ? toDate(value?.end) : null
     );
-
-    const [isFocus, setIsFocus] = useState(false);
 
     const prevStart = usePrevious(startDate);
     const prevEnd = usePrevious(endDate);
@@ -49,11 +50,11 @@ const DateRangePicker = forwardRef(
     const id = `dropdown-date-range-picker-${idGene}`;
 
     useEffect(() => {
-      if (!isFocus && containerRef.current) {
+      if (!isEnter && !openStart && !openEnd && containerRef.current) {
         const el = containerRef.current;
         el.style.borderColor = "var(--hadesui-border-color)";
       }
-    }, [isFocus]);
+    }, [isEnter, openStart, openEnd, containerRef]);
 
     useEffect(() => {
       const bothDefined = startDate instanceof Date && endDate instanceof Date;
@@ -63,13 +64,13 @@ const DateRangePicker = forwardRef(
       const bothNull = !startDate && !endDate;
       if ((bothDefined || bothNull) && isChanged) {
         onChange?.(bothNull ? null : { start: startDate, end: endDate });
-        setIsFocus(false);
+        setIsEnter(false);
       }
     }, [startDate, endDate]);
 
     useEffect(() => {
-      const newStart = value?.start ? new Date(value.start) : null;
-      const newEnd = value?.end ? new Date(value.end) : null;
+      const newStart = value?.start ? toDate(value.start) : null;
+      const newEnd = value?.end ? toDate(value.end) : null;
 
       if (
         (newStart?.getTime?.() ?? 0) !== (startDate?.getTime?.() ?? 0) ||
@@ -90,7 +91,7 @@ const DateRangePicker = forwardRef(
           !container.contains(event.target) &&
           !clickedInDropdown
         ) {
-          setIsFocus(false);
+          setIsEnter(false);
         }
       };
 
@@ -107,7 +108,7 @@ const DateRangePicker = forwardRef(
           if (typeof ref === "function") ref(el);
           else if (ref) ref.current = el;
         }}
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
         data-border-red-error={rest["data-border-red-error"]}
         data-disabled-action={disabled}
         flex
@@ -129,15 +130,25 @@ const DateRangePicker = forwardRef(
           ...style,
         }}
         onMouseEnter={(e) => {
-          if (!disabled && !isFocus) {
+          if (!disabled && !openEnd && !openStart) {
             e.currentTarget.style.borderColor = "var(--hadesui-blue-6)";
           }
         }}
         onMouseLeave={(e) => {
-          if (!disabled && !isFocus) {
+          if (!disabled && !openEnd && !openStart) {
             e.currentTarget.style.borderColor = "var(--hadesui-border-color)";
           }
         }}
+        onFocus={(e) => {
+          onFocus?.(e);
+          setIsEnter(true);
+        }}
+        onBlur={(e) => {
+          if (isEnter) return;
+          onBlur?.(e);
+          setIsEnter(false);
+        }}
+        {...rest}
       >
         <Stack
           flex={layout === "horizontal"}
@@ -154,25 +165,27 @@ const DateRangePicker = forwardRef(
             onOpenChange={setOpenStart}
             getPlacement={setPlacement}
             menu={
-              <Calendar
-                inRangePicker
-                hasTimePicker={hasTimePicker}
-                value={startDate}
-                onSelect={(date) => {
-                  setStartDate(date);
-                  if (!endDate) {
-                    setOpenEnd(true);
-                    setOpenStart(false);
-                  } else {
-                    setOpenStart(false);
-                  }
-                }}
-                max={endDate}
-              />
+              <div onPointerDownCapture={(e) => e.preventDefault()}>
+                <Calendar
+                  inRangePicker
+                  hasTimePicker={hasTimePicker}
+                  value={startDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    if (!endDate) {
+                      setOpenEnd(true);
+                      setOpenStart(false);
+                    } else {
+                      setOpenStart(false);
+                    }
+                  }}
+                  max={endDate}
+                />
+              </div>
             }
           >
             <Stack
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
               flex
               gap={8}
               align="center"
@@ -195,7 +208,6 @@ const DateRangePicker = forwardRef(
                     }),
                 transition: "border 0.05s ease",
               }}
-              onClick={() => setIsFocus(true)}
             >
               <Ellipsis
                 style={{
@@ -232,25 +244,27 @@ const DateRangePicker = forwardRef(
             onOpenChange={setOpenEnd}
             getPlacement={setPlacement}
             menu={
-              <Calendar
-                inRangePicker
-                hasTimePicker={hasTimePicker}
-                value={endDate}
-                onSelect={(date) => {
-                  setEndDate(date);
-                  if (!startDate) {
-                    setOpenStart(true);
-                    setOpenEnd(false);
-                  } else {
-                    setOpenEnd(false);
-                  }
-                }}
-                min={startDate}
-              />
+              <div onPointerDownCapture={(e) => e.preventDefault()}>
+                <Calendar
+                  inRangePicker
+                  hasTimePicker={hasTimePicker}
+                  value={endDate}
+                  onSelect={(date) => {
+                    setEndDate(date);
+                    if (!startDate) {
+                      setOpenStart(true);
+                      setOpenEnd(false);
+                    } else {
+                      setOpenEnd(false);
+                    }
+                  }}
+                  min={startDate}
+                />
+              </div>
             }
           >
             <Stack
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
               flex
               gap={8}
               align="center"
@@ -273,7 +287,6 @@ const DateRangePicker = forwardRef(
                     }),
                 transition: "border 0.05s ease",
               }}
-              onClick={() => setIsFocus(true)}
             >
               <Ellipsis
                 style={{
