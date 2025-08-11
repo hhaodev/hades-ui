@@ -1037,7 +1037,7 @@ function App() {
             <Dropdown placement="bottom-end" menu={menu}>
               <Button theme="default">BOT R</Button>
             </Dropdown>
-            <Dropdown menu={menu}>
+            <Dropdown open={open} onOpenChange={setOpen} menu={menu}>
               <Button theme="default">NO</Button>
             </Dropdown>
             <Dropdown menu={menu} placement="right">

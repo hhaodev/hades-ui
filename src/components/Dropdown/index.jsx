@@ -70,6 +70,78 @@ function getInitialTransform(placement) {
   return "translate(0, 0)";
 }
 
+function renderBridge(
+  actualPlacement,
+  referenceRef,
+  dropdownRef,
+  isHoverTrigger,
+  disabled,
+  setOpen
+) {
+  if (!referenceRef.current || !dropdownRef.current || !isHoverTrigger)
+    return null;
+
+  const ddRect = dropdownRef.current.getBoundingClientRect();
+
+  const commonProps = {
+    position: "fixed",
+    background: "transparent",
+    pointerEvents: "auto",
+  };
+
+  let style = null;
+
+  if (actualPlacement.startsWith("left")) {
+    style = {
+      ...commonProps,
+      top: ddRect.top,
+      left: ddRect.right - 8,
+      width: 8,
+      height: ddRect.height,
+    };
+  } else if (actualPlacement.startsWith("right")) {
+    style = {
+      ...commonProps,
+      top: ddRect.top,
+      left: ddRect.left,
+      width: 8,
+      height: ddRect.height,
+    };
+  } else if (actualPlacement.startsWith("top")) {
+    style = {
+      ...commonProps,
+      top: ddRect.bottom - 8,
+      left: ddRect.left,
+      width: ddRect.width,
+      height: 8,
+    };
+  } else if (actualPlacement.startsWith("bottom")) {
+    style = {
+      ...commonProps,
+      top: ddRect.top,
+      left: ddRect.left,
+      width: ddRect.width,
+      height: 8,
+    };
+  }
+
+  if (!style) return null;
+
+  return (
+    <div
+      style={style}
+      onMouseEnter={() => {
+        if (!isHoverTrigger || disabled) return;
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        if (!isHoverTrigger || disabled) return;
+        setOpen(false);
+      }}
+    />
+  );
+}
+
 const Dropdown = forwardRef(function Dropdown(
   {
     id,
@@ -100,9 +172,11 @@ const Dropdown = forwardRef(function Dropdown(
 
   const referenceRef = useRef(null);
   const dropdownRef = useRef(null);
-  const timer1 = useRef(null);
-  const timer2 = useRef(null);
+  const timer = useRef(null);
   const cleanupRef = useRef(null);
+
+  const ghostRef = useRef(null);
+  const ghostAnimRef = useRef(null);
 
   const isHoverTrigger = trigger.includes("hover");
   const isClickTrigger = trigger.includes("click");
@@ -124,10 +198,58 @@ const Dropdown = forwardRef(function Dropdown(
     referenceRef,
     dropdownRef,
     () => {
-      setTimeout(() => setOpen(false), 0);
+      requestAnimationFrame(() => setOpen(false));
     },
     { id: drdId }
   );
+
+  function removeGhost() {
+    try {
+      ghostAnimRef.current?.cancel?.();
+    } catch {}
+    ghostAnimRef.current = null;
+    if (ghostRef.current) {
+      ghostRef.current.remove();
+      ghostRef.current = null;
+    }
+  }
+
+  function spawnGhostAndAnimateToTrigger() {
+    const el = dropdownRef.current;
+    if (!el) return;
+
+    removeGhost();
+
+    const rect = el.getBoundingClientRect();
+    const ghost = el.cloneNode(true);
+    ghost.removeAttribute("id");
+    Object.assign(ghost.style, {
+      position: "fixed",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      margin: 0,
+      transform: "translate(0,0)",
+      transformOrigin: "center",
+      pointerEvents: "none",
+      zIndex: 2147483647,
+      overflow: "hidden",
+    });
+    document.body.appendChild(ghost);
+    ghostRef.current = ghost;
+
+    const anim = ghost.animate(
+      [
+        { transform: "translate(0px,0px)", opacity: 1 },
+        { transform: getInitialTransform(actualPlacement), opacity: 0 },
+      ],
+      { duration: 200 }
+    );
+    ghostAnimRef.current = anim;
+    anim.onfinish = removeGhost;
+    anim.oncancel = removeGhost;
+  }
 
   useLayoutEffect(() => {
     if (!shouldRender || !referenceRef.current || !dropdownRef.current) return;
@@ -175,19 +297,17 @@ const Dropdown = forwardRef(function Dropdown(
   }, [shouldRender, placement]);
 
   const show = () => {
-    clearTimeout(timer1.current);
-    clearTimeout(timer2.current);
-    timer1.current = setTimeout(() => {
-      setShouldRender(true);
-      setTimeout(() => setVisible(true), 100);
-    }, 0);
+    clearTimeout(timer.current);
+    removeGhost();
+    setShouldRender(true);
+    timer.current = setTimeout(() => setVisible(true), 100);
   };
 
   const hide = () => {
-    clearTimeout(timer1.current);
-    clearTimeout(timer2.current);
-    timer1.current = setTimeout(() => setShouldRender(false), 200);
-    timer2.current = setTimeout(() => setVisible(false), 100);
+    clearTimeout(timer.current);
+    spawnGhostAndAnimateToTrigger();
+    setShouldRender(false);
+    setVisible(false);
   };
 
   useEffect(() => {
@@ -213,8 +333,7 @@ const Dropdown = forwardRef(function Dropdown(
 
   useEffect(() => {
     return () => {
-      clearTimeout(timer1.current);
-      clearTimeout(timer2.current);
+      clearTimeout(timer.current);
       cleanupRef.current?.();
     };
   }, []);
@@ -227,7 +346,7 @@ const Dropdown = forwardRef(function Dropdown(
         if (!isClickTrigger || disabled) return;
         e.stopPropagation();
         children.props.onClick?.(e);
-        setOpen(open ? false : true);
+        requestAnimationFrame(() => setOpen(open ? false : true));
       },
       onMouseEnter: () => {
         if (!isHoverTrigger || disabled) return;
@@ -249,7 +368,7 @@ const Dropdown = forwardRef(function Dropdown(
 
   let menuContent = null;
   if (typeof menu === "function") {
-    menuContent = menu(referenceRef);
+    menuContent = menu();
   } else if (React.isValidElement(menu)) {
     menuContent = <DropdownMenu>{menu}</DropdownMenu>;
   } else if (Array.isArray(menu) && menu.length > 0) {
@@ -278,38 +397,48 @@ const Dropdown = forwardRef(function Dropdown(
       {shouldRender &&
         !disabled &&
         createPortal(
-          <Stack
-            onClick={(e) => e.stopPropagation()}
-            id={drdId}
-            ref={dropdownRef}
-            style={{
-              background: "var(--hadesui-bg-color)",
-              borderRadius: 8,
-              boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
-              minWidth: 100,
-              width: fixedWidthPopup ? popupWidth : "fit-content",
-              maxHeight: "100%",
-              ...popupStyles,
-              overflow: "hidden",
-              overflowY: "auto",
-              opacity: visible ? 1 : 0,
-              transform: visible
-                ? "translate(0, 0)"
-                : getInitialTransform(actualPlacement),
-              pointerEvents: visible ? "auto" : "none",
-              transition: "opacity 0.2s ease, transform 0.2s ease",
-              zIndex: "var(--z-dropdown)",
-            }}
-            onMouseEnter={() => {
-              if (!isHoverTrigger || disabled) return;
-              setOpen(true);
-            }}
-            onMouseLeave={() => {
-              if (!isHoverTrigger || disabled) return;
-              setOpen(false);
-            }}
-          >
-            {menuContent}
+          <Stack id={`${drdId}-wrapper`}>
+            {renderBridge(
+              actualPlacement,
+              referenceRef,
+              dropdownRef,
+              isHoverTrigger,
+              disabled,
+              setOpen
+            )}
+            <Stack
+              onClick={(e) => e.stopPropagation()}
+              id={drdId}
+              ref={dropdownRef}
+              style={{
+                background: "var(--hadesui-bg-color)",
+                borderRadius: 8,
+                boxShadow: "0 4px 12px var(--hadesui-boxshadow-color)",
+                minWidth: 100,
+                width: fixedWidthPopup ? popupWidth : "fit-content",
+                maxHeight: "100%",
+                ...popupStyles,
+                overflow: "hidden",
+                overflowY: "auto",
+                opacity: visible ? 1 : 0,
+                transform: visible
+                  ? "translate(0, 0)"
+                  : getInitialTransform(actualPlacement),
+                pointerEvents: visible ? "auto" : "none",
+                transition: "opacity 0.2s ease, transform 0.2s ease",
+                zIndex: "var(--z-dropdown)",
+              }}
+              onMouseEnter={() => {
+                if (!isHoverTrigger || disabled) return;
+                setOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (!isHoverTrigger || disabled) return;
+                setOpen(false);
+              }}
+            >
+              {menuContent}
+            </Stack>
           </Stack>,
           document.body
         )}

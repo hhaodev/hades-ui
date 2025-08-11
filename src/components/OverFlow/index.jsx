@@ -168,11 +168,8 @@ export default function OverFlow({
 
         {overflowItems.length > 0 && (
           <Dropdown
-            trigger={["click", "hover"]}
             ref={dropdownRef}
-            popupStyles={{
-              width: "fit-content",
-            }}
+            fixedWidthPopup={false}
             menu={() =>
               customPopup ? (
                 customPopup({

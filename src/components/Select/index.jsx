@@ -48,7 +48,6 @@ const Select = forwardRef(function Select(
   const containerRef = useRef(null);
   const menuRef = useRef(null);
   const itemRefs = useRef({});
-  const clearTimerRef = useRef();
 
   const [finalValue, setFinalValue] = useMergedState(multiple ? [] : "", {
     value,
@@ -113,10 +112,8 @@ const Select = forwardRef(function Select(
 
   useEffect(() => {
     if (!open && hasSearch) {
-      clearTimeout(clearTimerRef.current);
-      clearTimerRef.current = setTimeout(() => setSearch(""), 200);
+      setSearch("");
     }
-    return () => clearTimeout(clearTimerRef.current);
   }, [open, hasSearch]);
 
   const handleSelectSingle = (opt) => {
@@ -285,6 +282,11 @@ const Select = forwardRef(function Select(
         setIsEnter(true);
       }}
       onBlur={(e) => {
+        const next = e.relatedTarget;
+        const portalEl = document.getElementById(id);
+        if (next && portalEl && portalEl.contains(next)) {
+          return;
+        }
         onBlur?.(e);
         setIsEnter(false);
       }}
@@ -299,7 +301,7 @@ const Select = forwardRef(function Select(
         onOpenChange={setOpen}
         getPlacement={setPlacement}
         menu={() => (
-          <Stack wfull onPointerDownCapture={(e) => e.preventDefault()}>
+          <Stack wfull onPointerDownCapture={(e) => e.stopPropagation()}>
             {hasSearch && (
               <Stack wfull style={{ padding: "8px" }}>
                 <Input
