@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useMergedState } from "../../utils";
+import { isEmpty, useMergedState } from "../../utils";
 import Button from "../Button";
 import Dropdown from "../Dropdown";
 import { DropdownItem } from "../Dropdown/DropdownItem";
@@ -112,7 +112,7 @@ const Select = forwardRef(function Select(
 
   useEffect(() => {
     if (!open && hasSearch) {
-      setSearch("");
+      setTimeout(() => setSearch(""), 200);
     }
   }, [open, hasSearch]);
 
@@ -352,9 +352,9 @@ const Select = forwardRef(function Select(
               e.stopPropagation();
               if (disabled) return;
               const hasValue = multiple
-                ? Array.isArray(finalValue) && finalValue.length > 0
-                : Boolean(selectedSingle);
-              if (hasValue) {
+                ? !isEmpty(finalValue)
+                : !isEmpty(selectedSingle);
+              if (hasValue && !open) {
                 clearAll();
               } else if (open) {
                 setOpen(false);
@@ -369,11 +369,9 @@ const Select = forwardRef(function Select(
               color: "var(--hadesui-placeholder-color)",
             }}
           >
-            {(
-              multiple
-                ? Array.isArray(finalValue) && finalValue.length > 0
-                : Boolean(selectedSingle)
-            ) ? (
+            {(multiple
+              ? Array.isArray(finalValue) && finalValue.length > 0
+              : Boolean(selectedSingle)) && !open ? (
               <XIcon />
             ) : open && !placement.startsWith("top") ? (
               <UpIcon />

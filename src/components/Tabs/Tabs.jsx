@@ -4,7 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import { useMergedState } from "../../utils";
 import Button from "../Button";
@@ -125,18 +125,18 @@ function Tabs({
     }
   };
   useLayoutEffect(() => {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       updateIndicator();
-    }, 0);
+    });
   }, [currentActive, overflowKeysRef.current.length]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const observer = new ResizeObserver(() => {
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         updateIndicator();
-      }, 0);
+      });
     });
 
     observer.observe(containerRef.current);

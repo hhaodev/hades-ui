@@ -14,7 +14,7 @@ import { CloseIcon, FilterIcon, SearchIcon } from "../Icon";
 import Dropdown from "../Dropdown";
 import Button from "../Button";
 import Input from "../Input";
-import { getTextFromNode } from "../../utils";
+import { getTextFromNode, isEmpty } from "../../utils";
 import SortWorker from "../../sortWorker.js?worker";
 
 const SELECT_COL_W = 40;
@@ -670,8 +670,7 @@ const Table = ({
 
   const hasActiveFilters = useMemo(() => {
     return Object.values(columnFilters).some(
-      (filter) =>
-        filter.search !== "" || (filter.selected && filter.selected.length > 0)
+      (filter) => !isEmpty(filter.search) || !isEmpty(filter.selected)
     );
   }, [columnFilters]);
 

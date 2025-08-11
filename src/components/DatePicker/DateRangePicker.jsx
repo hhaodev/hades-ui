@@ -317,22 +317,24 @@ const DateRangePicker = forwardRef(
           onClick={(e) => {
             e.stopPropagation();
             if (disabled) return;
-            if (endDate && startDate) {
+            if (startDate && endDate && !openEnd && !openStart) {
               setStartDate(null);
               setEndDate(null);
               setOpenStart(false);
               setOpenEnd(false);
+              return;
             }
-            if (!startDate && (openEnd || openStart)) {
+            if (openStart || openEnd) {
               setOpenStart(false);
               setOpenEnd(false);
-            } else if (!openStart && !startDate) {
+              return;
+            }
+            if (!startDate) {
               setOpenStart(true);
-            } else if (!endDate && (openEnd || openStart)) {
+              setOpenEnd(false);
+            } else {
+              setOpenEnd(true);
               setOpenStart(false);
-              setOpenEnd(false);
-            } else if (!openEnd && !endDate) {
-              setOpenEnd(false);
             }
           }}
         >

@@ -189,7 +189,7 @@ function App() {
     });
   }
   const TabList = () => {
-    const tabs = Array.from({ length: 20 }, (_, i) => i + 1);
+    const tabs = Array.from({ length: 30 }, (_, i) => i + 1);
 
     return (
       <>

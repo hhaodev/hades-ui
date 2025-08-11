@@ -113,7 +113,7 @@ function MessageRoot({ onReady }) {
         justifyContent: "center",
         alignItems: "center",
         gap: 16,
-        zIndex: 1001,
+        zIndex: "var(--z-message)",
       }}
     >
       <AnimatePresence mode="popLayout">

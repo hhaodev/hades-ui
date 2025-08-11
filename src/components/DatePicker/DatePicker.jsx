@@ -165,7 +165,7 @@ const DatePicker = forwardRef(
               onClick={(e) => {
                 e.stopPropagation();
                 if (disabled) return;
-                if (finalValue) {
+                if (finalValue && !open) {
                   setFinalValue(null);
                   onClear?.();
                   setOpen(false);
@@ -176,7 +176,7 @@ const DatePicker = forwardRef(
                 }
               }}
             >
-              {finalValue ? (
+              {finalValue && !open ? (
                 <XIcon />
               ) : open && !placement.startsWith("top") ? (
                 <UpIcon />

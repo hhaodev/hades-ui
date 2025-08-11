@@ -121,13 +121,18 @@ export default function OverFlow({
 
   const renderForMeasure = (child) => {
     if (!React.isValidElement(child)) return child;
-    if (child.type === Dropdown || child.type.displayName === "Dropdown") {
-      const newChild = React.cloneElement(child, {
-        disabled: true,
-      });
-      return newChild;
-    }
-    return child;
+
+    const extraProps = {
+      style: { ...(child.props.style || {}), pointerEvents: "none" },
+      tabIndex: -1,
+    };
+
+    if ("disabled" in child.props) extraProps.disabled = true;
+    if ("disable" in child.props) extraProps.disable = true;
+    if ("readOnly" in child.props) extraProps.readOnly = true;
+    if ("isDisabled" in child.props) extraProps.isDisabled = true;
+
+    return React.cloneElement(child, extraProps);
   };
 
   return (
@@ -179,6 +184,7 @@ export default function OverFlow({
 
         {overflowItems.length > 0 && (
           <Dropdown
+            trigger={["hover", "click"]}
             ref={dropdownRef}
             fixedWidthPopup={false}
             menu={() =>
