@@ -119,6 +119,17 @@ export default function OverFlow({
   const visibleItems = items.slice(0, visibleCount);
   const overflowItems = items.slice(visibleCount);
 
+  const renderForMeasure = (child) => {
+    if (!React.isValidElement(child)) return child;
+    if (child.type === Dropdown || child.type.displayName === "Dropdown") {
+      const newChild = React.cloneElement(child, {
+        disabled: true,
+      });
+      return newChild;
+    }
+    return child;
+  };
+
   return (
     <>
       {/* Measurement */}
@@ -136,7 +147,7 @@ export default function OverFlow({
       >
         {items.map((child, i) => (
           <div key={i} style={{ flexShrink: 0 }}>
-            {child}
+            {renderForMeasure(child)}
           </div>
         ))}
         <div ref={moreFakeRef} style={{ flexShrink: 0 }}>

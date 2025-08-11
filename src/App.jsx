@@ -1091,7 +1091,7 @@ function App() {
             <Dropdown placement="bottom-end" menu={menu}>
               <Button theme="default">BOT R</Button>
             </Dropdown>
-            <Dropdown open={open} onOpenChange={setOpen} menu={menu}>
+            <Dropdown menu={menu}>
               <Button theme="default">NO</Button>
             </Dropdown>
             <Dropdown menu={menu} placement="right">
@@ -1104,6 +1104,8 @@ function App() {
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
             <Dropdown
+              open={open}
+              onOpenChange={setOpen}
               menu={
                 <Select
                   hasSearch
@@ -1117,6 +1119,14 @@ function App() {
             >
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
+            <Select
+              hasSearch
+              options={Array.from({ length: 5 }, (_, i) => {
+                const val = `${i + 1}0000000000000`.toString();
+                return { label: val, value: val };
+              })}
+              placeholder="Select..."
+            />
             <Dropdown menu={<>hehehehehehe</>}>
               <Button theme="default">Open Custom Popup</Button>
             </Dropdown>
