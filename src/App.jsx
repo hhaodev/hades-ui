@@ -20,6 +20,7 @@ import {
   Panel,
   ResizableBox,
   RightClickMenu,
+  ScrollerDiv,
   SearchIcon,
   Select,
   Stack,
@@ -187,34 +188,19 @@ function App() {
       }, delay);
     });
   }
-  const TabList = () => (
-    <>
-      <Tabs.Item tabKey="tab1" title="Tab 1">
-        <Render key="tab1" title={1} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab2" title="Tab 2">
-        <Render key="tab2" title={2} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab3" title="Tab 3">
-        <Render key="tab3" title={3} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab4" title="Tab 4">
-        <Render key="tab4" title={4} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab5" title="Tab 5">
-        <Render key="tab5" title={5} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab6" title="Tab 6">
-        <Render key="tab6" title={6} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab7" title="Tab 7">
-        <Render key="tab7" title={7} />
-      </Tabs.Item>
-      <Tabs.Item tabKey="tab8" title="Tab 8">
-        <Render key="tab8" title={8} />
-      </Tabs.Item>
-    </>
-  );
+  const TabList = () => {
+    const tabs = Array.from({ length: 20 }, (_, i) => i + 1);
+
+    return (
+      <>
+        {tabs.map((n) => (
+          <Tabs.Item key={`tab-${n}`} tabKey={`tab${n}`} title={`Tab ${n}`}>
+            <Render title={n} key={`tab-${n}`} />
+          </Tabs.Item>
+        ))}
+      </>
+    );
+  };
 
   const columns = useMemo(() => {
     return [
@@ -419,7 +405,7 @@ function App() {
       return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
     };
 
-    return Array.from({ length: 10000 }, (_, i) => {
+    return Array.from({ length: 500000 }, (_, i) => {
       const id = (i + 1).toString();
       const key = id;
       const first = firstNames[Math.floor(rand() * firstNames.length)];
@@ -474,6 +460,50 @@ function App() {
     });
   }, []);
 
+  const mockData = Array.from({ length: 200 }, (_, i) => ({
+    id: i + 1,
+    name: `Item ${i + 1}`,
+  }));
+
+  // API giả lập
+  function mockApi(pageIndex, pageSize) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const size = Math.min(pageSize, 35);
+        const start = (pageIndex - 1) * size;
+        const end = start + size;
+        resolve({
+          data: mockData.slice(start, end),
+          hasMore: end < mockData.length,
+        });
+      }, 1000);
+    });
+  }
+
+  const [items, setItems] = useState([]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasNextLoad, setHasNextLoad] = useState(true);
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchPage = async () => {
+      setIsLoading(true);
+      const res = await mockApi(pageIndex, pageSize);
+      if (isCancelled) return;
+
+      setItems((prev) => (pageIndex === 0 ? res.data : [...prev, ...res.data]));
+      setHasNextLoad(res.hasMore);
+      setIsLoading(false);
+    };
+
+    fetchPage();
+    return () => {
+      isCancelled = true;
+    };
+  }, [pageIndex, pageSize]);
+
   return (
     <>
       <Stack
@@ -499,6 +529,30 @@ function App() {
         {/* end theme region */}
         <DragDropTable data={data} onChange={handleMove} />
         <UploadFile multiple onChange={setFile} />
+        <div style={{ height: "500px", border: "1px solid #ccc" }}>
+          <ScrollerDiv
+            hasNextLoad={hasNextLoad}
+            isLoading={isLoading}
+            onLoadNext={() => {
+              setPageIndex((prev) => prev + 1);
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {items.map((item) => (
+                <div
+                  style={{
+                    height: "40px",
+                    width: "100%",
+                    background: "green",
+                  }}
+                  key={item.id}
+                >
+                  {item.name}
+                </div>
+              ))}
+            </div>
+          </ScrollerDiv>
+        </div>
         {/* <DragDropProvider onDragEnd={(props) => console.log(props)}>
           <Droppable droppableId="board" acceptType="column">
             <div style={{ display: "flex", gap: 8 }}>
@@ -590,7 +644,7 @@ function App() {
           </Droppable>
         </DragDropProvider> */}
         <Table
-          checkable="radio" //radio || true || checkbox // default === true === checkbox
+          checkable //radio || true || checkbox // default === true === checkbox
           columns={columns}
           data={dataTable}
           onCheck={(items) => {
