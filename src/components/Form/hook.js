@@ -18,11 +18,28 @@ export function useForm() {
     getFieldsValue: () => methods.getValues(),
     resetFields: () => methods.reset(),
     submit: () =>
-      methods.handleSubmit((data) => {
-        instance.__internalSubmit?.(data);
-      })(),
-    __internalSetSubmit: (fn) => {
-      instance.__internalSubmit = fn;
+      methods.handleSubmit(
+        (data) => {
+          instance.__internalOnFinish?.(data);
+        },
+        (errors) => {
+          const values = methods.getValues();
+          const allFields = Object.keys(values);
+          const errorWithValues = allFields.reduce((acc, field) => {
+            if (errors[field]) {
+              acc[field] = { ...errors[field], value: values[field] };
+            } else {
+              acc[field] = values[field];
+            }
+            return acc;
+          }, {});
+          instance.__internalOnFinishFailed?.(errorWithValues);
+        }
+      )(),
+
+    __internalSetSubmit: (onFinish, onFinishFailed) => {
+      instance.__internalOnFinish = onFinish;
+      instance.__internalOnFinishFailed = onFinishFailed;
     },
   };
 

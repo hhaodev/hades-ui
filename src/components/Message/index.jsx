@@ -165,8 +165,7 @@ function MessageItem({ icon, type = "info", message, onClose, allowClear }) {
         backgroundColor: "var(--hadesui-bg-toast-color)",
         boxShadow: "0px 4px 16px var(--hadesui-boxshadow-color)",
         borderRadius: "8px",
-        width: "fit-content",
-        maxWidth: "600px",
+        maxWidth: "calc(100vw - 32px)",
         justifyContent: "space-between",
       }}
     >

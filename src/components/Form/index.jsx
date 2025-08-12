@@ -13,24 +13,50 @@ export function useFormInstance() {
   return ctx;
 }
 
-export function Form({ form, children, onFinish, defaultValues }) {
+export function Form({
+  form,
+  children,
+  onFinish,
+  onFinishFailed,
+  defaultValues,
+}) {
   const fallbackMethods = useReactHookForm({ defaultValues });
   const methods = form?.internalHook ?? fallbackMethods;
 
   useEffect(() => {
     if (form) {
-      form.__internalSetSubmit?.(onFinish);
+      form.__internalSetSubmit?.(onFinish, onFinishFailed);
     }
-  }, [form, onFinish]);
+  }, [form, onFinish, onFinishFailed]);
 
   const handleSubmit = (data) => {
     if (onFinish) onFinish(data);
   };
 
+  const handleError = (errors) => {
+    const values = methods.getValues();
+
+    const allFields = Object.keys(values);
+    const errorWithValues = allFields.reduce((acc, field) => {
+      if (errors[field]) {
+        acc[field] = {
+          ...errors[field],
+          value: values[field],
+        };
+      } else {
+        acc[field] = values[field];
+      }
+      return acc;
+    }, {});
+    if (onFinishFailed) onFinishFailed(errorWithValues);
+  };
+
   return (
     <FormContext.Provider value={methods}>
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(handleSubmit)}>{children}</form>
+        <form onSubmit={methods.handleSubmit(handleSubmit, handleError)}>
+          {children}
+        </form>
       </FormProvider>
     </FormContext.Provider>
   );

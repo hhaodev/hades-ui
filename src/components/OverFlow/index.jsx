@@ -127,10 +127,9 @@ export default function OverFlow({
       tabIndex: -1,
     };
 
-    if ("disabled" in child.props) extraProps.disabled = true;
-    if ("disable" in child.props) extraProps.disable = true;
-    if ("readOnly" in child.props) extraProps.readOnly = true;
-    if ("isDisabled" in child.props) extraProps.isDisabled = true;
+    extraProps.disabled = true;
+    extraProps.disable = "true";
+    extraProps.readOnly = true;
 
     return React.cloneElement(child, extraProps);
   };
@@ -184,7 +183,6 @@ export default function OverFlow({
 
         {overflowItems.length > 0 && (
           <Dropdown
-            trigger={["hover", "click"]}
             ref={dropdownRef}
             fixedWidthPopup={false}
             menu={() =>

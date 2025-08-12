@@ -266,7 +266,10 @@ function Tabs({
           );
         }}
         style={{
-          alignItems: tabPosition === "top" ? "start" : "end",
+          alignItems:
+            tabPosition !== "left" && tabPosition !== "bottom"
+              ? "start"
+              : "end",
         }}
         getOverflowKeys={(items) => {
           overflowKeysRef.current = items;

@@ -76,7 +76,7 @@ export default function ScrollerDiv(props) {
         >
           {[...Array(quantitySkeleton)].map((_, index) => (
             <div
-              key={index}
+              key={`skeleton-async-${index}`}
               style={{ width: "100%", background: "red", height: 40 }}
             />
           ))}

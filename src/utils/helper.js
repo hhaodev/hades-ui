@@ -101,12 +101,25 @@ export function useDisableScroll(condition = true, refOrEl = null) {
 }
 
 export function isEmpty(value) {
-  return (
-    value === undefined ||
-    value === null ||
-    value === "" ||
-    (Array.isArray(value) && value.length === 0)
-  );
+  if (value === undefined || value === null) return true;
+
+  if (typeof value === "string" && value.trim().length === 0) return true;
+
+  if (Array.isArray(value) && value.length === 0) return true;
+
+  if (value instanceof Map || value instanceof Set) {
+    return value.size === 0;
+  }
+
+  if (value instanceof Date) {
+    return isNaN(value.getTime());
+  }
+
+  if (typeof value === "object" && Object.keys(value).length === 0) {
+    return true;
+  }
+
+  return false;
 }
 
 export function disableBodyScrollSafe() {

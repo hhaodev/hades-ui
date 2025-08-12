@@ -338,7 +338,7 @@ const DateRangePicker = forwardRef(
             }
           }}
         >
-          {endDate && startDate ? (
+          {endDate && startDate && !openEnd && !openStart ? (
             <XIcon />
           ) : (openEnd || openStart) && !placement.startsWith("top") ? (
             <UpIcon />

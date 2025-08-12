@@ -233,6 +233,19 @@ const DragDropTable = ({ data = [], onChange }) => {
     });
   }
 
+  function handleCopyCol(col) {
+    const newCol = {
+      ...col,
+      id: Math.random().toString(),
+      title: `${col.title}-copy`,
+      items: (col.items || []).map((item) => ({
+        ...item,
+        id: Math.random().toString(),
+      })),
+    };
+    onChange((prev) => [...prev, newCol]);
+  }
+
   function updateCard({ card, oldCol, targetCol, dropIndex }) {
     const cardId = card.id;
     const oldColId = oldCol.id;
@@ -289,7 +302,7 @@ const DragDropTable = ({ data = [], onChange }) => {
   return (
     <motion.div
       layout
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       ref={(el) => (boardRef.current = el)}
       className={cn("dragdroptable-board", { active: active })}
       onDrop={(e) => {
@@ -328,6 +341,7 @@ const DragDropTable = ({ data = [], onChange }) => {
               handleDeleteCol={handleDeleteCol}
               handleDeleteCard={handleDeleteCard}
               handleCopyCard={handleCopyCard}
+              handleCopyCol={handleCopyCol}
               uuid={uuid}
             />
           </div>
@@ -356,6 +370,7 @@ const Column = React.forwardRef(
       handleDeleteCol,
       handleDeleteCard,
       handleCopyCard,
+      handleCopyCol,
       uuid,
     },
     ref
@@ -499,6 +514,14 @@ const Column = React.forwardRef(
                       <PenIcon /> <span>Edit</span>
                     </>
                   ),
+                },
+                {
+                  element: (
+                    <>
+                      <CopyIcon /> <span>Copy</span>
+                    </>
+                  ),
+                  onClick: () => handleCopyCol(column),
                 },
                 {
                   element: (
