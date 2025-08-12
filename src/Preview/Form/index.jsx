@@ -104,7 +104,7 @@ const FormDemo = () => {
         <Button type="submit">Submit in from</Button>
       </Form>
       <Stack flex gap={8} style={{ marginTop: 10 }}>
-        <Button type="submit">Submit out from</Button>
+        <Button onClick={() => form.submit()}>Submit out from</Button>
         <Button
           onClick={() =>
             form.setFieldsValue({

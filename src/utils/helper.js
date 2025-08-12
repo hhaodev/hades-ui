@@ -15,10 +15,7 @@ export function hasScrollbar(refOrEl) {
 export function getScrollbarWidth(refOrEl) {
   const el = getElement(refOrEl);
 
-  if (el && el !== document.body && el !== document.documentElement) {
-    if (!hasScrollbar(el)) return 0;
-    return el.offsetWidth - el.clientWidth;
-  }
+  if (!hasScrollbar(el)) return 0;
 
   const scrollDiv = document.createElement("div");
   scrollDiv.style.width = "100px";
