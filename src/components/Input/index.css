@@ -38,6 +38,46 @@
     padding-right: 32px;
 }
 
+.common-input.no-padding {
+    padding: 0
+}
+
+.input-wrapper.input-type-range {
+    padding: 0px 8px;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.common-input.input-type-range {
+    position: static;
+    accent-color: var(--hadesui-blue-6);
+}
+
+.input-wrapper.input-type-color {
+    width: 36px;
+    height: 36px;
+}
+
+.common-input.input-type-color {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.common-input.input-type-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.common-input.input-type-color::-webkit-color-swatch {
+    border-radius: 8px;
+}
+
+.common-input.input-type-color::-moz-color-swatch {
+    border-radius: 8px;
+}
+
 .input-icon {
     position: absolute;
     display: flex;

@@ -270,7 +270,7 @@ const TableDemo = () => {
       }}
       rowKey="key" //id để biết từng row là khác nhau
       style={{
-        maxHeight: "calc(100vh - 80px)",
+        maxHeight: "calc(100vh - 20px)",
       }}
     />
   );

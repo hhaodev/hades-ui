@@ -18,6 +18,7 @@ import PanelDemo from "./Preview/Panel";
 import ScrollerDivDemo from "./Preview/ScrollerDiv";
 import RightClickDemo from "./Preview/RightClickMenu";
 import DropdownDemo from "./Preview/Dropdown";
+import InputDemo from "./Preview/Input";
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
         navbar
       </Stack>
 
-      <Stack style={{ flex: 1, minWidth: 0 }}>
+      <Stack style={{ flex: 1, minWidth: 0, height: "100vh" }}>
         <Tabs destroy tabPosition="left">
           <Tabs.Item key={`theme`} tabKey={`theme`} title={`Theme`}>
             <ThemeDemo />
@@ -101,12 +102,11 @@ function App() {
           >
             <RightClickDemo />
           </Tabs.Item>
-          <Tabs.Item
-            key={`dropdown`}
-            tabKey={`dropdown`}
-            title={`Dropdown`}
-          >
+          <Tabs.Item key={`dropdown`} tabKey={`dropdown`} title={`Dropdown`}>
             <DropdownDemo />
+          </Tabs.Item>
+          <Tabs.Item key={`input`} tabKey={`input`} title={`Input`}>
+            <InputDemo />
           </Tabs.Item>
         </Tabs>
       </Stack>

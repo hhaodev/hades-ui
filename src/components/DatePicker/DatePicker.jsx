@@ -32,7 +32,7 @@ const DatePicker = forwardRef(
     const [open, setOpen] = useState(false);
     const dateMemo = useMemo(() => toDate(valueProps), [valueProps]);
     const [finalValue, setFinalValue] = useMergedState(null, {
-      value: dateMemo,
+      value: valueProps ? dateMemo : undefined,
       onChange,
     });
 
@@ -47,7 +47,7 @@ const DatePicker = forwardRef(
     useEffect(() => {
       const isChanged = finalValue?.getTime() !== prevDate?.getTime();
       if (isChanged) {
-        onChange(finalValue);
+        onChange?.(finalValue);
       }
     }, [finalValue]);
 

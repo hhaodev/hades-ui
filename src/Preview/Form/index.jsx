@@ -34,6 +34,12 @@ const FormDemo = () => {
         >
           <Input placeholder="Nhập email" />
         </Form.Item>
+        <Form.Item label="Color" name="color" rules={[{ required: true }]}>
+          <Input type="color" />
+        </Form.Item>
+        <Form.Item label="Range" name="range" rules={[{ required: true }]}>
+          <Input type="range" />
+        </Form.Item>
         <Form.Item
           label="Age"
           name="age"

@@ -45,7 +45,7 @@ const ScrollerDivDemo = () => {
     };
   }, [pageIndex, pageSize]);
   return (
-    <div style={{ height: "500px", border: "1px solid #ccc" }}>
+    <div style={{ height: "calc(100vh - 20px)", border: "1px solid #ccc" }}>
       <ScrollerDiv
         hasNextLoad={hasNextLoad}
         isLoading={isLoading}

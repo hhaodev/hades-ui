@@ -245,7 +245,7 @@ function Tabs({
                   ? {
                       width: "100%",
                       display: "flex",
-                      justifyContent: "center",
+                      justifyContent: tabPosition === "right" ? "start" : "end",
                       padding: "0px 8px",
                     }
                   : { height: "100%", display: "flex", alignItems: "center" }),
