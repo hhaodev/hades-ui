@@ -85,6 +85,7 @@ const DatePicker = forwardRef(
             : "transparent",
           cursor: disabled ? "not-allowed" : "pointer",
           transition: "border-color 0.2s ease",
+          overflow: "hidden",
           ...style,
         }}
         onMouseEnter={(e) => {

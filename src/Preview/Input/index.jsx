@@ -7,16 +7,24 @@ const InputDemo = () => {
       <Input />
       <Stack>Input number</Stack>
       <Input type="number" />
+      <Stack>Color picker</Stack>
       <Input
         type="color"
         onChange={(v) => {
           console.log(v.target.value);
         }}
       />
+      <Stack>Range picker</Stack>
       <Input
         type="range"
         onChange={(v) => {
           console.log(v.target.value);
+        }}
+      />
+      <Stack>OTP</Stack>
+      <Input.OTP
+        onChange={(v) => {
+          console.log(v);
         }}
       />
       <Stack>Date picker</Stack>

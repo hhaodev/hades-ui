@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import "./index.css";
 import { cn } from "../../utils";
+import OtpInput from "../OTPInput";
 const SUPPORTED_TYPES = new Set([
   "text",
   "password",
@@ -116,4 +117,5 @@ const Input = forwardRef(
 );
 
 Input.displayName = "Input";
+Input.OTP = OtpInput;
 export default Input;

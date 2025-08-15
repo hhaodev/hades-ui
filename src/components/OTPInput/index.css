@@ -1,0 +1,22 @@
+.otp-input-container {
+    display: flex;
+    gap: 16px;
+    width: fit-content;
+}
+
+.otp-input {
+    width: 40px;
+    height: 60px;
+    text-align: center;
+    font-size: 32px;
+    border-radius: 8px;
+    outline: none;
+    background-color: transparent;
+    color: var(--hadesui-text-color);
+    border: 1px solid var(--hadesui-border-color);
+    transition: border-color 0.2s ease;
+}
+
+.otp-input:focus {
+    border-color: var(--hadesui-blue-6);
+}

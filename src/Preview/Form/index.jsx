@@ -56,7 +56,7 @@ const FormDemo = () => {
           <Input placeholder="Input number ..." type="number" />
         </Form.Item>
 
-        <Form.Item label="Checkbox" name="file" rules={[{ required: true }]}>
+        <Form.Item label="File" name="file">
           <UploadFile
             accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
             multiple
@@ -106,6 +106,9 @@ const FormDemo = () => {
         <Form.Item label="Check" name="check" rules={[{ required: true }]}>
           <Checkbox />
         </Form.Item>
+        <Form.Item label="OTP" name="otp" rules={[{ required: true }]}>
+          <Input.OTP />
+        </Form.Item>
 
         <Button type="submit">Submit in from</Button>
       </Form>
@@ -118,12 +121,15 @@ const FormDemo = () => {
                 start: "2025-07-22T17:00:00.000Z",
                 end: "2025-07-26T17:00:00.000Z",
               },
+              range: "10",
               date: "2025-07-22T17:00:00.000Z",
               email: "test@gmail.com",
               age: 54,
               select: 15,
               selectmultiple: [4, 2, 3],
               check: true,
+              otp: "123123",
+              color: "#ffffff",
             })
           }
         >
