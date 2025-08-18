@@ -108,6 +108,8 @@ function MessageRoot({ onReady }) {
         top: 20,
         left: "50%",
         transform: "translateX(-50%)",
+        width: 0,
+        overflow: "visible",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -165,6 +167,7 @@ function MessageItem({ icon, type = "info", message, onClose, allowClear }) {
         backgroundColor: "var(--hadesui-bg-toast-color)",
         boxShadow: "0px 4px 16px var(--hadesui-boxshadow-color)",
         borderRadius: "8px",
+        width: "fit-content",
         maxWidth: "calc(100vw - 32px)",
         justifyContent: "space-between",
       }}

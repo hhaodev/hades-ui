@@ -44,6 +44,7 @@ const Tooltip = forwardRef(
     const [visible, setVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const [positionStyle, setPositionStyle] = useState({});
+    const [actualPlacement, setActualPlacement] = useState(placement);
     const cleanupRef = useRef(null);
     const hideTimer = useRef(null);
     const hideTimer2 = useRef(null);
@@ -77,7 +78,7 @@ const Tooltip = forwardRef(
       clearTimeout(hideTimer2.current);
       hideTimer.current = setTimeout(() => {
         setShouldRender(true);
-        setTimeout(() => setVisible(true), 50);
+        setTimeout(() => setVisible(true), 100);
       }, delay);
     };
 
@@ -106,12 +107,13 @@ const Tooltip = forwardRef(
             flip(["top", "bottom", "left", "right"]),
             shift(),
           ],
-        }).then(({ x, y }) => {
+        }).then(({ x, y, placement: resolvedPlacement }) => {
           setPositionStyle({
             position: "absolute",
             left: `${x}px`,
             top: `${y}px`,
           });
+          setActualPlacement(resolvedPlacement);
         });
       });
       cleanupRef.current = cleanup;
@@ -198,14 +200,14 @@ const Tooltip = forwardRef(
                 fontSize: 13,
                 lineHeight: "18px",
                 borderRadius: 4,
-                maxWidth: "50%",
+                maxWidth: "clamp(200px, 50%, 800px)",
                 wordWrap: "break-word",
                 whiteSpace: "normal",
                 pointerEvents: "auto",
                 opacity: visible ? 1 : 0,
                 transform: visible
                   ? "translateY(0)"
-                  : getInitialTransform(placement),
+                  : getInitialTransform(actualPlacement),
                 transition: "opacity 0.2s ease, transform 0.2s ease",
                 zIndex: "var(--z-tooltip)",
                 ...style,
