@@ -1,114 +1,109 @@
-import { Stack, Tabs } from "./components";
-import ThemeDemo from "./Preview/Theme";
-import FormDemo from "./Preview/Form";
-import TableDemo from "./Preview/Table";
-import OverflowDemo from "./Preview/Overflow";
-import TooltipDemo from "./Preview/Tooltip";
-import TabDemo from "./Preview/Tab";
+import { useEffect, useState } from "react";
+import { ImageIcon, Sidebar, Stack } from "./components";
 import ButtonDemo from "./Preview/Button";
 import DividerDemo from "./Preview/Divider";
-import FileUploadDemo from "./Preview/FileUpload";
 import DndDemo from "./Preview/Dnd";
+import DropdownDemo from "./Preview/Dropdown";
+import FileUploadDemo from "./Preview/FileUpload";
+import FormDemo from "./Preview/Form";
+import InputDemo from "./Preview/Input";
 import KanbanTable from "./Preview/Kanban";
 import LoadingDemo from "./Preview/Loading";
 import MessageDemo from "./Preview/Message";
-import NotificationDemo from "./Preview/Notification";
 import ModalDemo from "./Preview/Modal";
+import NotificationDemo from "./Preview/Notification";
+import OverflowDemo from "./Preview/Overflow";
 import PanelDemo from "./Preview/Panel";
-import ScrollerDivDemo from "./Preview/ScrollerDiv";
 import RightClickDemo from "./Preview/RightClickMenu";
-import DropdownDemo from "./Preview/Dropdown";
-import InputDemo from "./Preview/Input";
+import ScrollerDivDemo from "./Preview/ScrollerDiv";
+import TabDemo from "./Preview/Tab";
+import TableDemo from "./Preview/Table";
+import ThemeDemo from "./Preview/Theme";
+import TooltipDemo from "./Preview/Tooltip";
 
 function App() {
+  const components = [
+    { key: "theme", title: "Theme", component: <ThemeDemo /> },
+    { key: "form", title: "Form", component: <FormDemo /> },
+    { key: "table", title: "Table", component: <TableDemo /> },
+    { key: "overflow", title: "Overflow", component: <OverflowDemo /> },
+    { key: "tooltip", title: "Tooltip", component: <TooltipDemo /> },
+    { key: "tabs", title: "Tabs", component: <TabDemo /> },
+    { key: "button", title: "Button", component: <ButtonDemo /> },
+    { key: "divider", title: "Divider", component: <DividerDemo /> },
+    { key: "fileupload", title: "FileUpload", component: <FileUploadDemo /> },
+    { key: "dnd", title: "DndContext", component: <DndDemo /> },
+    { key: "kanban", title: "KanbanTable", component: <KanbanTable /> },
+    { key: "loading", title: "Loading", component: <LoadingDemo /> },
+    { key: "message", title: "Message", component: <MessageDemo /> },
+    {
+      key: "notification",
+      title: "Notification",
+      component: <NotificationDemo />,
+    },
+    { key: "modal", title: "Modal", component: <ModalDemo /> },
+    { key: "panel", title: "Panel", component: <PanelDemo /> },
+    { key: "scroller", title: "ScrollerDiv", component: <ScrollerDivDemo /> },
+    {
+      key: "rightclick",
+      title: "RightClickMenu",
+      component: <RightClickDemo />,
+    },
+    { key: "dropdown", title: "Dropdown", component: <DropdownDemo /> },
+    { key: "input", title: "Input", component: <InputDemo /> },
+  ];
+
+  const getKeyFromUrl = () => {
+    const urlKey = window.location.pathname.slice(1);
+    const keys = components.map((c) => c.key);
+    return keys.includes(urlKey) ? urlKey : "theme";
+  };
+
+  const [selectedKey, setSelectedKey] = useState(getKeyFromUrl());
+
+  const handleSelect = (key) => {
+    setSelectedKey(key);
+  };
+
+  useEffect(() => {
+    const onPopState = () => setSelectedKey(getKeyFromUrl());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    window.history.pushState(null, "", `/${selectedKey}`);
+  }, [selectedKey]);
+
+  const navItem = components.map(({ key, title }) => ({
+    key,
+    title,
+    icon: ImageIcon,
+    onClick: () => handleSelect(key),
+    // notifs: 4,
+  }));
+
+  const componentMap = Object.fromEntries(
+    components.map(({ key, component }) => [key, component])
+  );
+
   return (
-    <Stack flex>
+    <Stack
+      flex
+      style={{
+        height: "100vh",
+        overflow: "auto",
+      }}
+    >
+      <Sidebar items={navItem} defaultSelectedKey={selectedKey} />
       <Stack
         style={{
-          top: 0,
-          height: "100vh",
-          flex: "0 0 180px",
-          position: "sticky",
+          flex: 1,
+          minWidth: 0,
+          padding: 10,
         }}
       >
-        navbar
-      </Stack>
-
-      <Stack style={{ flex: 1, minWidth: 0, height: "100vh" }}>
-        <Tabs destroy tabPosition="left">
-          <Tabs.Item key={`theme`} tabKey={`theme`} title={`Theme`}>
-            <ThemeDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`form`} tabKey={`form`} title={`Form`}>
-            <FormDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`table`} tabKey={`table`} title={`Table`}>
-            <TableDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`overflow`} tabKey={`overflow`} title={`Overflow`}>
-            <OverflowDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`tooltip`} tabKey={`tooltip`} title={`Tooltip`}>
-            <TooltipDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`tab`} tabKey={`tab`} title={`Tabs`}>
-            <TabDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`button`} tabKey={`button`} title={`Button`}>
-            <ButtonDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`divider`} tabKey={`divider`} title={`Divider`}>
-            <DividerDemo />
-          </Tabs.Item>
-          <Tabs.Item
-            key={`fileupload`}
-            tabKey={`fileupload`}
-            title={`Fileupload`}
-          >
-            <FileUploadDemo />
-          </Tabs.Item>
-          <Tabs.Item
-            key={`dndContext`}
-            tabKey={`dndContext`}
-            title={`dndContext`}
-          >
-            <DndDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`kanban`} tabKey={`kanban`} title={`Kanban table`}>
-            <KanbanTable />
-          </Tabs.Item>
-          <Tabs.Item key={`loading`} tabKey={`loading`} title={`Loading`}>
-            <LoadingDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`message`} tabKey={`message`} title={`Message`}>
-            <MessageDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`toast`} tabKey={`toast`} title={`Toast`}>
-            <NotificationDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`modal`} tabKey={`modal`} title={`Modal`}>
-            <ModalDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`Panel`} tabKey={`Panel`} title={`Panel`}>
-            <PanelDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`scroller`} tabKey={`scroller`} title={`ScrollerDiv`}>
-            <ScrollerDivDemo />
-          </Tabs.Item>
-          <Tabs.Item
-            key={`RightClickDemo`}
-            tabKey={`RightClickDemo`}
-            title={`RightClickMenu`}
-          >
-            <RightClickDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`dropdown`} tabKey={`dropdown`} title={`Dropdown`}>
-            <DropdownDemo />
-          </Tabs.Item>
-          <Tabs.Item key={`input`} tabKey={`input`} title={`Input`}>
-            <InputDemo />
-          </Tabs.Item>
-        </Tabs>
+        {componentMap[selectedKey]}
       </Stack>
     </Stack>
   );

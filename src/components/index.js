@@ -20,6 +20,7 @@ export { default as Table } from "./Table";
 export { default as Checkbox } from "./Checkbox";
 export { default as SortIcon } from "./SortIcon";
 export { default as ScrollerDiv } from "./ScrollerDiv";
+export { default as Sidebar } from "./Sidebar";
 export * from "./Message";
 export * from "./Toast";
 export * from "./DatePicker";

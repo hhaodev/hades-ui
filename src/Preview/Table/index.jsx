@@ -206,7 +206,7 @@ const TableDemo = () => {
       return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
     };
 
-    return Array.from({ length: 500000 }, (_, i) => {
+    return Array.from({ length: 1000 }, (_, i) => {
       const id = (i + 1).toString();
       const key = id;
       const first = firstNames[Math.floor(rand() * firstNames.length)];
