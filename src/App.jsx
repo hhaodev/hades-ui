@@ -63,6 +63,7 @@ function App() {
 
   const handleSelect = (key) => {
     setSelectedKey(key);
+    window.history.pushState(null, "", `/${key}`);
   };
 
   useEffect(() => {
@@ -71,16 +72,25 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  useEffect(() => {
-    window.history.pushState(null, "", `/${selectedKey}`);
-  }, [selectedKey]);
-
   const navItem = components.map(({ key, title }) => ({
     key,
     title,
     icon: ImageIcon,
     onClick: () => handleSelect(key),
-    // notifs: 4,
+    // children: [
+    //   {
+    //     key: `sub1of${key}`,
+    //     title: `sub1 of ${key}`,
+    //     icon: ImageIcon,
+    //     onClick: () => handleSelect(key),
+    //   },
+    //   {
+    //     key: `sub2of${key}`,
+    //     title: `sub2 of ${key}`,
+    //     icon: ImageIcon,
+    //     onClick: () => handleSelect(key),
+    //   },
+    // ],
   }));
 
   const componentMap = Object.fromEntries(
@@ -94,7 +104,11 @@ function App() {
         height: "100vh",
       }}
     >
-      <Sidebar items={navItem} defaultSelectedKey={selectedKey} />
+      <Sidebar
+        items={navItem}
+        defaultSelectedKey={selectedKey}
+        selectedKey={selectedKey}
+      />
       <Stack
         style={{
           flex: 1,

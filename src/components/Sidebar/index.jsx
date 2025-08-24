@@ -1,12 +1,16 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 import Ellipsis from "../Ellipsis";
-import { DoubleRightIcon } from "../Icon";
+import { DoubleRightIcon, DownIcon, UpIcon } from "../Icon";
 import Tooltip from "../Tooltip";
+import { useMergedState } from "../../utils";
 
-const Sidebar = ({ items = [], defaultSelectedKey = "" }) => {
+const Sidebar = ({ items = [], defaultSelectedKey, selectedKey }) => {
   const [open, setOpen] = useState(true);
-  const [selected, setSelected] = useState(defaultSelectedKey ?? items[0]?.key);
+  const [selected, setSelected] = useMergedState(items[0]?.key, {
+    value: selectedKey,
+    defaultValue: defaultSelectedKey,
+  });
 
   const needAnimate = useRef(false);
 
@@ -18,7 +22,7 @@ const Sidebar = ({ items = [], defaultSelectedKey = "" }) => {
         top: 0,
         height: "100vh",
         flexShrink: 0,
-        width: open ? 220 : "fit-content",
+        width: open ? 220 : 60,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -68,120 +72,158 @@ const Sidebar = ({ items = [], defaultSelectedKey = "" }) => {
   );
 };
 
-const Option = ({ item, selected, setSelected, open, needAnimate }) => {
+const Option = ({
+  item,
+  selected,
+  setSelected,
+  open,
+  needAnimate,
+  level = 0,
+}) => {
+  const [expanded, setExpanded] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const isActive = selected === item.key;
+
   const handleClick = (e) => {
-    if (item.onClick) item.onClick(e);
-    setSelected(item.key);
+    if (item.children) {
+      if (!open) return;
+      setExpanded((prev) => !prev);
+    } else {
+      if (item.onClick) item.onClick(e);
+      setSelected(item.key);
+    }
   };
   return (
-    <motion.div
-      layout
-      onClick={() => handleClick()}
-      style={{
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: open ? "start" : "center",
-        height: 40,
-        minHeight: 40,
-        width: "100%",
-        borderRadius: 8,
-        background:
-          selected === item.key
-            ? "var(--hadesui-bg-selected-color)"
-            : "var(--hadesui-bg-color)",
-        cursor: "pointer",
-        padding: "0 8px",
-        gap: 6,
-        fontSize: 14,
-        color: selected === item.key ? "var(--hadesui-blue-6)" : undefined,
-        transition: "background 0.2s ease, color 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (selected === item.key) return;
-        e.currentTarget.style.background = "var(--hadesui-bg-selected-color)";
-      }}
-      onMouseLeave={(e) => {
-        if (selected === item.key) return;
-        e.currentTarget.style.background = "var(--hadesui-bg-color)";
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: -7,
-          top: 0,
-          bottom: 0,
-          minWidth: 3,
-          borderRadius: 2,
-          background: "var(--hadesui-blue-6)",
-          opacity: selected === item.key ? 1 : 0,
-          transition: "opacity 0.2s ease",
-        }}
-      />
+    <>
       <motion.div
         layout
+        onClick={handleClick}
         style={{
-          display: "grid",
-          placeContent: "center",
-          width: 20,
-          height: "100%",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: open ? "start" : "center",
+          height: 40,
+          minHeight: 40,
+          width: `calc(100% - ${level * 12}px)`,
+          marginLeft: open ? level * 12 : 0,
+          borderRadius: 8,
+          background:
+            isActive || hovered
+              ? "var(--hadesui-bg-selected-color)"
+              : "var(--hadesui-bg-color)",
+          cursor: "pointer",
+          padding: "0 8px",
+          gap: 6,
+          fontSize: 14,
+          color: isActive ? "var(--hadesui-blue-6)" : undefined,
+          transition: "background 0.2s ease, color 0.2s ease",
+        }}
+        onMouseEnter={() => {
+          setHovered(true);
+        }}
+        onMouseLeave={() => {
+          setHovered(false);
         }}
       >
-        <item.icon />
-      </motion.div>
-      {open && (
-        <>
-          {needAnimate ? (
-            <motion.span
-              layout
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.125 }}
-              style={{
-                maxWidth: `calc(100% - ${item.notifs ? "60px" : "44px"})`,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Ellipsis>{item.title}</Ellipsis>
-            </motion.span>
-          ) : (
-            <span
-              style={{
-                maxWidth: `calc(100% - ${item.notifs ? "60px" : "44px"})`,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Ellipsis>{item.title}</Ellipsis>
-            </span>
-          )}
-        </>
-      )}
-      {item.notifs && open && (
-        <motion.span
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: isActive || hovered ? 1 : 0,
+            height: isActive ? "100%" : hovered ? 10 : 0,
+            top: isActive ? 0 : "50%",
+            transform: isActive ? "none" : "translateY(-50%)",
+          }}
+          transition={{ duration: 0.2 }}
           style={{
             position: "absolute",
-            right: 8,
-            width: 16,
-            height: 16,
-            borderRadius: "50%",
+            left: -(7 + level * 12),
+            minWidth: 3,
+            borderRadius: 2,
             background: "var(--hadesui-blue-6)",
-            color: "#fff",
-            fontSize: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+          }}
+        />
+        <motion.div
+          layout
+          style={{
+            display: "grid",
+            placeContent: "center",
+            width: 20,
+            height: "100%",
           }}
         >
-          {item.notifs}
-        </motion.span>
+          <item.icon />
+        </motion.div>
+        {open && (
+          <motion.span
+            layout
+            initial={needAnimate ? { opacity: 0, x: -15 } : false}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.125 }}
+            style={{
+              maxWidth: `calc(100% - ${item.notifs ? "60px" : "44px"})`,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Ellipsis>{item.title}</Ellipsis>
+          </motion.span>
+        )}
+        {item.children && open && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            style={{
+              position: "absolute",
+              right: 8,
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              fontSize: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {expanded ? <UpIcon /> : <DownIcon />}
+          </motion.span>
+        )}
+      </motion.div>
+      {/* Children */}
+      {item.children && open && (
+        <AnimatePresence initial={false}>
+          {expanded && (
+            <motion.div
+              key="submenu"
+              layout
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                marginTop: 4,
+              }}
+            >
+              {item.children.map((child) => (
+                <Option
+                  key={child.key}
+                  item={child}
+                  selected={selected}
+                  setSelected={setSelected}
+                  open={open}
+                  needAnimate={needAnimate}
+                  level={level + 1}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
-    </motion.div>
+    </>
   );
 };
 
@@ -203,22 +245,14 @@ const TitleSection = ({ open, needAnimate }) => {
       >
         <Logo />
         {open && (
-          <>
-            {needAnimate ? (
-              <motion.div
-                layout
-                initial={{ opacity: 0, x: -15 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.125 }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
-              </motion.div>
-            ) : (
-              <div>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
-              </div>
-            )}
-          </>
+          <motion.div
+            layout
+            initial={needAnimate ? { opacity: 0, x: -15 } : false}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.125 }}
+          >
+            <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
+          </motion.div>
         )}
       </div>
     </div>
@@ -239,7 +273,7 @@ const Logo = () => (
   >
     <svg
       width="24"
-      height="auto"
+      height="24"
       viewBox="0 0 50 39"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -293,19 +327,15 @@ const ToggleClose = ({ open, setOpen, needAnimate }) => {
       </motion.div>
       {open && (
         <>
-          {needAnimate.current ? (
-            <motion.span
-              layout
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.125 }}
-              style={{ fontSize: 12, fontWeight: 500 }}
-            >
-              Hide
-            </motion.span>
-          ) : (
-            <div style={{ fontSize: 12, fontWeight: 500 }}>Hide</div>
-          )}
+          <motion.span
+            layout
+            initial={needAnimate.current ? { opacity: 0, x: -15 } : false}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.125 }}
+            style={{ fontSize: 12, fontWeight: 500 }}
+          >
+            Hide
+          </motion.span>
         </>
       )}
     </motion.div>

@@ -97,6 +97,8 @@ export function FormItem({
   children,
   validateTrigger = ["onBlur"],
   debounceValidate = 0,
+  span = 12,
+  row = false,
 }) {
   const { control, trigger, formState, setError, clearErrors } =
     useFormInstance();
@@ -128,7 +130,11 @@ export function FormItem({
 
   if (!name) {
     return (
-      <div style={{ marginBottom: 8 }}>
+      <div
+        style={{
+          gridColumn: row ? `1 / span ${span}` : `span ${span}`,
+        }}
+      >
         {renderLabel()}
         {children}
       </div>
@@ -136,7 +142,11 @@ export function FormItem({
   }
 
   return (
-    <div style={{ marginBottom: 8 }}>
+    <div
+      style={{
+        gridColumn: row ? `1 / span ${span}` : `span ${span}`,
+      }}
+    >
       {renderLabel()}
       <Controller
         name={name}
@@ -224,3 +234,5 @@ export function FormItem({
     </div>
   );
 }
+
+FormItem.displayName = "HadesUIFormItem";

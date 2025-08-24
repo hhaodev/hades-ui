@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useForm as useReactHookForm, FormProvider } from "react-hook-form";
 import { FormItem } from "./FormItem";
 import { useForm } from "./hook";
@@ -55,7 +55,15 @@ export function Form({
     <FormContext.Provider value={methods}>
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(handleSubmit, handleError)}>
-          {children}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(12, 1fr)",
+              gap: 8,
+            }}
+          >
+            {children}
+          </div>
         </form>
       </FormProvider>
     </FormContext.Provider>
