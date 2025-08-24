@@ -9,7 +9,7 @@ import Calendar from "./Calender";
 const DatePicker = forwardRef(
   (
     {
-      value: valueProps,
+      value,
       onChange,
       onFocus,
       onBlur,
@@ -30,10 +30,10 @@ const DatePicker = forwardRef(
   ) => {
     const [placement, setPlacement] = useState("");
     const [open, setOpen] = useState(false);
-    const dateMemo = useMemo(() => toDate(valueProps), [valueProps]);
     const [finalValue, setFinalValue] = useMergedState(null, {
-      value: valueProps ? dateMemo : undefined,
+      value,
       onChange,
+      postState: toDate,
     });
 
     const prevDate = usePrevious(finalValue);

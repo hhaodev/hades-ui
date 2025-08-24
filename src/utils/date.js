@@ -194,7 +194,8 @@ export const formatDate = (input, format = DEFAULT_FORMAT) => {
 };
 
 export const toDate = (v) => {
-  if (v == null) return null;
+  if (v === undefined) return undefined;
+  if (v === null) return null;
   if (v instanceof Date) return isNaN(v) ? null : v;
 
   if (typeof v === "string") {

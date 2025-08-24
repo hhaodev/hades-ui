@@ -22,6 +22,7 @@ const Sidebar = ({ items = [], defaultSelectedKey = "" }) => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        background: "var(--hadesui-bg-color)",
       }}
     >
       <div>
@@ -88,12 +89,13 @@ const Option = ({ item, selected, setSelected, open, needAnimate }) => {
         background:
           selected === item.key
             ? "var(--hadesui-bg-selected-color)"
-            : "transparent",
+            : "var(--hadesui-bg-color)",
         cursor: "pointer",
         padding: "0 8px",
         gap: 6,
         fontSize: 14,
-        transition: "background 0.2s ease",
+        color: selected === item.key ? "var(--hadesui-blue-6)" : undefined,
+        transition: "background 0.2s ease, color 0.2s ease",
       }}
       onMouseEnter={(e) => {
         if (selected === item.key) return;
@@ -101,7 +103,7 @@ const Option = ({ item, selected, setSelected, open, needAnimate }) => {
       }}
       onMouseLeave={(e) => {
         if (selected === item.key) return;
-        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.background = "var(--hadesui-bg-color)";
       }}
     >
       <div

@@ -5,7 +5,7 @@ const NotificationDemo = () => {
   const [toastId, setToastId] = useState("");
 
   return (
-    <Stack>
+    <Stack flexCol gap={8}>
       <Stack flex gap={8}>
         <Button
           theme="default"

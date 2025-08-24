@@ -17,41 +17,53 @@ export function usePrevious(value) {
 }
 
 export function useMergedState(defaultStateValue, options = {}) {
-  const { defaultValue, value, onChange } = options;
+  const { defaultValue, value, onChange, postState } = options;
 
   const isControlled = value !== undefined;
 
   const [innerValue, setInnerValue] = useState(() => {
-    if (isControlled) return value;
-    if (defaultValue !== undefined)
-      return typeof defaultValue === "function" ? defaultValue() : defaultValue;
-    return typeof defaultStateValue === "function"
-      ? defaultStateValue()
-      : defaultStateValue;
+    let initial;
+    if (isControlled) initial = value;
+    else if (defaultValue !== undefined)
+      initial =
+        typeof defaultValue === "function" ? defaultValue() : defaultValue;
+    else
+      initial =
+        typeof defaultStateValue === "function"
+          ? defaultStateValue()
+          : defaultStateValue;
+
+    return postState ? postState(initial) : initial;
   });
 
-  const mergedValue = isControlled ? value : innerValue;
+  const mergedValue = isControlled
+    ? postState
+      ? postState(value)
+      : value
+    : innerValue;
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   const setValue = useCallback(
     (next) => {
+      const nextValue = postState ? postState(next) : next;
       if (!isControlled) {
-        setInnerValue(next);
+        setInnerValue(nextValue);
       }
-      if (mergedValue !== next && onChangeRef.current) {
-        onChangeRef.current(next);
+      if (mergedValue !== nextValue && onChangeRef.current) {
+        onChangeRef.current(nextValue);
       }
     },
-    [isControlled, mergedValue]
+    [isControlled, mergedValue, postState]
   );
 
   useEffect(() => {
     if (isControlled) {
-      setInnerValue(value);
+      const v = postState ? postState(value) : value;
+      setInnerValue(v);
     }
-  }, [value]);
+  }, [value, isControlled, postState]);
 
   return [mergedValue, setValue];
 }

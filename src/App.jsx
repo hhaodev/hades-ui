@@ -92,7 +92,6 @@ function App() {
       flex
       style={{
         height: "100vh",
-        overflow: "auto",
       }}
     >
       <Sidebar items={navItem} defaultSelectedKey={selectedKey} />
@@ -101,6 +100,7 @@ function App() {
           flex: 1,
           minWidth: 0,
           padding: 10,
+          overflow: "auto",
         }}
       >
         {componentMap[selectedKey]}
