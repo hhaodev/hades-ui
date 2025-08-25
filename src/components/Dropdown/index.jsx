@@ -229,11 +229,13 @@ const Dropdown = forwardRef(function Dropdown(
         children.props.onClick?.(e);
         setOpen(open ? false : true);
       },
-      onMouseEnter: () => {
+      onMouseEnter: (e) => {
+        children.props.onMouseEnter?.(e);
         if (!isHoverTrigger || disabled) return;
         setOpen(true);
       },
-      onMouseLeave: () => {
+      onMouseLeave: (e) => {
+        children.props.onMouseLeave?.(e);
         if (!isHoverTrigger || disabled) return;
         setOpen(false);
       },

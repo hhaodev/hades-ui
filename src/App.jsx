@@ -23,7 +23,63 @@ import TooltipDemo from "./Preview/Tooltip";
 
 function App() {
   const components = [
-    { key: "theme", title: "Theme", component: <ThemeDemo /> },
+    {
+      key: "theme",
+      title: "Theme",
+      component: <ThemeDemo />,
+      children: [
+        { key: "theme1", title: "Theme 1.1", component: <ThemeDemo /> },
+        {
+          key: "theme2",
+          title: "Theme 1.2",
+          component: <ThemeDemo />,
+          children: [
+            { key: "theme121", title: "Theme 1.2.1", component: <ThemeDemo /> },
+            {
+              key: "theme122",
+              title: "Theme 1.2.2",
+              component: <ThemeDemo />,
+              children: [
+                {
+                  key: "theme1221",
+                  title: "Theme 1.2.2.1",
+                  component: <ThemeDemo />,
+                },
+                {
+                  key: "theme1222",
+                  title: "Theme 1.2.2.2",
+                  component: <ThemeDemo />,
+                  children: [
+                    {
+                      key: "theme12221",
+                      title: "Theme 1.2.2.2.1",
+                      component: <ThemeDemo />,
+                    },
+                    {
+                      key: "theme12222",
+                      title: "Theme 1.2.2.2.2",
+                      component: <ThemeDemo />,
+                      children: [
+                        {
+                          key: "theme122221",
+                          title: "Theme 1.2.2.2.2.1",
+                          component: <ThemeDemo />,
+                        },
+                        {
+                          key: "theme122222",
+                          title: "Theme 1.2.2.2.2.2",
+                          component: <ThemeDemo />,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     { key: "form", title: "Form", component: <FormDemo /> },
     { key: "table", title: "Table", component: <TableDemo /> },
     { key: "overflow", title: "Overflow", component: <OverflowDemo /> },
@@ -53,9 +109,21 @@ function App() {
     { key: "input", title: "Input", component: <InputDemo /> },
   ];
 
+  function buildComponentMap(components) {
+    const map = {};
+    components.forEach(({ key, component, children }) => {
+      map[key] = component;
+      if (children) {
+        Object.assign(map, buildComponentMap(children));
+      }
+    });
+    return map;
+  }
+
   const getKeyFromUrl = () => {
     const urlKey = window.location.pathname.slice(1);
-    const keys = components.map((c) => c.key);
+    const componentMap = buildComponentMap(components);
+    const keys = Object.keys(componentMap);
     return keys.includes(urlKey) ? urlKey : "theme";
   };
 
@@ -72,30 +140,20 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const navItem = components.map(({ key, title }) => ({
-    key,
-    title,
-    icon: ImageIcon,
-    onClick: () => handleSelect(key),
-    // children: [
-    //   {
-    //     key: `sub1of${key}`,
-    //     title: `sub1 of ${key}`,
-    //     icon: ImageIcon,
-    //     onClick: () => handleSelect(key),
-    //   },
-    //   {
-    //     key: `sub2of${key}`,
-    //     title: `sub2 of ${key}`,
-    //     icon: ImageIcon,
-    //     onClick: () => handleSelect(key),
-    //   },
-    // ],
-  }));
+  const mapNavItems = (items, handleSelect, IconComponent) => {
+    return items.map(({ key, title, children }) => ({
+      key,
+      title,
+      onClick: () => handleSelect(key),
+      children: children
+        ? mapNavItems(children, handleSelect, IconComponent)
+        : undefined,
+    }));
+  };
 
-  const componentMap = Object.fromEntries(
-    components.map(({ key, component }) => [key, component])
-  );
+  const navItem = mapNavItems(components, handleSelect, ImageIcon);
+
+  const componentMap = buildComponentMap(components);
 
   return (
     <Stack
@@ -108,6 +166,7 @@ function App() {
         items={navItem}
         defaultSelectedKey={selectedKey}
         selectedKey={selectedKey}
+        expandedItems={["theme", "theme2212"]}
       />
       <Stack
         style={{
