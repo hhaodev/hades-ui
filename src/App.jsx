@@ -138,7 +138,7 @@ function App() {
     return items.map(({ key, title, children }) => ({
       key,
       title,
-      onClick: () => handleSelect(key),
+      // onClick: () => handleSelect(key),
       children: children
         ? mapNavItems(children, handleSelect, IconComponent)
         : undefined,
@@ -160,6 +160,13 @@ function App() {
         items={navItem}
         defaultSelectedKey={selectedKey}
         selectedKey={selectedKey}
+        onSelectKey={(key) => {
+          setSelectedKey(key);
+          window.history.pushState(null, "", `/${key}`);
+        }}
+        onSelectItem={(v) => {
+          console.log(v);
+        }}
         expandedItems={["theme", "theme2212"]}
       />
       <Stack

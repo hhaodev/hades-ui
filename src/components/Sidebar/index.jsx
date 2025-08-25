@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Ellipsis from "../Ellipsis";
 import { DoubleRightIcon, DownIcon, RightIcon, UpIcon } from "../Icon";
 import Tooltip from "../Tooltip";
@@ -23,15 +23,29 @@ const checkChildActive = (node, selected) => {
 
 const Sidebar = ({
   items = [],
-  defaultSelectedKey,
   selectedKey,
+  defaultSelectedKey,
+  onSelectKey,
+  onSelectItem,
   expandedItems: expandedProps,
   treeLine = false,
+  collapse,
+  onCollapseChange,
 }) => {
-  const [open, setOpen] = useState(true);
+  const itemsFlatRef = useRef(new Map());
+  const [open, setOpen] = useMergedState(!collapse, {
+    value: collapse !== undefined ? !collapse : undefined,
+    defaultValue: !collapse,
+    onChange: (val) => onCollapseChange?.(!val),
+  });
   const [selected, setSelected] = useMergedState(items[0]?.key, {
     value: selectedKey,
     defaultValue: defaultSelectedKey,
+    onChange: (val) => {
+      onSelectKey?.(val);
+      const selectedItem = itemsFlatRef.current.get(val);
+      if (selectedItem) onSelectItem?.(selectedItem);
+    },
   });
   const [needAnimate, setNeedAnimate] = useState(false);
   const [expandedItems, setExpandedItems] = useMergedState(expandedProps);
@@ -43,6 +57,18 @@ const Sidebar = ({
       setNeedAnimate(true);
     });
   });
+
+  useEffect(() => {
+    const map = new Map();
+    const dfs = (arr) => {
+      arr.forEach((i) => {
+        map.set(i.key, i);
+        if (i.children) dfs(i.children);
+      });
+    };
+    dfs(items);
+    itemsFlatRef.current = map;
+  }, [items]);
 
   return (
     <SidebarContext.Provider
@@ -66,7 +92,7 @@ const Sidebar = ({
           top: 0,
           height: "100vh",
           flexShrink: 0,
-          width: open ? 240 : 60,
+          width: open ? 240 : "fit-content",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -121,15 +147,8 @@ const Render = ({ item }) => {
 
   return (
     <motion.div layout>
-      {open ? (
-        <Option item={item} />
-      ) : item.children && item.children.length > 0 ? (
-        <motion.div
-          layout
-          style={{
-            position: "relative",
-          }}
-        >
+      {item.children && item.children.length > 0 && !open ? (
+        <motion.div layout style={{ position: "relative" }}>
           <motion.div
             initial={false}
             animate={{
@@ -153,9 +172,7 @@ const Render = ({ item }) => {
             fixedWidthPopup={false}
             trigger={["hover"]}
             placement="right-start"
-            menu={() => {
-              return <RenderInDropdown items={item.children} />;
-            }}
+            menu={<RenderInDropdown items={item.children} />}
           >
             <motion.div
               tabIndex={1}
@@ -164,7 +181,7 @@ const Render = ({ item }) => {
                 display: "grid",
                 placeContent: "center",
                 width: 40,
-                minHeight: 40,
+                height: 40,
                 cursor: "pointer",
                 borderRadius: 8,
                 transition: "background 0.2s ease",
@@ -205,7 +222,11 @@ const Render = ({ item }) => {
           </Dropdown>
         </motion.div>
       ) : (
-        <Tooltip placement="right" key={item.key} tooltip={item.title}>
+        <Tooltip
+          placement="right"
+          key={item.key}
+          tooltip={open ? null : item.title}
+        >
           <motion.div layout>
             <Option item={item} />
           </motion.div>
@@ -217,11 +238,11 @@ const Render = ({ item }) => {
 
 const RenderInDropdown = ({ items }) => {
   return (
-    <Dropdown.Menu>
+    <React.Fragment>
       {items.map((item) => (
         <OptionDropDown key={item.key} item={item} />
       ))}
-    </Dropdown.Menu>
+    </React.Fragment>
   );
 };
 
@@ -260,6 +281,7 @@ const OptionDropDown = ({ item }) => {
           alignItems: "center",
           gap: 6,
           height: 40,
+          width: "100%",
           borderRadius: 6,
           padding: "0 8px",
           cursor: "pointer",
@@ -289,7 +311,7 @@ const OptionDropDown = ({ item }) => {
       fixedWidthPopup={false}
       trigger={["hover"]}
       placement="right-start"
-      menu={() => <RenderInDropdown items={item.children} />}
+      menu={<RenderInDropdown items={item.children} />}
     >
       <motion.div
         tabIndex={1}
@@ -298,6 +320,7 @@ const OptionDropDown = ({ item }) => {
           alignItems: "center",
           gap: 6,
           height: 40,
+          width: "100%",
           borderRadius: 6,
           padding: "0 8px",
           cursor: "pointer",
@@ -409,9 +432,7 @@ const Option = ({ item, level = 0 }) => {
           alignItems: "center",
           justifyContent: open ? "start" : "center",
           height: 40,
-          minHeight: 40,
-          maxHeight: 40,
-          width: "100%",
+          width: open ? "100%" : 40,
           borderRadius: 8,
           background:
             isActive || hovered
@@ -571,27 +592,30 @@ const TitleSection = () => {
         borderBottom: "1px solid var(--hadesui-border-color)",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: open ? "start" : "center",
-          alignItems: "center",
-          gap: 8,
-          padding: 8,
-        }}
-      >
-        <Logo />
-        {open && (
-          <motion.div
-            layout
-            initial={needAnimate ? { opacity: 0, x: -15 } : false}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.125 }}
-          >
-            <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
-          </motion.div>
-        )}
-      </div>
+      <Tooltip offset={0} placement="right" tooltip={open ? null : "Hades UI"}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: open ? "start" : "center",
+            alignItems: "center",
+            gap: 8,
+            padding: 8,
+            cursor: "pointer",
+          }}
+        >
+          <Logo />
+          {open && (
+            <motion.div
+              layout
+              initial={needAnimate ? { opacity: 0, x: -15 } : false}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.125 }}
+            >
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
+            </motion.div>
+          )}
+        </div>
+      </Tooltip>
     </div>
   );
 };
@@ -629,17 +653,20 @@ const Logo = () => (
 
 const ToggleClose = () => {
   const { open, setOpen, needAnimate } = useSidebar();
+  const toggle = () => {
+    setOpen(open ? false : true);
+  };
   return (
     <motion.div
       tabIndex={1}
       layout
       onKeyDown={(e) => {
         if (e.key === "Enter") {
-          setOpen((pv) => !pv);
+          toggle();
         }
       }}
       onClick={() => {
-        setOpen((pv) => !pv);
+        toggle();
       }}
       style={{
         display: "flex",

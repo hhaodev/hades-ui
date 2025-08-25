@@ -172,7 +172,10 @@ const Dropdown = forwardRef(function Dropdown(
       }
     );
     cleanupRef.current = cleanup;
-    return () => cleanup();
+    return () => {
+      cleanup();
+      cleanupRef.current = null;
+    };
   }, [shouldRender, placement]);
 
   const show = () => {
