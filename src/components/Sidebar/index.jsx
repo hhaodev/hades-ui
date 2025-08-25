@@ -133,106 +133,21 @@ const Sidebar = ({
 };
 
 const Render = ({ item }) => {
-  const { selected, open, dropdownRef } = useSidebar();
-  const [hovered, setHovered] = useState(false);
-  const isActive = selected === item.key;
-  const isChildActive = item.children
-    ? item.children.some((child) => {
-        if (child.children) {
-          return checkChildActive(child, selected);
-        }
-        return child.key === selected;
-      })
-    : false;
-
+  const { open } = useSidebar();
   return (
-    <motion.div layout>
-      {item.children && item.children.length > 0 && !open ? (
-        <motion.div layout style={{ position: "relative" }}>
-          <motion.div
-            initial={false}
-            animate={{
-              opacity: isActive || hovered || isChildActive ? 1 : 0,
-              height: isActive || isChildActive ? "100%" : hovered ? 10 : 0,
-              top: isActive || isChildActive ? 0 : "50%",
-              transform:
-                isActive || isChildActive ? "none" : "translateY(-50%)",
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: "absolute",
-              left: -7,
-              minWidth: 3,
-              borderRadius: 2,
-              background: "var(--hadesui-blue-6)",
-            }}
-          />
-          <Dropdown
-            ref={dropdownRef}
-            fixedWidthPopup={false}
-            trigger={["hover"]}
-            placement="right-start"
-            menu={<RenderInDropdown items={item.children} />}
-          >
-            <motion.div
-              tabIndex={1}
-              layout
-              style={{
-                display: "grid",
-                placeContent: "center",
-                width: 40,
-                height: 40,
-                cursor: "pointer",
-                borderRadius: 8,
-                transition: "background 0.2s ease",
-                background:
-                  isActive || hovered || isChildActive
-                    ? "var(--hadesui-bg-selected-color)"
-                    : "var(--hadesui-bg-color)",
-                color:
-                  isActive || isChildActive
-                    ? "var(--hadesui-blue-6)"
-                    : undefined,
-              }}
-              onMouseEnter={() => setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
-              onFocus={() => setHovered(true)}
-              onBlur={() => setHovered(false)}
-            >
-              <motion.div
-                layout
-                style={{
-                  display: "grid",
-                  placeContent: "center",
-                  width: 20,
-                  height: "100%",
-                  color:
-                    isActive || isChildActive
-                      ? "var(--hadesui-blue-6)"
-                      : undefined,
-                }}
-              >
-                {item.icon ? (
-                  <item.icon />
-                ) : (
-                  <TitleInitial title={item.title} size={28} />
-                )}
-              </motion.div>
-            </motion.div>
-          </Dropdown>
-        </motion.div>
-      ) : (
-        <Tooltip
-          placement="right"
-          key={item.key}
-          tooltip={open ? null : item.title}
-        >
-          <motion.div layout>
-            <Option item={item} />
-          </motion.div>
-        </Tooltip>
-      )}
-    </motion.div>
+    <Tooltip
+      placement="right"
+      key={item.key}
+      tooltip={
+        open || (item.children && item.children.length > 0 && !open)
+          ? null
+          : item.title
+      }
+    >
+      <motion.div layout>
+        <Option item={item} />
+      </motion.div>
+    </Tooltip>
   );
 };
 
@@ -393,6 +308,7 @@ const Option = ({ item, level = 0 }) => {
     expandedItems,
     setExpandedItems,
     treeLine,
+    dropdownRef,
   } = useSidebar();
   const [hovered, setHovered] = useState(false);
   const isActive = selected === item.key;
@@ -419,108 +335,128 @@ const Option = ({ item, level = 0 }) => {
   };
   return (
     <motion.div layout>
-      <motion.div
-        tabIndex={1}
-        layout
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleClick(e);
-        }}
-        onClick={handleClick}
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: open ? "start" : "center",
-          height: 40,
-          width: open ? "100%" : 40,
-          borderRadius: 8,
-          background:
-            isActive || hovered
-              ? "var(--hadesui-bg-selected-color)"
-              : "var(--hadesui-bg-color)",
-          cursor: "pointer",
-          padding: "0 8px",
-          gap: 6,
-          fontSize: 14,
-          color:
-            isActive || isChildActive ? "var(--hadesui-blue-6)" : undefined,
-          transition: "background 0.2s ease, color 0.2s ease",
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
-        onBlur={() => setHovered(false)}
+      <Dropdown
+        ref={dropdownRef}
+        fixedWidthPopup={false}
+        trigger={["hover"]}
+        placement="right-start"
+        menu={
+          item.children && item.children?.length > 0 && !open ? (
+            <RenderInDropdown items={item.children} />
+          ) : null
+        }
       >
         <motion.div
-          initial={false}
-          animate={{
-            opacity: isActive || hovered || isChildActive ? 1 : 0,
-            height: isActive ? "100%" : isChildActive ? 3 : hovered ? 10 : 0,
-            top: isActive ? 0 : "50%",
-            transform: isActive ? "none" : "translateY(-50%)",
-          }}
-          transition={{ duration: 0.2 }}
-          style={{
-            position: "absolute",
-            left: -(7 + level * (treeLine ? 18 : 15)),
-            minWidth: 3,
-            borderRadius: 2,
-            background: "var(--hadesui-blue-6)",
-          }}
-        />
-        <motion.div
+          tabIndex={1}
           layout
-          style={{
-            display: "grid",
-            placeContent: "center",
-            width: 20,
-            height: "100%",
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleClick(e);
           }}
+          onClick={handleClick}
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: open ? "start" : "center",
+            height: 40,
+            width: open ? "100%" : 40,
+            borderRadius: 8,
+            background:
+              isActive || hovered
+                ? "var(--hadesui-bg-selected-color)"
+                : "var(--hadesui-bg-color)",
+            cursor: "pointer",
+            padding: "0 8px",
+            gap: 6,
+            fontSize: 14,
+            color:
+              isActive || isChildActive ? "var(--hadesui-blue-6)" : undefined,
+            transition: "background 0.2s ease, color 0.2s ease",
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onFocus={() => setHovered(true)}
+          onBlur={() => setHovered(false)}
         >
-          {item.icon ? (
-            <item.icon />
-          ) : (
-            <TitleInitial title={item.title} size={open ? 20 : 28} />
-          )}
-        </motion.div>
-        {open && (
-          <motion.span
-            layout
-            initial={needAnimate ? { opacity: 0, x: -15 } : false}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.125 }}
-            style={{
-              maxWidth: `calc(100% - 44px)`,
-              display: "flex",
-              alignItems: "center",
+          <motion.div
+            initial={false}
+            animate={{
+              opacity: isActive || hovered || isChildActive ? 1 : 0,
+              height:
+                isActive ||
+                (item.children?.length > 0 && !open && isChildActive)
+                  ? "100%"
+                  : isChildActive
+                  ? 3
+                  : hovered
+                  ? 10
+                  : 0,
+              top: isActive ? 0 : "50%",
+              transform: isActive ? "none" : "translateY(-50%)",
             }}
-          >
-            <Ellipsis>
-              <Stack style={{ cursor: "pointer" }}>{item.title}</Stack>
-            </Ellipsis>
-          </motion.span>
-        )}
-        {item.children && item.children.length > 0 && open && (
-          <motion.span
-            initial={needAnimate ? { scale: 0, opacity: 0 } : false}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.125 }}
+            transition={{ duration: 0.2 }}
             style={{
               position: "absolute",
-              right: 8,
-              width: 16,
-              height: 16,
-              borderRadius: "50%",
-              fontSize: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              left: -(7 + level * (treeLine ? 18 : 15)),
+              minWidth: 3,
+              borderRadius: 2,
+              background: "var(--hadesui-blue-6)",
+            }}
+          />
+          <motion.div
+            layout
+            style={{
+              display: "grid",
+              placeContent: "center",
+              width: 20,
+              height: "100%",
             }}
           >
-            {isExpanded ? <UpIcon /> : <DownIcon />}
-          </motion.span>
-        )}
-      </motion.div>
+            {item.icon ? (
+              <item.icon />
+            ) : (
+              <TitleInitial title={item.title} size={open ? 20 : 28} />
+            )}
+          </motion.div>
+          {open && (
+            <motion.span
+              layout
+              initial={needAnimate ? { opacity: 0, x: -12 } : false}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.125 }}
+              style={{
+                maxWidth: `calc(100% - 44px)`,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Ellipsis>
+                <Stack style={{ cursor: "pointer" }}>{item.title}</Stack>
+              </Ellipsis>
+            </motion.span>
+          )}
+          {item.children && item.children.length > 0 && open && (
+            <motion.span
+              initial={needAnimate ? { scale: 0, opacity: 0 } : false}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.125 }}
+              style={{
+                position: "absolute",
+                right: 8,
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                fontSize: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {isExpanded ? <UpIcon /> : <DownIcon />}
+            </motion.span>
+          )}
+        </motion.div>
+      </Dropdown>
       {item.children && item.children.length > 0 && open && (
         <AnimatePresence>
           {isExpanded && (
@@ -607,7 +543,7 @@ const TitleSection = () => {
           {open && (
             <motion.div
               layout
-              initial={needAnimate ? { opacity: 0, x: -15 } : false}
+              initial={needAnimate ? { opacity: 0, x: -12 } : false}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.125 }}
             >
@@ -699,7 +635,7 @@ const ToggleClose = () => {
       {open && (
         <motion.span
           layout
-          initial={needAnimate ? { opacity: 0, x: -15 } : false}
+          initial={needAnimate ? { opacity: 0, x: -12 } : false}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.125 }}
           style={{ fontSize: 12, fontWeight: 500 }}

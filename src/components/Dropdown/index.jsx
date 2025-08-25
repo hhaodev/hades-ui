@@ -228,9 +228,9 @@ const Dropdown = forwardRef(function Dropdown(
     const triggerProps = {
       "data-disabled-action": disabled ? "true" : "false",
       onClick: (e) => {
-        if (!isClickTrigger || disabled) return;
-        e.stopPropagation();
         children.props.onClick?.(e);
+        e.stopPropagation();
+        if (!isClickTrigger || disabled) return;
         setOpen(open ? false : true);
       },
       onMouseEnter: (e) => {
@@ -300,6 +300,7 @@ const Dropdown = forwardRef(function Dropdown(
       {triggerNode}
       {shouldRender &&
         !disabled &&
+        menu &&
         createPortal(
           <Stack
             onClick={(e) => e.stopPropagation()}
