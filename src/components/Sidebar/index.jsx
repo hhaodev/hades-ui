@@ -36,6 +36,7 @@ const Sidebar = ({
   const [needAnimate, setNeedAnimate] = useState(false);
   const [expandedItems, setExpandedItems] = useMergedState(expandedProps);
   const dropdownRef = useRef();
+  const navRef = useRef();
 
   return (
     <SidebarContext.Provider
@@ -50,6 +51,7 @@ const Sidebar = ({
         setExpandedItems,
         treeLine,
         dropdownRef,
+        navRef,
       }}
     >
       <motion.nav
@@ -69,6 +71,7 @@ const Sidebar = ({
         <div>
           <TitleSection />
           <div
+            ref={navRef}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -217,7 +220,7 @@ const RenderInDropdown = ({ items }) => {
 };
 
 const OptionDropDown = ({ item }) => {
-  const { selected, setSelected, dropdownRef } = useSidebar();
+  const { selected, setSelected, dropdownRef, navRef } = useSidebar();
   const [hovered, setHovered] = useState(false);
 
   const isActive = selected === item.key;
@@ -229,6 +232,7 @@ const OptionDropDown = ({ item }) => {
     if (item.onClick) item.onClick(e);
     setSelected(item.key);
     dropdownRef.current.hide();
+    navRef.current.style.overflow = "hidden";
   };
 
   if (!item.children || item.children.length === 0) {
