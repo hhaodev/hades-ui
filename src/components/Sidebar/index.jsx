@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Ellipsis from "../Ellipsis";
 import { DoubleRightIcon, DownIcon, RightIcon, UpIcon } from "../Icon";
 import Tooltip from "../Tooltip";
@@ -38,6 +38,12 @@ const Sidebar = ({
   const dropdownRef = useRef();
   const navRef = useRef();
 
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setNeedAnimate(true);
+    });
+  });
+
   return (
     <SidebarContext.Provider
       value={{
@@ -46,7 +52,6 @@ const Sidebar = ({
         selected,
         setSelected,
         needAnimate,
-        setNeedAnimate,
         expandedItems,
         setExpandedItems,
         treeLine,
@@ -380,7 +385,7 @@ const Option = ({ item, level = 0 }) => {
     }
   };
   return (
-    <>
+    <motion.div layout>
       <motion.div
         layout
         onClick={handleClick}
@@ -444,9 +449,7 @@ const Option = ({ item, level = 0 }) => {
         {open && (
           <motion.span
             layout
-            initial={
-              needAnimate && level === 0 ? { opacity: 0, x: -15 } : false
-            }
+            initial={needAnimate ? { opacity: 0, x: -15 } : false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.125 }}
             style={{
@@ -462,9 +465,7 @@ const Option = ({ item, level = 0 }) => {
         )}
         {item.children && item.children.length > 0 && open && (
           <motion.span
-            initial={
-              needAnimate && level === 0 ? { scale: 0, opacity: 0 } : false
-            }
+            initial={needAnimate ? { scale: 0, opacity: 0 } : false}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.125 }}
             style={{
@@ -484,14 +485,14 @@ const Option = ({ item, level = 0 }) => {
         )}
       </motion.div>
       {item.children && item.children.length > 0 && open && (
-        <AnimatePresence initial={false}>
+        <AnimatePresence>
           {isExpanded && (
             <motion.div
               key="submenu"
-              initial={{ height: 0, opacity: 0 }}
+              initial={needAnimate ? { height: 0, opacity: 0 } : false}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: 0.2 }}
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -510,7 +511,7 @@ const Option = ({ item, level = 0 }) => {
           )}
         </AnimatePresence>
       )}
-    </>
+    </motion.div>
   );
 };
 
@@ -520,7 +521,8 @@ const TitleInitial = ({ title }) => {
   const firstChar = title.charAt(0).toUpperCase();
 
   return (
-    <div
+    <motion.div
+      layout
       style={{
         width: 20,
         height: 20,
@@ -534,7 +536,7 @@ const TitleInitial = ({ title }) => {
       }}
     >
       {firstChar}
-    </div>
+    </motion.div>
   );
 };
 
@@ -603,15 +605,12 @@ const Logo = () => (
 );
 
 const ToggleClose = () => {
-  const { open, setOpen, needAnimate, setNeedAnimate } = useSidebar();
+  const { open, setOpen, needAnimate } = useSidebar();
   return (
     <motion.div
       layout
       onClick={() => {
         setOpen((pv) => !pv);
-        if (!needAnimate) {
-          setNeedAnimate(true);
-        }
       }}
       style={{
         display: "flex",
