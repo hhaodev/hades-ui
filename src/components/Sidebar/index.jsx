@@ -407,7 +407,7 @@ const Option = ({ item, level = 0 }) => {
     : false;
 
   const handleClick = (e) => {
-    if (item.children) {
+    if (item.children && item.children.length > 0) {
       if (!open) return;
       setExpandedItems((prev) =>
         isExpanded ? prev.filter((k) => k !== item.key) : [...prev, item.key]

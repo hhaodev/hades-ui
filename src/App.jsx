@@ -141,7 +141,7 @@ function App() {
       // onClick: () => handleSelect(key),
       children: children
         ? mapNavItems(children, handleSelect, IconComponent)
-        : undefined,
+        : [],
     }));
   };
 
