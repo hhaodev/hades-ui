@@ -117,6 +117,7 @@ const Dropdown = forwardRef(function Dropdown(
       setOpen(false);
     },
     opening: open,
+    id: drdId,
   }));
 
   useSafeZone(
@@ -239,6 +240,23 @@ const Dropdown = forwardRef(function Dropdown(
         if (!isHoverTrigger || disabled) return;
         setOpen(false);
       },
+      onFocus: (e) => {
+        children.props.onFocus?.(e);
+        if (!isHoverTrigger || disabled) return;
+        setOpen(true);
+      },
+      onBlur: (e) => {
+        children.props.onBlur?.(e);
+        if (!isHoverTrigger || disabled) return;
+        const relatedTarget = e.relatedTarget;
+        if (
+          dropdownRef.current &&
+          dropdownRef.current.contains(relatedTarget)
+        ) {
+          return;
+        }
+        setOpen(false);
+      },
       ref: (el) => {
         referenceRef.current = el;
         const childRef = children.ref;
@@ -284,6 +302,7 @@ const Dropdown = forwardRef(function Dropdown(
             onClick={(e) => e.stopPropagation()}
             id={drdId}
             ref={dropdownRef}
+            tabIndex={1}
             style={{
               background: "var(--hadesui-bg-color)",
               borderRadius: 8,

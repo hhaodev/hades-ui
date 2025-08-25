@@ -158,6 +158,7 @@ const Render = ({ item }) => {
             }}
           >
             <motion.div
+              tabIndex={1}
               layout
               style={{
                 display: "grid",
@@ -176,12 +177,10 @@ const Render = ({ item }) => {
                     ? "var(--hadesui-blue-6)"
                     : undefined,
               }}
-              onMouseEnter={() => {
-                setHovered(true);
-              }}
-              onMouseLeave={() => {
-                setHovered(false);
-              }}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              onFocus={() => setHovered(true)}
+              onBlur={() => setHovered(false)}
             >
               <motion.div
                 layout
@@ -199,7 +198,7 @@ const Render = ({ item }) => {
                 {item.icon ? (
                   <item.icon />
                 ) : (
-                  <TitleInitial title={item.title} />
+                  <TitleInitial title={item.title} size={28} />
                 )}
               </motion.div>
             </motion.div>
@@ -245,11 +244,17 @@ const OptionDropDown = ({ item }) => {
   if (!item.children || item.children.length === 0) {
     return (
       <motion.div
+        tabIndex={1}
         layout
         key={item.key}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleClick(e);
+        }}
         onClick={handleClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -286,7 +291,8 @@ const OptionDropDown = ({ item }) => {
       placement="right-start"
       menu={() => <RenderInDropdown items={item.children} />}
     >
-      <div
+      <motion.div
+        tabIndex={1}
         style={{
           display: "flex",
           alignItems: "center",
@@ -305,6 +311,8 @@ const OptionDropDown = ({ item }) => {
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
       >
         <motion.div
           layout
@@ -348,7 +356,7 @@ const OptionDropDown = ({ item }) => {
         >
           <RightIcon />
         </motion.span>
-      </div>
+      </motion.div>
     </Dropdown>
   );
 };
@@ -389,7 +397,11 @@ const Option = ({ item, level = 0 }) => {
   return (
     <motion.div layout>
       <motion.div
+        tabIndex={1}
         layout
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleClick(e);
+        }}
         onClick={handleClick}
         style={{
           position: "relative",
@@ -413,12 +425,10 @@ const Option = ({ item, level = 0 }) => {
             isActive || isChildActive ? "var(--hadesui-blue-6)" : undefined,
           transition: "background 0.2s ease, color 0.2s ease",
         }}
-        onMouseEnter={() => {
-          setHovered(true);
-        }}
-        onMouseLeave={() => {
-          setHovered(false);
-        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
       >
         <motion.div
           initial={false}
@@ -446,7 +456,11 @@ const Option = ({ item, level = 0 }) => {
             height: "100%",
           }}
         >
-          {item.icon ? <item.icon /> : <TitleInitial title={item.title} />}
+          {item.icon ? (
+            <item.icon />
+          ) : (
+            <TitleInitial title={item.title} size={open ? 20 : 28} />
+          )}
         </motion.div>
         {open && (
           <motion.span
@@ -524,7 +538,7 @@ const Option = ({ item, level = 0 }) => {
   );
 };
 
-const TitleInitial = ({ title }) => {
+const TitleInitial = ({ title, size = 20 }) => {
   if (!title) return null;
 
   const firstChar = title.charAt(0).toUpperCase();
@@ -533,8 +547,8 @@ const TitleInitial = ({ title }) => {
     <motion.div
       layout
       style={{
-        width: 20,
-        height: 20,
+        width: size,
+        height: size,
         borderRadius: 6,
         backgroundColor: "var(--hadesui-blue-6)",
         color: "#fff",
@@ -617,7 +631,13 @@ const ToggleClose = () => {
   const { open, setOpen, needAnimate } = useSidebar();
   return (
     <motion.div
+      tabIndex={1}
       layout
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          setOpen((pv) => !pv);
+        }
+      }}
       onClick={() => {
         setOpen((pv) => !pv);
       }}
