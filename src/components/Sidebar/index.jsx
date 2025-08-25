@@ -264,10 +264,6 @@ const OptionDropDown = ({ item }) => {
           {item.icon ? <item.icon /> : <TitleInitial title={item.title} />}
         </motion.div>
         <motion.span
-          layout
-          initial={false}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.125 }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -278,9 +274,6 @@ const OptionDropDown = ({ item }) => {
           </Ellipsis>
         </motion.span>
         <motion.span
-          initial={false}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.125 }}
           style={{
             right: 8,
             width: 16,
@@ -421,8 +414,8 @@ const Option = ({ item, level = 0 }) => {
           {open && (
             <motion.span
               layout
-              initial={needAnimate ? { opacity: 0, x: -12 } : false}
-              animate={{ opacity: 1, x: 0 }}
+              initial={needAnimate ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.125 }}
               style={{
                 maxWidth: `calc(100% - 44px)`,
@@ -461,10 +454,17 @@ const Option = ({ item, level = 0 }) => {
         <AnimatePresence>
           {isExpanded && (
             <motion.div
-              key="submenu"
+              key={`submenu-level-${level + 1}`}
               initial={needAnimate ? { height: 0, opacity: 0 } : false}
               animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+              exit={{
+                height: 0,
+                opacity: 0,
+                transition: {
+                  height: { duration: 0.2 },
+                  opacity: { duration: 0.1 },
+                },
+              }}
               transition={{ duration: 0.2 }}
               style={{
                 marginLeft: 15,
@@ -543,7 +543,7 @@ const TitleSection = () => {
           {open && (
             <motion.div
               layout
-              initial={needAnimate ? { opacity: 0, x: -12 } : false}
+              initial={needAnimate ? { opacity: 0 } : false}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.125 }}
             >
@@ -635,8 +635,8 @@ const ToggleClose = () => {
       {open && (
         <motion.span
           layout
-          initial={needAnimate ? { opacity: 0, x: -12 } : false}
-          animate={{ opacity: 1, x: 0 }}
+          initial={needAnimate ? { opacity: 0 } : false}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.125 }}
           style={{ fontSize: 12, fontWeight: 500 }}
         >
