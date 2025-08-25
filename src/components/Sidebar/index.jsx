@@ -110,7 +110,7 @@ const Render = ({ item }) => {
     : false;
 
   return (
-    <>
+    <motion.div layout>
       {open ? (
         <Option item={item} />
       ) : item.children && item.children.length > 0 ? (
@@ -197,12 +197,12 @@ const Render = ({ item }) => {
         </motion.div>
       ) : (
         <Tooltip placement="right" key={item.key} tooltip={item.title}>
-          <div>
+          <motion.div layout>
             <Option item={item} />
-          </div>
+          </motion.div>
         </Tooltip>
       )}
-    </>
+    </motion.div>
   );
 };
 
