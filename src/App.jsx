@@ -21,66 +21,60 @@ import TableDemo from "./Preview/Table";
 import ThemeDemo from "./Preview/Theme";
 import TooltipDemo from "./Preview/Tooltip";
 
+const generateMenuObject = (
+  depth,
+  childrenPerLevel = 2,
+  rootKey = "",
+  rootTitle = "",
+  component = <></>
+) => {
+  const Cpn = component;
+  const createItem = (level, parentPath = []) => {
+    const path = parentPath;
+    const key = `${rootKey}${path.join("")}`;
+    const title = `${rootTitle} ${path.join(".")}`;
+
+    const item = { key, title, component: <Cpn /> };
+
+    if (level < depth) {
+      item.children = [];
+      for (let i = 1; i <= childrenPerLevel; i++) {
+        if (i === childrenPerLevel) {
+          item.children.push(createItem(level + 1, [...path, i]));
+        } else {
+          item.children.push({
+            key: `${rootKey}${[...path, i].join("")}`,
+            title: `${rootTitle} ${[...path, i].join(".")}`,
+            component: <Cpn />,
+          });
+        }
+      }
+    }
+
+    return item;
+  };
+
+  const root = { key: rootKey, title: rootTitle, component: <Cpn /> };
+  root.children = [];
+  for (let i = 1; i <= childrenPerLevel; i++) {
+    if (i === childrenPerLevel) {
+      root.children.push(createItem(1, [i]));
+    } else {
+      root.children.push({
+        key: `${rootKey}${i}`,
+        title: `${rootTitle} ${i}`,
+        component: <Cpn />,
+      });
+    }
+  }
+
+  return root;
+};
+
 function App() {
   const components = [
-    {
-      key: "theme",
-      title: "Theme",
-      component: <ThemeDemo />,
-      children: [
-        { key: "theme1", title: "Theme 1.1", component: <ThemeDemo /> },
-        {
-          key: "theme2",
-          title: "Theme 1.2",
-          component: <ThemeDemo />,
-          children: [
-            { key: "theme121", title: "Theme 1.2.1", component: <ThemeDemo /> },
-            {
-              key: "theme122",
-              title: "Theme 1.2.2",
-              component: <ThemeDemo />,
-              children: [
-                {
-                  key: "theme1221",
-                  title: "Theme 1.2.2.1",
-                  component: <ThemeDemo />,
-                },
-                {
-                  key: "theme1222",
-                  title: "Theme 1.2.2.2",
-                  component: <ThemeDemo />,
-                  children: [
-                    {
-                      key: "theme12221",
-                      title: "Theme 1.2.2.2.1",
-                      component: <ThemeDemo />,
-                    },
-                    {
-                      key: "theme12222",
-                      title: "Theme 1.2.2.2.2",
-                      component: <ThemeDemo />,
-                      children: [
-                        {
-                          key: "theme122221",
-                          title: "Theme 1.2.2.2.2.1",
-                          component: <ThemeDemo />,
-                        },
-                        {
-                          key: "theme122222",
-                          title: "Theme 1.2.2.2.2.2",
-                          component: <ThemeDemo />,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    { key: "form", title: "Form", component: <FormDemo /> },
+    generateMenuObject(5, 2, "theme", "Theme", ThemeDemo),
+    generateMenuObject(5, 2, "form", "Form", FormDemo),
     { key: "table", title: "Table", component: <TableDemo /> },
     { key: "overflow", title: "Overflow", component: <OverflowDemo /> },
     { key: "tooltip", title: "Tooltip", component: <TooltipDemo /> },

@@ -66,16 +66,17 @@ const Sidebar = ({
           top: 0,
           height: "100vh",
           flexShrink: 0,
-          width: open ? 220 : 60,
+          width: open ? 240 : 60,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           background: "var(--hadesui-bg-color)",
         }}
       >
-        <div>
+        <motion.div layout>
           <TitleSection />
-          <div
+          <motion.div
+            layout
             ref={navRef}
             style={{
               display: "flex",
@@ -85,6 +86,7 @@ const Sidebar = ({
               scrollbarGutter: "stable",
               maxHeight: "calc(100vh - 92px - 2px)",
               overflow: "hidden",
+              userSelect: "none",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.overflowY = "auto";
@@ -96,8 +98,8 @@ const Sidebar = ({
             {items.map((item) => (
               <Render key={item.key} item={item} />
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         <ToggleClose />
       </motion.nav>
     </SidebarContext.Provider>
@@ -494,9 +496,6 @@ const Option = ({ item, level = 0 }) => {
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
                 marginLeft: 15,
                 ...(treeLine && {
                   borderLeft: "1px solid var(--hadesui-border-color)",
@@ -504,9 +503,19 @@ const Option = ({ item, level = 0 }) => {
                 }),
               }}
             >
-              {item.children.map((child) => (
-                <Option key={child.key} item={child} level={level + 1} />
-              ))}
+              <motion.div
+                layout
+                style={{
+                  paddingTop: 4,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                }}
+              >
+                {item.children.map((child) => (
+                  <Option key={child.key} item={child} level={level + 1} />
+                ))}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -620,6 +629,7 @@ const ToggleClose = () => {
         borderTop: "1px solid var(--hadesui-border-color)",
         maxHeight: 36,
         cursor: "pointer",
+        userSelect: "none",
       }}
     >
       <motion.div
