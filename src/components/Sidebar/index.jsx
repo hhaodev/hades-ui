@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
-import Ellipsis from "../Ellipsis";
-import { DoubleRightIcon, DownIcon, RightIcon, UpIcon } from "../Icon";
-import Tooltip from "../Tooltip";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { useMergedState } from "../../utils";
+import Ellipsis from "../Ellipsis";
+import { DoubleRightIcon, RightIcon, UpIcon } from "../Icon";
+import Tooltip from "../Tooltip";
 
 import { createContext, useContext } from "react";
 import Dropdown from "../Dropdown";
@@ -21,6 +21,21 @@ const checkChildActive = (node, selected) => {
   return false;
 };
 
+const buildPath = (item, selected, path = []) => {
+  if (item.key === selected) {
+    return [...path, item];
+  }
+
+  if (item.children) {
+    for (const child of item.children) {
+      const childPath = buildPath(child, selected, [...path, item]);
+      if (childPath) return childPath;
+    }
+  }
+
+  return null;
+};
+
 const Sidebar = ({
   items = [],
   selectedKey,
@@ -28,16 +43,21 @@ const Sidebar = ({
   onSelectKey,
   onSelectItem,
   expandedItems: expandedProps,
+  defaultExpandedItems,
+  onExpandedChange,
   treeLine = false,
   collapse,
-  onCollapseChange,
+  hasCollapseButton = true,
 }) => {
+  const sidebarId = useId().replace(/[^a-zA-Z0-9_-]/g, "_");
   const itemsFlatRef = useRef(new Map());
-  const [open, setOpen] = useMergedState(!collapse, {
-    value: collapse !== undefined ? !collapse : undefined,
-    defaultValue: !collapse,
-    onChange: (val) => onCollapseChange?.(!val),
-  });
+  const dropdownRef = useRef();
+  const navRef = useRef();
+
+  const [open, setOpen] = useState(!collapse);
+  const [needAnimate, setNeedAnimate] = useState(false);
+  const [containerHovered, setContainerHovered] = useState(false);
+
   const [selected, setSelected] = useMergedState(items[0]?.key, {
     value: selectedKey,
     defaultValue: defaultSelectedKey,
@@ -47,10 +67,11 @@ const Sidebar = ({
       if (selectedItem) onSelectItem?.(selectedItem);
     },
   });
-  const [needAnimate, setNeedAnimate] = useState(false);
-  const [expandedItems, setExpandedItems] = useMergedState(expandedProps);
-  const dropdownRef = useRef();
-  const navRef = useRef();
+  const [expandedItems, setExpandedItems] = useMergedState([], {
+    value: expandedProps,
+    defaultValue: defaultExpandedItems,
+    onChange: onExpandedChange,
+  });
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -70,11 +91,19 @@ const Sidebar = ({
     itemsFlatRef.current = map;
   }, [items]);
 
+  useEffect(() => {
+    if (collapse !== undefined) {
+      setOpen(!collapse);
+    }
+  }, [collapse]);
+
   return (
     <SidebarContext.Provider
       value={{
+        sidebarId,
         open,
         setOpen,
+        containerHovered,
         selected,
         setSelected,
         needAnimate,
@@ -86,6 +115,7 @@ const Sidebar = ({
       }}
     >
       <motion.nav
+        id={`sidebar-${sidebarId}`}
         layout
         style={{
           position: "sticky",
@@ -110,23 +140,21 @@ const Sidebar = ({
               gap: 4,
               padding: "8px 0px 8px 8px",
               scrollbarGutter: "stable",
-              maxHeight: "calc(100vh - 92px - 2px)",
-              overflow: "hidden",
+              maxHeight: `calc(100vh - 56px - ${
+                hasCollapseButton ? "36px" : "0px"
+              } - 2px)`,
+              overflow: containerHovered ? "auto" : "hidden",
               userSelect: "none",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.overflowY = "auto";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.overflow = "hidden";
-            }}
+            onMouseEnter={() => setContainerHovered(true)}
+            onMouseLeave={() => setContainerHovered(false)}
           >
             {items.map((item) => (
               <Render key={item.key} item={item} />
             ))}
           </motion.div>
         </motion.div>
-        <ToggleClose />
+        {hasCollapseButton && <ToggleClose />}
       </motion.nav>
     </SidebarContext.Provider>
   );
@@ -295,6 +323,7 @@ const OptionDropDown = ({ item }) => {
 const Option = ({ item, level = 0 }) => {
   const {
     open,
+    containerHovered,
     selected,
     setSelected,
     needAnimate,
@@ -314,6 +343,24 @@ const Option = ({ item, level = 0 }) => {
         return child.key === selected;
       })
     : false;
+
+  const path = buildPath(item, selected);
+  let nearestParent = null;
+
+  if (path && path.length > 1) {
+    for (let i = path.length - 2; i >= 0; i--) {
+      const candidate = path[i];
+      const allParentsExpanded = path
+        .slice(0, i)
+        .every((p) => expandedItems.includes(p.key));
+      if (expandedItems.includes(candidate.key) && allParentsExpanded) {
+        nearestParent = candidate;
+        break;
+      }
+    }
+  }
+
+  const isNearestParentActive = nearestParent?.key === item.key;
 
   const handleClick = (e) => {
     if (item.children && item.children.length > 0) {
@@ -353,7 +400,14 @@ const Option = ({ item, level = 0 }) => {
             justifyContent: open ? "start" : "center",
             height: 40,
             width: open ? "100%" : 40,
-            borderRadius: 8,
+            ...(level !== 0
+              ? {
+                  borderBottomRightRadius: 8,
+                  borderTopRightRadius: 8,
+                }
+              : {
+                  borderRadius: 8,
+                }),
             background:
               isActive || hovered
                 ? "var(--hadesui-bg-selected-color)"
@@ -363,7 +417,9 @@ const Option = ({ item, level = 0 }) => {
             gap: 6,
             fontSize: 14,
             color:
-              isActive || isChildActive ? "var(--hadesui-blue-6)" : undefined,
+              isActive || (isChildActive && !isExpanded)
+                ? "var(--hadesui-blue-6)"
+                : undefined,
             transition: "background 0.2s ease, color 0.2s ease",
           }}
           onMouseEnter={() => setHovered(true)}
@@ -374,28 +430,48 @@ const Option = ({ item, level = 0 }) => {
           <motion.div
             initial={false}
             animate={{
-              opacity: isActive || hovered || isChildActive ? 1 : 0,
+              opacity:
+                isActive || hovered || (isChildActive && (!isExpanded || !open))
+                  ? 1
+                  : 0,
               height:
                 isActive ||
                 (item.children?.length > 0 && !open && isChildActive)
                   ? "100%"
-                  : isChildActive
-                  ? 3
                   : hovered
                   ? 10
-                  : 0,
+                  : 3,
               top: isActive ? 0 : "50%",
               transform: isActive ? "none" : "translateY(-50%)",
             }}
             transition={{ duration: 0.2 }}
             style={{
               position: "absolute",
-              left: -(7 + level * (treeLine ? 18 : 15)),
+              left: -(7 + level * (treeLine ? 16 : 15)),
               minWidth: 3,
               borderRadius: 2,
               background: "var(--hadesui-blue-6)",
             }}
           />
+          {level !== 0 && (
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: isActive || hovered ? 0.85 : 0,
+                height: "100%",
+                top: 0,
+              }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: "absolute",
+                left: -(level * (treeLine ? 16 : 15)),
+                minWidth: level * (treeLine ? 16 : 15),
+                borderTopLeftRadius: 8,
+                borderBottomLeftRadius: 8,
+                background: "var(--hadesui-bg-selected-color)",
+              }}
+            />
+          )}
           <motion.div
             layout
             style={{
@@ -445,7 +521,12 @@ const Option = ({ item, level = 0 }) => {
                 justifyContent: "center",
               }}
             >
-              {isExpanded ? <UpIcon /> : <DownIcon />}
+              <UpIcon
+                style={{
+                  transform: isExpanded ? "rotate(0deg)" : "rotate(180deg)",
+                  transition: "transform 0.2s",
+                }}
+              />
             </motion.span>
           )}
         </motion.div>
@@ -455,23 +536,33 @@ const Option = ({ item, level = 0 }) => {
           {isExpanded && (
             <motion.div
               key={`submenu-level-${level + 1}`}
-              initial={needAnimate ? { height: 0, opacity: 0 } : false}
-              animate={{ height: "auto", opacity: 1 }}
+              initial={
+                needAnimate
+                  ? { height: 0, opacity: 0, borderLeftColor: "rgba(0,0,0,0)" }
+                  : false
+              }
+              animate={{
+                height: "auto",
+                opacity: 1,
+                borderLeftColor:
+                  containerHovered || isNearestParentActive
+                    ? "var(--hadesui-border-color)"
+                    : "rgba(0,0,0,0)",
+              }}
               exit={{
                 height: 0,
                 opacity: 0,
                 transition: {
                   height: { duration: 0.2 },
                   opacity: { duration: 0.1 },
+                  borderLeftColor: { duration: 0.2 },
                 },
               }}
               transition={{ duration: 0.2 }}
               style={{
                 marginLeft: 15,
-                ...(treeLine && {
-                  borderLeft: "1px solid var(--hadesui-border-color)",
-                  paddingLeft: 2,
-                }),
+                borderLeftWidth: treeLine ? 1 : 0,
+                borderLeftStyle: "solid",
               }}
             >
               <motion.div
@@ -523,13 +614,15 @@ const TitleInitial = ({ title, size = 20 }) => {
 const TitleSection = () => {
   const { open, needAnimate } = useSidebar();
   return (
-    <div
+    <motion.div
+      layout
       style={{
         borderBottom: "1px solid var(--hadesui-border-color)",
       }}
     >
       <Tooltip offset={0} placement="right" tooltip={open ? null : "Hades UI"}>
-        <div
+        <motion.div
+          layout
           style={{
             display: "flex",
             justifyContent: open ? "start" : "center",
@@ -550,9 +643,9 @@ const TitleSection = () => {
               <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
             </motion.div>
           )}
-        </div>
+        </motion.div>
       </Tooltip>
-    </div>
+    </motion.div>
   );
 };
 

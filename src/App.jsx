@@ -71,68 +71,76 @@ const generateMenuObject = (
   return root;
 };
 
+const components = [
+  generateMenuObject(5, 3, "theme", "Theme", ThemeDemo),
+  generateMenuObject(5, 2, "form", "Form", FormDemo),
+  { key: "table", title: "Table", component: <TableDemo /> },
+  { key: "overflow", title: "Overflow", component: <OverflowDemo /> },
+  { key: "tooltip", title: "Tooltip", component: <TooltipDemo /> },
+  { key: "tabs", title: "Tabs", component: <TabDemo /> },
+  { key: "button", title: "Button", component: <ButtonDemo /> },
+  { key: "divider", title: "Divider", component: <DividerDemo /> },
+  { key: "fileupload", title: "FileUpload", component: <FileUploadDemo /> },
+  { key: "dnd", title: "DndContext", component: <DndDemo /> },
+  { key: "kanban", title: "KanbanTable", component: <KanbanTable /> },
+  { key: "loading", title: "Loading", component: <LoadingDemo /> },
+  { key: "message", title: "Message", component: <MessageDemo /> },
+  {
+    key: "notification",
+    title: "Notification",
+    component: <NotificationDemo />,
+  },
+  { key: "modal", title: "Modal", component: <ModalDemo /> },
+  { key: "panel", title: "Panel", component: <PanelDemo /> },
+  { key: "scroller", title: "ScrollerDiv", component: <ScrollerDivDemo /> },
+  {
+    key: "rightclick",
+    title: "RightClickMenu",
+    component: <RightClickDemo />,
+  },
+  { key: "dropdown", title: "Dropdown", component: <DropdownDemo /> },
+  { key: "input", title: "Input", component: <InputDemo /> },
+];
+
+function buildComponentMap(components) {
+  const map = {};
+  components.forEach(({ key, component, title, children }) => {
+    map[key] = { component, title };
+    if (children) {
+      Object.assign(map, buildComponentMap(children));
+    }
+  });
+  return map;
+}
+
+const componentMap = buildComponentMap(components);
+
+const getKeyFromUrl = () => {
+  const urlKey = window.location.pathname.slice(1);
+  const keys = Object.keys(componentMap);
+  const keyToUse = keys.includes(urlKey) ? urlKey : "theme";
+
+  const title = componentMap[keyToUse]?.title || keyToUse;
+  document.title = `${title} - Hades UI`;
+  return keyToUse;
+};
+
 function App() {
-  const components = [
-    generateMenuObject(5, 2, "theme", "Theme", ThemeDemo),
-    generateMenuObject(5, 2, "form", "Form", FormDemo),
-    { key: "table", title: "Table", component: <TableDemo /> },
-    { key: "overflow", title: "Overflow", component: <OverflowDemo /> },
-    { key: "tooltip", title: "Tooltip", component: <TooltipDemo /> },
-    { key: "tabs", title: "Tabs", component: <TabDemo /> },
-    { key: "button", title: "Button", component: <ButtonDemo /> },
-    { key: "divider", title: "Divider", component: <DividerDemo /> },
-    { key: "fileupload", title: "FileUpload", component: <FileUploadDemo /> },
-    { key: "dnd", title: "DndContext", component: <DndDemo /> },
-    { key: "kanban", title: "KanbanTable", component: <KanbanTable /> },
-    { key: "loading", title: "Loading", component: <LoadingDemo /> },
-    { key: "message", title: "Message", component: <MessageDemo /> },
-    {
-      key: "notification",
-      title: "Notification",
-      component: <NotificationDemo />,
-    },
-    { key: "modal", title: "Modal", component: <ModalDemo /> },
-    { key: "panel", title: "Panel", component: <PanelDemo /> },
-    { key: "scroller", title: "ScrollerDiv", component: <ScrollerDivDemo /> },
-    {
-      key: "rightclick",
-      title: "RightClickMenu",
-      component: <RightClickDemo />,
-    },
-    { key: "dropdown", title: "Dropdown", component: <DropdownDemo /> },
-    { key: "input", title: "Input", component: <InputDemo /> },
-  ];
-
-  function buildComponentMap(components) {
-    const map = {};
-    components.forEach(({ key, component, children }) => {
-      map[key] = component;
-      if (children) {
-        Object.assign(map, buildComponentMap(children));
-      }
-    });
-    return map;
-  }
-
-  const getKeyFromUrl = () => {
-    const urlKey = window.location.pathname.slice(1);
-    const componentMap = buildComponentMap(components);
-    const keys = Object.keys(componentMap);
-    return keys.includes(urlKey) ? urlKey : "theme";
-  };
-
   const [selectedKey, setSelectedKey] = useState(getKeyFromUrl());
-
-  const handleSelect = (key) => {
-    setSelectedKey(key);
-    window.history.pushState(null, "", `/${key}`);
-  };
+  const [expanded, setExpanded] = useState(["theme", "theme3333"]);
 
   useEffect(() => {
     const onPopState = () => setSelectedKey(getKeyFromUrl());
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  const handleSelect = (key) => {
+    setSelectedKey(key);
+    const title = componentMap[key]?.title;
+    document.title = `${title} - Hades UI`;
+    window.history.pushState(null, "", `/${key}`);
+  };
 
   const mapNavItems = (items, handleSelect, IconComponent) => {
     return items.map(({ key, title, children }) => ({
@@ -147,8 +155,6 @@ function App() {
 
   const navItem = mapNavItems(components, handleSelect, ImageIcon);
 
-  const componentMap = buildComponentMap(components);
-
   return (
     <Stack
       flex
@@ -158,16 +164,14 @@ function App() {
     >
       <Sidebar
         items={navItem}
-        defaultSelectedKey={selectedKey}
-        selectedKey={selectedKey}
-        onSelectKey={(key) => {
-          setSelectedKey(key);
-          window.history.pushState(null, "", `/${key}`);
-        }}
-        onSelectItem={(v) => {
-          console.log(v);
-        }}
-        expandedItems={["theme", "theme2212"]}
+        defaultSelectedKey={selectedKey} // default for uncontrolled
+        selectedKey={selectedKey} // controlled
+        onSelectKey={handleSelect} //<--
+        onSelectItem={(item) => {}}
+        expandedItems={expanded} // controlled expanded
+        onExpandedChange={setExpanded} //<--
+        defaultExpandedItems={[]} // default expanded for uncontrolled expanded
+        treeLine
       />
       <Stack
         style={{
@@ -177,7 +181,7 @@ function App() {
           overflow: "auto",
         }}
       >
-        {componentMap[selectedKey]}
+        {componentMap[selectedKey].component}
       </Stack>
     </Stack>
   );
