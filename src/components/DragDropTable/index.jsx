@@ -29,7 +29,6 @@ const DragDropTable = ({ data = [], onChange }) => {
   const columnRefs = useRef({});
   const ghostRef = useRef(null);
   const dragEnterCounter = useRef(0);
-  const dragColRef = useRef(null);
 
   function handleAddCol(col) {
     onChange((prev) => [...prev, col]);
@@ -72,11 +71,8 @@ const DragDropTable = ({ data = [], onChange }) => {
     onChange((prev) => prev.filter((c) => c.id !== col.id));
   }
 
-  function handleMoveCol({ newIndex }) {
-    const dragInfo = dragColRef.current;
-    if (!dragInfo) return;
-
-    const { oldIndex, column } = dragInfo;
+  function handleMoveCol({ data: dataDrop, newIndex }) {
+    const { oldIndex, column } = dataDrop;
     if (oldIndex === -1 || oldIndex === newIndex) return;
 
     const next = [...data];
@@ -93,7 +89,6 @@ const DragDropTable = ({ data = [], onChange }) => {
       fromIndex: oldIndex,
       toIndex: newIndex,
     });
-    dragColRef.current = null;
   }
 
   function handleColDragStart(e, column) {
@@ -101,8 +96,6 @@ const DragDropTable = ({ data = [], onChange }) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("column", JSON.stringify(column));
     dragType.current = "column";
-    const oldIndex = data.findIndex((col) => col.id === column.id);
-    dragColRef.current = { column, oldIndex };
     e.dataTransfer.setDragImage(new Image(), 0, 0);
     const el = columnRefs.current[column.id];
     const rect = el.getBoundingClientRect();
@@ -143,7 +136,8 @@ const DragDropTable = ({ data = [], onChange }) => {
 
   function handleDragEnd(e) {
     if (dragType.current !== "column" || dragType.current === null) return;
-    const newCol = JSON.parse(e.dataTransfer.getData("column") || "{}");
+    const column = JSON.parse(e.dataTransfer.getData("column") || "{}");
+    const oldIndex = data.findIndex((col) => col.id === column.id);
     setActive(false);
     clearHighlights();
     dragEnterCounter.current = 0;
@@ -152,7 +146,10 @@ const DragDropTable = ({ data = [], onChange }) => {
     const before = element.dataset.before || "-1";
     const dropIndex =
       before === "-1" ? data.length : data.findIndex((c) => c.id === before);
-    handleMoveCol({ column: newCol, newIndex: dropIndex });
+    handleMoveCol({
+      data: { column, oldIndex },
+      newIndex: dropIndex,
+    });
     dragType.current = null;
     e.dataTransfer.clearData();
   }

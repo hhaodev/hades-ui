@@ -11,14 +11,25 @@ import themeToken from "./theme.css?raw";
   }
 
   themeStyle.textContent = themeToken;
-})()
+})();
 
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children, defaultTheme = "system" }) => {
-  const [theme, setTheme] = useState(
+  const [theme, _setTheme] = useState(
     () => localStorage.getItem("theme") || defaultTheme
   );
+
+  const setTheme = (nextTheme) => {
+    const html = document.documentElement;
+    html.classList.add("no-transition");
+    _setTheme(nextTheme);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        html.classList.remove("no-transition");
+      });
+    });
+  };
 
   useEffect(() => {
     const html = document.documentElement;
@@ -37,22 +48,27 @@ export const ThemeProvider = ({ children, defaultTheme = "system" }) => {
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const handleChange = () => {
+    const applySystemTheme = () => {
       if (theme === "system") {
         const prefersDark = mediaQuery.matches;
         const html = document.documentElement;
         html.classList.remove("light", "dark");
-        html.classList.add(prefersDark ? "dark" : "light");
-        html.setAttribute("data-theme", prefersDark ? "dark" : "light");
-        document.body.setAttribute(
-          "data-theme",
-          prefersDark ? "dark" : "light"
-        );
+        html.classList.add(prefersDark ? "dark" : "light", "no-transition");
+        html.dataset.theme = prefersDark ? "dark" : "light";
+        document.body.dataset.theme = prefersDark ? "dark" : "light";
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            html.classList.remove("no-transition");
+          });
+        });
       }
     };
 
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    applySystemTheme();
+
+    mediaQuery.addEventListener("change", applySystemTheme);
+    return () => mediaQuery.removeEventListener("change", applySystemTheme);
   }, [theme]);
 
   useEffect(() => {
