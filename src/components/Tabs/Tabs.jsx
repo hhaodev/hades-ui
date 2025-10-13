@@ -308,14 +308,16 @@ function Tabs({
               }}
               style={tabItemStyle(isActive)}
               onClick={() => handleClick(pane.props.tabKey)}
-              onMouseEnter={(e) => {
+              onMouseEnter={() => {
                 if (!isActive) {
-                  e.target.style.color = "var(--hadesui-blue-6)";
+                  const child = tabRefs.current[key];
+                  if (child) child.style.color = "var(--hadesui-blue-6)";
                 }
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={() => {
                 if (!isActive) {
-                  e.target.style.color = "var(--hadesui-text-color)";
+                  const child = tabRefs.current[key];
+                  if (child) child.style.color = "var(--hadesui-text-color)";
                 }
               }}
             >

@@ -155,7 +155,13 @@ export default function OverFlow({
           </div>
         ))}
         <div ref={moreFakeRef} style={{ flexShrink: 0 }}>
-          {customAction ? customAction?.() : <Button>+99</Button>}
+          {customAction ? (
+            customAction?.()
+          ) : (
+            <Button>
+              <PlusIcon /> {overflowItems.length}
+            </Button>
+          )}
         </div>
       </div>
 

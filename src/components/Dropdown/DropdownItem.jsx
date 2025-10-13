@@ -1,6 +1,6 @@
-import { forwardRef } from "react";
-import Stack from "../Stack";
+import { forwardRef, isValidElement } from "react";
 import Ellipsis from "../Ellipsis";
+import Stack from "../Stack";
 
 export const DropdownItem = forwardRef(
   (
@@ -22,11 +22,17 @@ export const DropdownItem = forwardRef(
       if (!checked) {
         e.currentTarget.style.background = hoverBg;
       }
+      if (isValidElement(children) && children.props?.onMouseEnter) {
+        children.props.onMouseEnter(e);
+      }
     };
 
     const handleMouseLeave = (e) => {
       if (!checked) {
         e.currentTarget.style.background = defaultBg;
+      }
+      if (isValidElement(children) && children.props?.onMouseLeave) {
+        children.props.onMouseLeave(e);
       }
     };
 

@@ -7,30 +7,41 @@ export default function ResizableBox({
   minHeight = 50,
   width = 200,
   height = 100,
+  mode = "both", // "horizontal" | "vertical" | "both"
 }) {
   const boxRef = useRef(null);
 
   const startResize = (e) => {
     e.preventDefault();
-
     const box = boxRef.current;
-    document.body.style.cursor = "se-resize";
+    if (!box) return;
+
     const rect = box.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
-
     const startWidth = rect.width;
     const startHeight = rect.height;
+
+    document.body.style.cursor =
+      mode === "horizontal"
+        ? "e-resize"
+        : mode === "vertical"
+        ? "s-resize"
+        : "se-resize";
 
     const onMouseMove = (moveEvent) => {
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
 
-      const newWidth = Math.max(minWidth, startWidth + deltaX);
-      const newHeight = Math.max(minHeight, startHeight + deltaY);
+      if (mode === "horizontal" || mode === "both") {
+        const newWidth = Math.max(minWidth, startWidth + deltaX);
+        box.style.width = `${newWidth}px`;
+      }
 
-      box.style.width = `${newWidth}px`;
-      box.style.height = `${newHeight}px`;
+      if (mode === "vertical" || mode === "both") {
+        const newHeight = Math.max(minHeight, startHeight + deltaY);
+        box.style.height = `${newHeight}px`;
+      }
     };
 
     const onMouseUp = () => {
@@ -48,13 +59,13 @@ export default function ResizableBox({
       className="custom-resizable"
       ref={boxRef}
       style={{
-        width: `${width > minWidth ? width : minWidth}px`,
-        height: `${height > minHeight ? height : minHeight}px`,
+        width: `${Math.max(width, minWidth)}px`,
+        height: `${Math.max(height, minHeight)}px`,
         maxWidth: "100%",
       }}
     >
       {children}
-      <div className="resizer" onMouseDown={startResize} />
+      <div className={`resizer-${mode}`} onMouseDown={startResize} />
     </div>
   );
 }

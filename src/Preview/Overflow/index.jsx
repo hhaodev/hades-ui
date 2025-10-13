@@ -6,7 +6,7 @@ const OverflowDemo = () => {
     <Stack>
       <Stack>VERTICAL OVERFLOW</Stack>
       <Stack>
-        <ResizableBox width={50}>
+        <ResizableBox mode={"vertical"}>
           <OverFlow mode="vertical">
             <Button theme="default">default</Button>
             <Button theme="primary">primary</Button>
@@ -20,6 +20,20 @@ const OverflowDemo = () => {
       </Stack>
 
       <Stack>HORIZONTAL OVERFLOW</Stack>
+      <Stack>
+        <ResizableBox mode={"horizontal"} width={500}>
+          <OverFlow>
+            <Button theme="default">default</Button>
+            <Button theme="primary">primary</Button>
+            <Button theme="link">link</Button>
+            <Button theme="text">text</Button>
+            <Button theme="dashed">dashed</Button>
+            <Button loading>loading</Button>
+            <Button disabled>disabled</Button>
+          </OverFlow>
+        </ResizableBox>
+      </Stack>
+      <Stack>BOTH RESIZE</Stack>
       <Stack>
         <ResizableBox width={500}>
           <OverFlow>

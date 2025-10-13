@@ -492,7 +492,6 @@ const Option = ({ item, level = 0 }) => {
               layout
               initial={needAnimate ? { opacity: 0 } : false}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.125 }}
               style={{
                 maxWidth: `calc(100% - 44px)`,
                 display: "flex",
@@ -508,7 +507,6 @@ const Option = ({ item, level = 0 }) => {
             <motion.span
               initial={needAnimate ? { scale: 0, opacity: 0 } : false}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.125 }}
               style={{
                 position: "absolute",
                 right: 8,
