@@ -127,7 +127,7 @@ const getKeyFromUrl = () => {
 
 function App() {
   const [selectedKey, setSelectedKey] = useState(getKeyFromUrl());
-  const [expanded, setExpanded] = useState(["theme", "theme3333"]);
+  const [expanded, setExpanded] = useState();
 
   useEffect(() => {
     const onPopState = () => setSelectedKey(getKeyFromUrl());
@@ -146,6 +146,7 @@ function App() {
     return items.map(({ key, title, children }) => ({
       key,
       title,
+      // icon: IconComponent,
       // onClick: () => handleSelect(key),
       children: children
         ? mapNavItems(children, handleSelect, IconComponent)
@@ -167,10 +168,12 @@ function App() {
         defaultSelectedKey={selectedKey} // default for uncontrolled
         selectedKey={selectedKey} // controlled
         onSelectKey={handleSelect} //<--
-        onSelectItem={(item) => {}}
-        expandedItems={expanded} // controlled expanded
+        onSelectItem={(item) => {
+          console.log("🚀 ~ item:", item);
+        }}
+        expandedItems={expanded} // controlled expanded (expanded !== undefined === controlled)
         onExpandedChange={setExpanded} //<--
-        defaultExpandedItems={[]} // default expanded for uncontrolled expanded
+        defaultExpandedItems={["theme", "theme3", "form2"]} // default expanded for uncontrolled expanded
         treeLine
       />
       <Stack
@@ -181,7 +184,7 @@ function App() {
           overflow: "auto",
         }}
       >
-        {componentMap[selectedKey].component}
+        {componentMap[selectedKey]?.component}
       </Stack>
     </Stack>
   );

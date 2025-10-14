@@ -363,7 +363,7 @@ const Option = ({ item, level = 0 }) => {
     if (item.children && item.children.length > 0) {
       if (!open) return;
       setExpandedItems((prev) =>
-        isExpanded ? prev.filter((k) => k !== item.key) : [...prev, item.key]
+        isExpanded ? prev?.filter((k) => k !== item.key) : [...prev, item.key]
       );
     } else {
       if (item.onClick) item.onClick(e);

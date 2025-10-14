@@ -23,7 +23,7 @@ export function useMergedState(defaultStateValue, options = {}) {
 
   const [innerValue, setInnerValue] = useState(() => {
     let initial;
-    if (isControlled) initial = value;
+    if (isControlled) initial = value ?? defaultValue ?? defaultStateValue;
     else if (defaultValue !== undefined)
       initial =
         typeof defaultValue === "function" ? defaultValue() : defaultValue;
@@ -47,12 +47,14 @@ export function useMergedState(defaultStateValue, options = {}) {
 
   const setValue = useCallback(
     (next) => {
-      const nextValue = postState ? postState(next) : next;
+      const prev = mergedValue;
+      const nextInner = typeof next === "function" ? next(prev) : next;
+      const nextValue = postState ? postState(nextInner) : nextInner;
       if (!isControlled) {
         setInnerValue(nextValue);
       }
-      if (mergedValue !== nextValue && onChangeRef.current) {
-        onChangeRef.current(nextValue);
+      if (nextValue !== prev) {
+        onChangeRef.current?.(nextValue);
       }
     },
     [isControlled, mergedValue, postState]
