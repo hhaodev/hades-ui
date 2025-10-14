@@ -8,8 +8,8 @@ import Button from "../Button";
 let root = null;
 let pushMessage = null;
 
-const maxMessage = 3;
-const defaultDuration = 5000;
+let maxMessage = 5;
+let defaultDuration = 5000;
 const prefixMessageId = "-hadesUI-message";
 
 export const message = {
@@ -19,6 +19,11 @@ export const message = {
   info: (opts) => showMessage({ ...opts, type: "info" }),
   remove: () => {},
   clearAll: () => {},
+  config: (args) => {
+    if (args.maxMessage !== undefined) maxMessage = args.maxMessage;
+    if (args.defaultDuration !== undefined)
+      defaultDuration = args.defaultDuration;
+  },
 };
 
 function initMessageRoot() {
@@ -62,6 +67,7 @@ function showMessage(messageItem) {
 
 function MessageRoot({ onReady }) {
   const [messages, setMessages] = useState([]);
+  const [hover, setHover] = useState(false);
   const timersRef = useRef({});
 
   useEffect(() => {
@@ -75,7 +81,7 @@ function MessageRoot({ onReady }) {
   const remove = useCallback((id) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
     if (timersRef.current[id]) {
-      clearTimeout(timersRef.current[id]);
+      clearTimeout(timersRef.current[id].timeoutId);
       delete timersRef.current[id];
     }
   }, []);
@@ -83,15 +89,21 @@ function MessageRoot({ onReady }) {
   const add = useCallback(
     (msg) => {
       const duration = msg.duration ?? defaultDuration;
-      const newMsg = { ...msg, duration };
+      const id = msg.id;
+
+      const record = {
+        remaining: duration,
+        startTime: Date.now(),
+        timeoutId: null,
+      };
+
+      record.timeoutId = setTimeout(() => remove(id), duration);
+      timersRef.current[id] = record;
+
       setMessages((prev) => {
-        const updated = [newMsg, ...prev];
+        const updated = [msg, ...prev];
         return updated.slice(0, maxMessage);
       });
-      timersRef.current[message.id] = setTimeout(
-        () => remove(message.id),
-        duration
-      );
     },
     [remove]
   );
@@ -101,8 +113,27 @@ function MessageRoot({ onReady }) {
     timersRef.current = {};
   }, []);
 
+  useEffect(() => {
+    const now = Date.now();
+    Object.entries(timersRef.current).forEach(([id, record]) => {
+      if (!record) return;
+
+      clearTimeout(record.timeoutId);
+
+      if (hover) {
+        const elapsed = now - record.startTime;
+        record.remaining = Math.max(record.remaining - elapsed, 0);
+      } else {
+        record.startTime = now;
+        record.timeoutId = setTimeout(() => remove(id), record.remaining);
+      }
+    });
+  }, [hover]);
+
   return (
     <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
         position: "fixed",
         top: 20,

@@ -194,9 +194,10 @@ const OptionDropDown = ({ item }) => {
   const [hovered, setHovered] = useState(false);
 
   const isActive = selected === item.key;
-  const isChildActive = item.children
-    ? item.children.some((child) => checkChildActive(child, selected))
-    : false;
+  const isChildActive =
+    item.children && item.children.length != 0
+      ? item.children.some((child) => checkChildActive(child, selected))
+      : false;
 
   const handleClick = (e) => {
     if (item.onClick) item.onClick(e);
@@ -335,14 +336,10 @@ const Option = ({ item, level = 0 }) => {
   const [hovered, setHovered] = useState(false);
   const isActive = selected === item.key;
   const isExpanded = expandedItems.includes(item.key);
-  const isChildActive = item.children
-    ? item.children.some((child) => {
-        if (child.children) {
-          return checkChildActive(child, selected);
-        }
-        return child.key === selected;
-      })
-    : false;
+  const isChildActive =
+    item.children && item.children.length != 0
+      ? item.children.some((child) => checkChildActive(child, selected))
+      : false;
 
   const path = buildPath(item, selected);
   let nearestParent = null;
@@ -453,6 +450,7 @@ const Option = ({ item, level = 0 }) => {
               background: "var(--hadesui-blue-6)",
             }}
           />
+          {/**placeholder div before item**/}
           {level !== 0 && (
             <motion.div
               initial={false}
@@ -505,8 +503,8 @@ const Option = ({ item, level = 0 }) => {
           )}
           {item.children && item.children.length > 0 && open && (
             <motion.span
-              initial={needAnimate ? { scale: 0, opacity: 0 } : false}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={needAnimate ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
               style={{
                 position: "absolute",
                 right: 8,
@@ -636,7 +634,6 @@ const TitleSection = () => {
               layout
               initial={needAnimate ? { opacity: 0 } : false}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.125 }}
             >
               <span style={{ fontSize: 14, fontWeight: 600 }}>Hades UI</span>
             </motion.div>
@@ -728,7 +725,6 @@ const ToggleClose = () => {
           layout
           initial={needAnimate ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.125 }}
           style={{ fontSize: 12, fontWeight: 500 }}
         >
           Hide
