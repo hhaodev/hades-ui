@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Button,
   Checkbox,
@@ -47,7 +46,10 @@ const FormDemo = () => {
             { required: true, message: "Tuổi là bắt buộc" },
             {
               validate: {
-                positive: (v) => v > 0 || "Phải lớn hơn 0",
+                positive: (v) => {
+                  if (v > 0) return true;
+                  else return "Phải lớn hơn 0";
+                }, // cách viết giống lessThan100 nhưng dễ hiểu hơn..
                 lessThan100: (v) => v < 100 || "Phải nhỏ hơn 100",
               },
             },
@@ -109,8 +111,9 @@ const FormDemo = () => {
         <Form.Item label="OTP" name="otp" rules={[{ required: true }]}>
           <Input.OTP />
         </Form.Item>
-
-        <Button type="submit">Submit in from</Button>
+        <Form.Item>
+          <Button type="submit">Submit in from</Button>
+        </Form.Item>
       </Form>
       <Stack flex gap={8} style={{ marginTop: 10 }}>
         <Button onClick={() => form.submit()}>Submit out from</Button>
@@ -149,6 +152,14 @@ const FormDemo = () => {
           Clear email error
         </Button>
         <Button onClick={() => form.clearErrors()}>Clear all error</Button>
+        <Button
+          onClick={async () => {
+            const result = await form.validateFields();
+            console.log("🚀 ~ result:", result);
+          }}
+        >
+          Validate form
+        </Button>
       </Stack>
     </Stack>
   );

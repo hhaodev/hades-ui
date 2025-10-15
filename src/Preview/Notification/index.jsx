@@ -2,17 +2,20 @@ import React, { useEffect, useState } from "react";
 import { Button, Checkbox, Form, Input, Stack, toast } from "../../components";
 
 const NotificationDemo = () => {
+  const [form] = Form.useForm({
+    defaultValues: {
+      limitToast: 5,
+      duration: 5,
+      pauseOnHover: true,
+      showProgress: true,
+    },
+  });
   const [toastId, setToastId] = useState("");
 
   return (
     <Stack flexCol gap={8}>
       <Form
-        defaultValues={{
-          limitToast: 5,
-          duration: 5,
-          pauseOnHover: true,
-          showProgress: true,
-        }}
+        form={form}
         onFinish={(values) => {
           toast.config({
             limitToast: values.limitToast,
@@ -24,6 +27,9 @@ const NotificationDemo = () => {
             title: "Configure",
             description: "Configure successfully!",
           });
+        }}
+        onFinishFailed={(v) => {
+          console.log(v);
         }}
       >
         <Form.Item
@@ -38,7 +44,15 @@ const NotificationDemo = () => {
         <Form.Item
           span={1}
           row
-          rules={[{ required: true }]}
+          rules={[
+            { required: true },
+            {
+              validate: {
+                positive: (v) => v > 0 || "Phải lớn hơn 0",
+                lessThan100: (v) => v < 100 || "Phải nhỏ hơn 100",
+              },
+            },
+          ]}
           label="Duration"
           name="duration"
         >

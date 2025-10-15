@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect } from "react";
-import { useForm as useReactHookForm, FormProvider } from "react-hook-form";
+import { createContext, useContext, useEffect } from "react";
+import { FormProvider, useForm as useReactHookForm } from "react-hook-form";
 import { FormItem } from "./FormItem";
 import { useForm } from "./hook";
 
@@ -13,14 +13,8 @@ export function useFormInstance() {
   return ctx;
 }
 
-export function Form({
-  form,
-  children,
-  onFinish,
-  onFinishFailed,
-  defaultValues,
-}) {
-  const fallbackMethods = useReactHookForm({ defaultValues });
+export function Form({ form, children, onFinish, onFinishFailed }) {
+  const fallbackMethods = useReactHookForm();
   const methods = form?.internalHook ?? fallbackMethods;
 
   useEffect(() => {
@@ -35,20 +29,26 @@ export function Form({
 
   const handleError = (errors) => {
     const values = methods.getValues();
-
     const allFields = Object.keys(values);
+
+    const firstErrorField = Object.keys(errors)[0];
+    if (firstErrorField) {
+      const el = document.querySelector(`[name="${firstErrorField}"]`);
+      if (el && el.scrollIntoView) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        el.focus?.();
+      }
+    }
+
     const errorWithValues = allFields.reduce((acc, field) => {
       if (errors[field]) {
-        acc[field] = {
-          ...errors[field],
-          value: values[field],
-        };
+        acc[field] = { ...errors[field], value: values[field] };
       } else {
         acc[field] = values[field];
       }
       return acc;
     }, {});
-    if (onFinishFailed) onFinishFailed(errorWithValues);
+    onFinishFailed?.(errorWithValues);
   };
 
   return (

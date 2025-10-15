@@ -95,8 +95,8 @@ export function FormItem({
   label,
   rules = [],
   children,
-  validateTrigger = ["onBlur"],
-  debounceValidate = 0,
+  validateTrigger = ["onBlur"], // onChange, onBlur
+  debounceValidate = 0, //work when trigger is onChange..input => debounce validate
   span = 12,
   row = false,
 }) {

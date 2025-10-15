@@ -60,7 +60,7 @@ function showMessage(messageItem) {
   }
   const id = `${prefixMessageId}-${Date.now()}-${Math.random()
     .toString(36)
-    .slice(2, 6)}`;
+    .slice(2)}`;
   const newMessage = { ...messageItem, id };
   requestAnimationFrame(() => waitForPush(newMessage));
 }

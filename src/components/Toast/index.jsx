@@ -64,7 +64,7 @@ function showToast(toastItem) {
   }
   const id = `${prefixToastId}-${Date.now()}-${Math.random()
     .toString(36)
-    .slice(2, 6)}`;
+    .slice(2)}`;
   const newToast = { ...toastItem, id };
   requestAnimationFrame(() => waitForAddToast(newToast));
   return id;
@@ -199,7 +199,7 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
         onMouseLeave={() => setHover(false)}
       >
         <AnimatePresence mode="popLayout">
-          {visibleToasts.map((item, index) => {
+          {visibleToasts.map((item) => {
             return (
               <motion.div
                 layout
