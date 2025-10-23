@@ -32,9 +32,7 @@ function createSafeZoneManager() {
 
     for (let i = zones.length - 1; i >= 0; i--) {
       const { zone } = zones[i];
-      const contains = zone.contains
-        ? zone.contains(node)
-        : zone.contains(node);
+      const contains = zone.contains(node);
       if (contains) {
         closeZonesAbove(i);
         return;

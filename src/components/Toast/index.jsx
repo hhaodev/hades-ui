@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Button from "../Button";
 import { IconError, IconInfo, IconSuccess, IconWarning, XIcon } from "../Icon";
@@ -72,7 +72,7 @@ function showToast(toastItem) {
 
 function ToastRoot({ onReady }) {
   const [toasts, setToasts] = useState([]);
-  const timersRef = useRef({});
+  const toastRecords = useRef(new Map());
 
   useEffect(() => {
     onReady({
@@ -84,25 +84,25 @@ function ToastRoot({ onReady }) {
 
   const remove = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-    if (timersRef.current[id]) {
-      clearTimeout(timersRef.current[id].timeoutId);
-      delete timersRef.current[id];
+    const record = toastRecords.current.get(id);
+    if (record) {
+      record.onHide?.(id);
+      clearTimeout(record.timeoutId);
+      toastRecords.current.delete(id);
     }
   }, []);
 
   const add = useCallback(
     (toast) => {
+      const { onHide, ...rest } = toast;
       const placement =
         (placements.includes(toast.placement) && toast.placement) || "topRight";
       const duration = toast.duration ?? defaultDuration;
       const showProgressInternal = toast.showProgress ?? showProgress;
       const pauseOnHoverInternal = toast.pauseOnHover ?? pauseOnHover;
       const newToast = {
-        ...toast,
-        showProgress: showProgressInternal,
-        pauseOnHover: pauseOnHoverInternal,
+        ...rest,
         placement,
-        duration,
       };
 
       setToasts((prev) => {
@@ -112,42 +112,74 @@ function ToastRoot({ onReady }) {
         return [...before, ...updated];
       });
 
-      if (duration !== 0) {
-        timersRef.current[toast.id] = {
-          timeoutId: setTimeout(() => remove(toast.id), duration),
-          startTime: Date.now(),
-          remaining: duration,
-          totalDuration: duration,
-          ...newToast,
-        };
-      }
+      const record = {
+        duration,
+        pauseOnHover: pauseOnHoverInternal,
+        showProgress: showProgressInternal,
+        startTime: Date.now(),
+        remaining: duration,
+        onHide,
+        timeoutId:
+          duration > 0
+            ? setTimeout(() => remove(record.id), duration)
+            : undefined,
+        ...newToast,
+      };
+
+      record.pause = () => {
+        if (record.duration === 0 || !record.timeoutId) return;
+        const elapsed = Date.now() - record.startTime;
+        record.remaining = Math.max(record.remaining - elapsed, 0);
+        clearTimeout(record.timeoutId);
+        record.timeoutId = undefined;
+      };
+
+      record.resume = () => {
+        if (record.duration === 0 || record.timeoutId) return;
+        if (record.remaining <= 0) {
+          remove(record.id);
+          return;
+        }
+        record.startTime = Date.now();
+        record.timeoutId = setTimeout(
+          () => remove(record.id),
+          record.remaining
+        );
+      };
+
+      record.hide = () => remove(record.id);
+
+      toastRecords.current.set(toast.id, record);
     },
     [remove]
   );
+
   const clearAll = useCallback(() => {
     setToasts([]);
-    timersRef.current = {};
+    for (const record of toastRecords.current.values()) {
+      clearTimeout(record.timeoutId);
+    }
+    toastRecords.current.clear();
   }, []);
 
   const grouped = placements.reduce((acc, p) => ({ ...acc, [p]: [] }), {});
   for (const t of toasts) grouped[t.placement].push(t);
 
   return (
-    <>
+    <React.Fragment>
       {placements.map((placement) => (
         <ToastPlacementGroup
           key={placement}
           placement={placement}
           items={grouped[placement]}
-          remove={remove}
-          timersRef={timersRef}
+          toastRecords={toastRecords}
         />
       ))}
-    </>
+    </React.Fragment>
   );
 }
 
-function ToastPlacementGroup({ placement, items, remove, timersRef }) {
+function ToastPlacementGroup({ placement, items, toastRecords }) {
   const isTop = placement.includes("top");
   const isRight = placement.includes("Right");
   const [hover, setHover] = useState(false);
@@ -170,17 +202,13 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
   };
 
   useEffect(() => {
-    const now = Date.now();
     items.forEach((item) => {
-      const record = timersRef.current[item.id];
-      if (!record || !record.pauseOnHover) return;
+      const record = toastRecords.current.get(item.id);
+      if (!record || record.duration === 0 || !record.pauseOnHover) return;
       if (hover) {
-        const elapsed = now - record.startTime;
-        record.remaining = Math.max(record.remaining - elapsed, 0);
-        clearTimeout(record.timeoutId);
+        record.pause();
       } else {
-        record.startTime = now;
-        record.timeoutId = setTimeout(() => remove(item.id), record.remaining);
+        record.resume();
       }
     });
   }, [hover]);
@@ -219,8 +247,7 @@ function ToastPlacementGroup({ placement, items, remove, timersRef }) {
               >
                 <ToastItem
                   item={item}
-                  onClose={() => remove(item.id)}
-                  timersRef={timersRef}
+                  toastRecords={toastRecords}
                   hover={hover}
                 />
               </motion.div>
@@ -280,24 +307,28 @@ const getToastIcon = (type) => {
   }
 };
 
-function ToastItem({ item, onClose, timersRef, hover }) {
-  const {
-    icon,
-    type = "info",
-    title,
-    description,
-    id,
-    showProgress,
-    duration,
-    pauseOnHover,
-  } = item;
+if (!customElements.get("hadesui-toast")) {
+  class ToastItemElement extends HTMLElement {
+    #hide() {
+      this.dispatchEvent(new CustomEvent("hide"));
+    } // (#hide) k cho truy cập từ bên ngoài. ex: ele.hide(), có thể truy cập nếu k có #
+    method(action) {
+      if (action === "hide") this.#hide();
+    }
+  }
+  customElements.define("hadesui-toast", ToastItemElement);
+}
+
+function ToastItem({ item, toastRecords, hover }) {
+  const { id, type, description, title, icon } = item;
+  const divRef = useRef(null);
   const hoverRef = useRef(false);
-  const record = timersRef.current[id];
+  const record = toastRecords.current.get(id);
   const [progress, setProgress] = useState(() => {
-    if (!record || !showProgress) return 0;
+    if (!record || record.duration === 0 || !record.showProgress) return 0;
     const elapsed = Date.now() - record.startTime;
     const remaining = Math.max(record.remaining - elapsed, 0);
-    return (remaining / record.totalDuration) * 100;
+    return (remaining / record.duration) * 100;
   });
 
   useEffect(() => {
@@ -305,21 +336,31 @@ function ToastItem({ item, onClose, timersRef, hover }) {
   }, [hover]);
 
   useEffect(() => {
-    if (!record || !showProgress) return;
+    if (!record || record.duration === 0 || !record.showProgress) return;
     const update = () => {
-      if (hoverRef.current && pauseOnHover) return;
+      if (hoverRef.current && record?.pauseOnHover) return;
       const elapsed = Date.now() - record.startTime;
       const remaining = Math.max(record.remaining - elapsed, 0);
-      const percent = (remaining / duration) * 100;
+      const percent = (remaining / record.duration) * 100;
       setProgress(percent);
     };
 
     const interval = setInterval(update, 100);
     return () => clearInterval(interval);
-  }, [id, duration, record]);
+  }, [id, record]);
+
+  useEffect(() => {
+    const el = divRef.current;
+    if (!el) return;
+    const handleHide = () => record?.hide?.();
+    el.addEventListener("hide", handleHide);
+    return () => el.removeEventListener("hide", handleHide);
+  }, [record]);
 
   return (
-    <div
+    <hadesui-toast
+      id={id}
+      ref={divRef}
       style={{
         display: "flex",
         alignItems: "center",
@@ -362,7 +403,7 @@ function ToastItem({ item, onClose, timersRef, hover }) {
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              onClose?.();
+              record?.hide();
             }}
             theme="icon"
           >
@@ -371,7 +412,7 @@ function ToastItem({ item, onClose, timersRef, hover }) {
         </div>
       </div>
 
-      {showProgress && (
+      {record?.showProgress && (
         <div
           style={{
             position: "absolute",
@@ -384,6 +425,6 @@ function ToastItem({ item, onClose, timersRef, hover }) {
           }}
         />
       )}
-    </div>
+    </hadesui-toast>
   );
 }

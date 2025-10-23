@@ -1,4 +1,10 @@
-import { DatePicker, DateRangePicker, Input, Stack } from "../../components";
+import {
+  DatePicker,
+  DateRangePicker,
+  Input,
+  Select,
+  Stack,
+} from "../../components";
 
 const InputDemo = () => {
   return (
@@ -34,6 +40,23 @@ const InputDemo = () => {
       <Stack>Range Picker</Stack>
       <DateRangePicker layout="vertical" />
       <DateRangePicker />
+      <Select
+        hasSearch
+        options={Array.from({ length: 20 }, (_, i) => {
+          const val = `item ${i + 1}`.toString();
+          return { label: val, value: i + 1 };
+        })}
+        placeholder="Select..."
+      />
+      <Select
+        hasSearch
+        options={Array.from({ length: 20 }, (_, i) => {
+          const val = `item ${i + 1}`.toString();
+          return { label: val, value: i + 1 };
+        })}
+        multiple
+        placeholder="Select multiple..."
+      />
     </Stack>
   );
 };

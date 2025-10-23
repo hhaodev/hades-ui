@@ -10,7 +10,15 @@ const NotificationDemo = () => {
       showProgress: true,
     },
   });
-  const [toastId, setToastId] = useState("");
+  const [toastId, setToastId] = useState([]);
+
+  const addToast = (id) => {
+    setToastId((prev) => [id, ...prev]);
+  };
+
+  const removeToast = (id) => {
+    setToastId((prev) => prev.filter((i) => i !== id));
+  };
 
   return (
     <Stack flexCol gap={8}>
@@ -48,7 +56,7 @@ const NotificationDemo = () => {
             { required: true },
             {
               validate: {
-                positive: (v) => v > 0 || "Phải lớn hơn 0",
+                positive: (v) => v >= 0 || "Phải lớn hơn hoặc bằng 0",
                 lessThan100: (v) => v < 100 || "Phải nhỏ hơn 100",
               },
             },
@@ -74,8 +82,9 @@ const NotificationDemo = () => {
               title: "topRight",
               description: "topRight",
               placement: "topRight", // default
+              onHide: removeToast, // callback after toast removed
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast top right
@@ -87,8 +96,9 @@ const NotificationDemo = () => {
               title: "topLeft",
               description: "topLeft",
               placement: "topLeft",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast top left
@@ -100,8 +110,9 @@ const NotificationDemo = () => {
               title: "bottomLeft",
               description: "bottomLeft",
               placement: "bottomLeft",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast bottom left
@@ -113,8 +124,9 @@ const NotificationDemo = () => {
               title: "bottomRight",
               description: "bottomRight",
               placement: "bottomRight",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast bottom right
@@ -127,8 +139,9 @@ const NotificationDemo = () => {
             const toastId = toast.success({
               title: "Success",
               description: "Success",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast Success
@@ -139,8 +152,9 @@ const NotificationDemo = () => {
             const toastId = toast.warning({
               title: "Warning",
               description: "Warning",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast Warning
@@ -151,8 +165,9 @@ const NotificationDemo = () => {
             const toastId = toast.info({
               title: "Info",
               description: "Info",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast Info
@@ -163,8 +178,9 @@ const NotificationDemo = () => {
             const toastId = toast.error({
               title: "Error",
               description: "Error",
+              onHide: removeToast,
             });
-            setToastId(toastId);
+            addToast(toastId);
           }}
         >
           Make toast Error
@@ -174,7 +190,10 @@ const NotificationDemo = () => {
         <Button
           theme="default"
           onClick={() => {
-            toast.remove(toastId);
+            if (toastId.length === 0) return;
+            const ele = document.querySelector(`#${toastId}`);
+            ele?.method("hide"); // api DOM
+            // toast.remove(toastId[0]); //api toast
           }}
         >
           Remove toast
@@ -182,7 +201,11 @@ const NotificationDemo = () => {
         <Button
           theme="default"
           onClick={() => {
-            toast.clearAll();
+            const allToast = document.querySelectorAll("hadesui-toast");
+            allToast?.forEach((el) => {
+              el.method("hide");
+            });
+            // toast.clearAll();
           }}
         >
           Clear all toast
@@ -202,6 +225,7 @@ const NotificationDemo = () => {
         placement (string): &quot;topLeft&quot;, &quot;topRight&quot;,
         &quot;bottomLeft&quot;, &quot;bottomRight&quot;
       </p>
+      <p>onHide: callback return id of toast after toast removed</p>
       <p>
         func: toast.remove(id): id return when use like this: const id =
         toast.success(...args)
@@ -213,6 +237,10 @@ const NotificationDemo = () => {
           "{limitToast: number, duration: number, pauseOnHover: boolean, showProgress: boolean}"
         }
         ): limit of box toast, duration of toast item
+      </p>
+      <p>
+        querySelector(idToast): query element toast. include method hide.
+        example: element.method( &quot;hide&quot;)
       </p>
     </Stack>
   );

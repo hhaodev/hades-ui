@@ -192,7 +192,7 @@ const loadingEl =
   document.querySelector("hades-ui-global-loading") ||
   (() => {
     const el = document.createElement("hades-ui-global-loading");
-    document.body.appendChild(el);
+    document.documentElement.appendChild(el);
     return el;
   })();
 

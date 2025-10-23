@@ -306,6 +306,7 @@ const Select = forwardRef(function Select(
               <Stack wfull style={{ padding: "8px" }}>
                 <Input
                   value={search}
+                  placeholder="Search..."
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Escape") setSearch("");
