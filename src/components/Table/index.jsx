@@ -73,7 +73,7 @@ const FilterPanel = React.memo(
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleApply();
               }}
-              placeholder={`Search ${getTextFromNode(col.title)}`}
+              placeholder={`Search by ${getTextFromNode(col.title)}`}
               prefix={
                 <Button theme="icon" onClick={() => {}}>
                   <SearchIcon size={16} />
@@ -184,7 +184,7 @@ const HeaderCell = React.memo(
     handleSort,
     handleMouseDown,
     index,
-    currentFilter,
+    currentFilter = { search: "", selected: [] },
     onFilterApply,
   }) => {
     const dropdownRef = useRef();
@@ -209,27 +209,19 @@ const HeaderCell = React.memo(
       [col.fixed, leftOffset]
     );
 
-    const filterState = currentFilter ?? { search: "", selected: [] };
-
     const { hasFilter, filterIconColor } = useMemo(() => {
       const active =
-        (col.searchable && filterState.search?.trim() !== "") ||
+        (col.searchable && currentFilter.search?.trim() !== "") ||
         ((col.filters || col.filterDropdown) &&
-          Array.isArray(filterState.selected) &&
-          filterState.selected.length > 0);
+          Array.isArray(currentFilter.selected) &&
+          currentFilter.selected.length > 0);
       return {
         hasFilter: active,
         filterIconColor: active
           ? "var(--hadesui-blue-6)"
           : "var(--hadesui-text2-color)",
       };
-    }, [
-      col.searchable,
-      col.filters,
-      col.filterDropdown,
-      filterState.search,
-      filterState.selected,
-    ]);
+    }, [col.searchable, col.filters, col.filterDropdown, currentFilter]);
 
     return (
       <div
@@ -282,22 +274,28 @@ const HeaderCell = React.memo(
             menu={
               col.filterDropdown ? (
                 col.filterDropdown({
-                  setSelectedKeys: (keys) => {
+                  column: col,
+                  setFilter: ({ selected, search } = {}) => {
                     setTempFilter((prev) => ({
                       ...prev,
-                      selected: Array.isArray(keys) ? keys : [],
+                      ...(search !== undefined ? { search } : {}),
+                      ...(selected !== undefined
+                        ? { selected: Array.isArray(selected) ? selected : [] }
+                        : {}),
                     }));
                   },
-                  selectedKeys: tempFilter,
-                  confirm: () => {
+                  filterState: tempFilter,
+                  applyFilter: () => {
                     onFilterApply(col, {
+                      search: tempFilter.search,
                       selected: Array.from(tempFilter.selected),
                     });
                     dropdownRef.current.hide();
                   },
-                  clearFilters: () => {
+                  clearFilter: () => {
                     setTempFilter((prev) => ({
                       ...prev,
+                      search: "",
                       selected: [],
                     }));
                   },
@@ -782,6 +780,9 @@ const Table = ({
         }
 
         if (col.searchable && f.search && f.search.trim() !== "") {
+          if (typeof col.onSearch === "function") {
+            return col.onSearch(f.search.trim(), item);
+          }
           const target = String(item[col.dataIndex] ?? "").toLowerCase();
           if (!target.includes(f.search.trim().toLowerCase())) {
             return false;

@@ -98,6 +98,7 @@ const Input = forwardRef(
             onBlur?.(e);
             setIsEnter(false);
           }}
+          title={props.placeholder}
           {...props}
         />
         {type === "range" && <div>{props.max ?? 100}</div>}

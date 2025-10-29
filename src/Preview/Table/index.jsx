@@ -1,6 +1,16 @@
 import React, { useMemo } from "react";
-import { Button, DateRangePicker, Stack, Table } from "../../components";
-import { formatDate } from "../../utils";
+import {
+  Button,
+  CloseIcon,
+  DateRangePicker,
+  Input,
+  SearchIcon,
+  Stack,
+  Table,
+} from "../../components";
+import { formatDate, getTextFromNode } from "../../utils";
+
+const limit = 20;
 
 const TableDemo = () => {
   const columns = useMemo(() => {
@@ -46,13 +56,15 @@ const TableDemo = () => {
         key: "createdAt",
         render: (v) => <span>{formatDate(v, "DD-MM-YYYY")}</span>,
         sortable: true,
+        searchable: true,
         sorter: (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         filterDropdown: ({
-          setSelectedKeys,
-          selectedKeys,
-          confirm,
-          clearFilters,
+          setFilter,
+          filterState,
+          applyFilter,
+          clearFilter,
+          column,
         }) => {
           return (
             <Stack
@@ -63,15 +75,40 @@ const TableDemo = () => {
                 width: "250px",
               }}
             >
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Search</div>
+                <Input
+                  value={filterState.search}
+                  onChange={(e) => setFilter({ search: e.target.value })}
+                  placeholder={`Search by ${getTextFromNode(column.title)}`}
+                  prefix={
+                    <Button theme="icon" onClick={() => {}}>
+                      <SearchIcon size={16} />
+                    </Button>
+                  }
+                  suffix={
+                    filterState.search ? (
+                      <Button
+                        theme="icon"
+                        onClick={() => setFilter({ search: "" })}
+                      >
+                        <CloseIcon />
+                      </Button>
+                    ) : null
+                  }
+                />
+              </div>
               <Stack style={{ fontSize: 13, fontWeight: 600 }}>
                 Custom filter
               </Stack>
               <DateRangePicker
-                value={selectedKeys?.selected[0]}
+                value={filterState?.selected[0]}
                 onChange={(value) =>
-                  setSelectedKeys(
-                    value ? [{ start: value.start, end: value.end }] : [] // required array => return each item in value at value in OnFilter
-                  )
+                  setFilter({
+                    selected: value
+                      ? [{ start: value.start, end: value.end }]
+                      : [], // required array => return each item in value at value in OnFilter
+                  })
                 }
               />
               <Stack
@@ -81,14 +118,10 @@ const TableDemo = () => {
                   justifyContent: "flex-end",
                 }}
               >
-                <Button
-                  theme="text"
-                  onClick={() => clearFilters()}
-                  size="small"
-                >
+                <Button theme="text" onClick={() => clearFilter()} size="small">
                   Reset
                 </Button>
-                <Button onClick={() => confirm()} size="small">
+                <Button onClick={() => applyFilter()} size="small">
                   Apply
                 </Button>
               </Stack>
@@ -110,6 +143,10 @@ const TableDemo = () => {
 
           return recordDate >= startDay && recordDate <= endDay;
         },
+        onSearch: (value, record) => {
+          const date = formatDate(record.createdAt, "DD-MM-YYYY");
+          return date.includes(value);
+        },
       },
       {
         title: "Status",
@@ -117,6 +154,7 @@ const TableDemo = () => {
         key: "status",
         // ví dụ custom active > pending > inactive > banned
         sortable: true,
+        searchable: true,
         sorter: (a, b) => {
           const order = { active: 0, pending: 1, inactive: 2, banned: 3 };
           return (order[a.status] ?? 99) - (order[b.status] ?? 99);
@@ -148,16 +186,16 @@ const TableDemo = () => {
           return va - vb;
         },
       },
-      ...Array.from({ length: 5 }, (_, i) => {
-        const dataIndex = `col${i + 1}`;
-        return {
-          title: `Tag ${i + 1}`,
-          dataIndex,
-          key: dataIndex,
-          render: (v) => <span>{v}</span>,
-          sortable: true,
-        };
-      }),
+      // ...Array.from({ length: 5 }, (_, i) => {
+      //   const dataIndex = `col${i + 1}`;
+      //   return {
+      //     title: `Tag ${i + 1}`,
+      //     dataIndex,
+      //     key: dataIndex,
+      //     render: (v) => <span>{v}</span>,
+      //     sortable: true,
+      //   };
+      // }),
     ];
   }, []);
 
@@ -208,7 +246,7 @@ const TableDemo = () => {
       return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
     };
 
-    return Array.from({ length: 100 }, (_, i) => {
+    return Array.from({ length: limit }, (_, i) => {
       const id = (i + 1).toString();
       const key = id;
       const first = firstNames[Math.floor(rand() * firstNames.length)];
@@ -254,11 +292,11 @@ const TableDemo = () => {
         status,
         amount,
         description,
-        col1: tags[Math.floor(rand() * tags.length)],
-        col2: tags[Math.floor(rand() * tags.length)],
-        col3: tags[Math.floor(rand() * tags.length)],
-        col4: tags[Math.floor(rand() * tags.length)],
-        col5: tags[Math.floor(rand() * tags.length)],
+        // col1: tags[Math.floor(rand() * tags.length)],
+        // col2: tags[Math.floor(rand() * tags.length)],
+        // col3: tags[Math.floor(rand() * tags.length)],
+        // col4: tags[Math.floor(rand() * tags.length)],
+        // col5: tags[Math.floor(rand() * tags.length)],
       };
     });
   }, []);
