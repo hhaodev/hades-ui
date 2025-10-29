@@ -14,7 +14,14 @@ window.addEventListener(
   true
 );
 
-export default function Modal({ title, buttons, open, onClose, children }) {
+export default function Modal({
+  title,
+  buttons,
+  open,
+  onClose,
+  children,
+  container = document.body,
+}) {
   const [active, setActive] = useState(false);
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -23,7 +30,7 @@ export default function Modal({ title, buttons, open, onClose, children }) {
   const modalRef = useRef(null);
   const bodyRef = useRef(null);
 
-  useDisableScroll(open);
+  useDisableScroll(open, container);
 
   useEffect(() => {
     if (open) {
@@ -131,6 +138,6 @@ export default function Modal({ title, buttons, open, onClose, children }) {
         </Stack>
       </Stack>
     </Stack>,
-    document.body
+    container
   );
 }

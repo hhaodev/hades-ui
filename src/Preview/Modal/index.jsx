@@ -10,6 +10,77 @@ const ModalDemo = () => {
         <Button onClick={() => setOpenModal1(true)}>Open Modal</Button>
         <Button onClick={() => setOpenModal2(true)}>Open Modal 2</Button>
       </Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
+      <Stack>1</Stack>
       <Modal
         title={"Modal 1"}
         buttons={[
@@ -24,11 +95,21 @@ const ModalDemo = () => {
         ContentModal1
       </Modal>
       <Modal
+        container={document.getElementById("layoutDemo")}
         title={"Modal 2"}
         open={openModal2}
         onClose={() => setOpenModal2(false)}
       >
         ContentModal2
+        <Button
+          theme="default"
+          onClick={() => {
+            $$.loading(true);
+            setTimeout(() => $$.loading(false), 3000);
+          }}
+        >
+          Start Loading
+        </Button>
       </Modal>
     </Stack>
   );

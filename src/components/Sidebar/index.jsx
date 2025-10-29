@@ -48,6 +48,8 @@ const Sidebar = ({
   treeLine = false,
   collapse,
   hasCollapseButton = true,
+  width: widthProp = 480,
+  resize = true,
 }) => {
   const sidebarId = useId().replace(/[^a-zA-Z0-9_-]/g, "_");
   const itemsFlatRef = useRef(new Map());
@@ -57,6 +59,13 @@ const Sidebar = ({
   const [open, setOpen] = useState(!collapse);
   const [needAnimate, setNeedAnimate] = useState(false);
   const [containerHovered, setContainerHovered] = useState(false);
+
+  const [width, setWidth] = useState(widthProp);
+  const [ghostLeft, setGhostLeft] = useState(null);
+  const disableAnimate = useRef(false);
+  const resizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(widthProp);
 
   const [selected, setSelected] = useMergedState(items[0]?.key, {
     value: selectedKey,
@@ -97,6 +106,45 @@ const Sidebar = ({
     }
   }, [collapse]);
 
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!resizingRef.current) return;
+      const delta = e.clientX - startXRef.current;
+      const ghostPos = Math.max(startWidthRef.current + delta, 160);
+      setGhostLeft(ghostPos);
+    };
+
+    const handleMouseUp = () => {
+      if (!resizingRef.current) return;
+      resizingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      if (ghostLeft !== null) {
+        setWidth(ghostLeft);
+        setGhostLeft(null);
+        disableAnimate.current = true;
+        requestAnimationFrame(() => (disableAnimate.current = false));
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [ghostLeft]);
+
+  const handleMouseDown = (e) => {
+    if (!resize || !open) return;
+    resizingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = width;
+    setGhostLeft(width);
+    document.body.style.cursor = "ew-resize";
+    document.body.style.userSelect = "none";
+  };
+
   return (
     <SidebarContext.Provider
       value={{
@@ -112,27 +160,31 @@ const Sidebar = ({
         treeLine,
         dropdownRef,
         navRef,
+        disableAnimate,
       }}
     >
       <motion.nav
         id={`sidebar-${sidebarId}`}
-        layout
+        layout={!disableAnimate.current}
         style={{
           position: "sticky",
           top: 0,
           height: "100vh",
           flexShrink: 0,
-          width: open ? 240 : "fit-content",
+          width: open ? width : "fit-content",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           background: "var(--hadesui-bg-color)",
+          // ...(resize
+          //   ? { borderRight: "1px solid var(--hadesui-border-color)" }
+          //   : {}),
         }}
       >
-        <motion.div layout>
+        <motion.div layout={!disableAnimate.current}>
           <TitleSection />
           <motion.div
-            layout
+            layout={!disableAnimate.current}
             ref={navRef}
             style={{
               display: "flex",
@@ -156,12 +208,45 @@ const Sidebar = ({
         </motion.div>
         {hasCollapseButton && <ToggleClose />}
       </motion.nav>
+      {resize && open && (
+        <div
+          onMouseDown={handleMouseDown}
+          style={{
+            minWidth: 4,
+            height: "100%",
+            cursor: "ew-resize",
+            background: "transparent",
+            display: "flex",
+            alignItems: "center",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--hadesui-blue-6)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        />
+      )}
+      {resize && ghostLeft !== null && open && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: ghostLeft,
+            height: "100vh",
+            width: 4,
+            background: "var(--hadesui-blue-6)",
+            pointerEvents: "none",
+            zIndex: 9999,
+          }}
+        />
+      )}
     </SidebarContext.Provider>
   );
 };
 
 const Render = ({ item }) => {
-  const { open } = useSidebar();
+  const { open, disableAnimate } = useSidebar();
   return (
     <Tooltip
       placement="right"
@@ -172,7 +257,7 @@ const Render = ({ item }) => {
           : item.title
       }
     >
-      <motion.div layout>
+      <motion.div layout={!disableAnimate.current}>
         <Option item={item} />
       </motion.div>
     </Tooltip>
@@ -190,7 +275,8 @@ const RenderInDropdown = ({ items }) => {
 };
 
 const OptionDropDown = ({ item }) => {
-  const { selected, setSelected, dropdownRef, navRef } = useSidebar();
+  const { selected, setSelected, dropdownRef, navRef, disableAnimate } =
+    useSidebar();
   const [hovered, setHovered] = useState(false);
 
   const isActive = selected === item.key;
@@ -210,7 +296,7 @@ const OptionDropDown = ({ item }) => {
     return (
       <motion.div
         tabIndex={1}
-        layout
+        layout={!disableAnimate.current}
         key={item.key}
         onKeyDown={(e) => {
           if (e.key === "Enter") handleClick(e);
@@ -332,6 +418,7 @@ const Option = ({ item, level = 0 }) => {
     setExpandedItems,
     treeLine,
     dropdownRef,
+    disableAnimate,
   } = useSidebar();
   const [hovered, setHovered] = useState(false);
   const isActive = selected === item.key;
@@ -371,7 +458,7 @@ const Option = ({ item, level = 0 }) => {
     }
   };
   return (
-    <motion.div layout>
+    <motion.div layout={!disableAnimate.current}>
       <Dropdown
         ref={dropdownRef}
         fixedWidthPopup={false}
@@ -385,7 +472,7 @@ const Option = ({ item, level = 0 }) => {
       >
         <motion.div
           tabIndex={1}
-          layout
+          layout={!disableAnimate.current}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleClick(e);
           }}
@@ -471,7 +558,7 @@ const Option = ({ item, level = 0 }) => {
             />
           )}
           <motion.div
-            layout
+            layout={!disableAnimate.current}
             style={{
               display: "grid",
               placeContent: "center",
@@ -487,7 +574,7 @@ const Option = ({ item, level = 0 }) => {
           </motion.div>
           {open && (
             <motion.span
-              layout
+              layout={!disableAnimate.current}
               initial={needAnimate ? { opacity: 0 } : false}
               animate={{ opacity: 1 }}
               style={{
@@ -562,7 +649,7 @@ const Option = ({ item, level = 0 }) => {
               }}
             >
               <motion.div
-                layout
+                layout={!disableAnimate.current}
                 style={{
                   paddingTop: 4,
                   display: "flex",
@@ -608,17 +695,17 @@ const TitleInitial = ({ title, size = 20 }) => {
 };
 
 const TitleSection = () => {
-  const { open, needAnimate } = useSidebar();
+  const { open, needAnimate, disableAnimate } = useSidebar();
   return (
     <motion.div
-      layout
+      layout={!disableAnimate.current}
       style={{
         borderBottom: "1px solid var(--hadesui-border-color)",
       }}
     >
       <Tooltip offset={0} placement="right" tooltip={open ? null : "Hades UI"}>
         <motion.div
-          layout
+          layout={!disableAnimate.current}
           style={{
             display: "flex",
             justifyContent: open ? "start" : "center",
@@ -631,7 +718,7 @@ const TitleSection = () => {
           <Logo />
           {open && (
             <motion.div
-              layout
+              layout={!disableAnimate.current}
               initial={needAnimate ? { opacity: 0 } : false}
               animate={{ opacity: 1, x: 0 }}
             >
@@ -676,14 +763,14 @@ const Logo = () => (
 );
 
 const ToggleClose = () => {
-  const { open, setOpen, needAnimate } = useSidebar();
+  const { open, setOpen, needAnimate, disableAnimate } = useSidebar();
   const toggle = () => {
     setOpen(open ? false : true);
   };
   return (
     <motion.div
       tabIndex={1}
-      layout
+      layout={!disableAnimate.current}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           toggle();
@@ -704,7 +791,7 @@ const ToggleClose = () => {
       }}
     >
       <motion.div
-        layout
+        layout={!disableAnimate.current}
         style={{
           display: "flex",
           alignItems: "center",
@@ -722,7 +809,7 @@ const ToggleClose = () => {
       </motion.div>
       {open && (
         <motion.span
-          layout
+          layout={!disableAnimate.current}
           initial={needAnimate ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
           style={{ fontSize: 12, fontWeight: 500 }}

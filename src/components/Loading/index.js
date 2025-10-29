@@ -125,6 +125,7 @@ class HadesUILoading extends HTMLElement {
         }
 
         .loading-text {
+          font-family: Inter, sans-serif;
           font-size: 14px;
           color: #333;
         }

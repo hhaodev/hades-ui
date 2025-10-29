@@ -177,6 +177,7 @@ function App() {
         treeLine
       />
       <Stack
+        id="layoutDemo"
         style={{
           flex: 1,
           minWidth: 0,

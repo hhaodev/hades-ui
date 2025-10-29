@@ -27,6 +27,7 @@ export default function Panel({
   title,
   buttons,
   size = "large", //small | large | extra
+  container = document.body,
 }) {
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(open);
@@ -35,7 +36,7 @@ export default function Panel({
   const panelRef = useRef();
   const bodyRef = useRef();
   const timeoutRef = useRef();
-  useDisableScroll(open);
+  useDisableScroll(open, container);
 
   useEffect(() => {
     clearTimeout(timeoutRef.current);
@@ -124,6 +125,6 @@ export default function Panel({
         </Stack>
       </Stack>
     </Stack>,
-    document.body
+    container
   );
 }

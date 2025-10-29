@@ -1,9 +1,10 @@
 import React, { useEffect, useLayoutEffect } from "react";
 
 function getElement(refOrEl) {
-  if (!refOrEl) return document.body;
-  if (refOrEl instanceof Element) return refOrEl;
-  return refOrEl?.current ?? null;
+  if (!refOrEl) return null;
+  if (typeof refOrEl === "string") return document.querySelector(refOrEl);
+  if (refOrEl?.current) return refOrEl.current;
+  return refOrEl;
 }
 
 export function hasScrollbar(refOrEl) {
@@ -42,7 +43,7 @@ export function useDisableScroll(condition = true, refOrEl = null) {
     if (el.dataset["disableScroll"] === "true") return;
 
     el.dataset["disableScroll"] = "true";
-
+    const isBody = el === document.body || el === document.documentElement;
     const scrollY = window.scrollY;
     const originalStyle = {
       top: el.style.top,
@@ -58,14 +59,17 @@ export function useDisableScroll(condition = true, refOrEl = null) {
 
     requestAnimationFrame(() => {
       if (scrollbarWidth > 0) {
-        el.style.paddingRight = `${scrollbarWidth}px`;
+        const currentPaddingRight =
+          parseFloat(getComputedStyle(el).paddingRight) || 0;
+        el.style.paddingRight = `${scrollbarWidth + currentPaddingRight}px`;
       }
-
-      el.style.position = "fixed";
-      el.style.top = `-${scrollY}px`;
-      el.style.left = "0";
-      el.style.right = "0";
-      el.style.width = "100%";
+      if (isBody) {
+        el.style.position = "fixed";
+        el.style.top = `-${scrollY}px`;
+        el.style.left = "0";
+        el.style.right = "0";
+        el.style.width = "100%";
+      }
       el.style.overflow = "hidden";
     });
 

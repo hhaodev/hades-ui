@@ -55,7 +55,7 @@ const TableDemo = () => {
           clearFilters,
         }) => {
           return (
-            <div
+            <Stack
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -63,16 +63,18 @@ const TableDemo = () => {
                 width: "250px",
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Custom filter</div>
+              <Stack style={{ fontSize: 13, fontWeight: 600 }}>
+                Custom filter
+              </Stack>
               <DateRangePicker
                 value={selectedKeys?.selected[0]}
                 onChange={(value) =>
                   setSelectedKeys(
-                    value ? [{ start: value.start, end: value.end }] : [] // required array => return array[0] at value in OnFilter
+                    value ? [{ start: value.start, end: value.end }] : [] // required array => return each item in value at value in OnFilter
                   )
                 }
               />
-              <div
+              <Stack
                 style={{
                   display: "flex",
                   gap: 8,
@@ -89,8 +91,8 @@ const TableDemo = () => {
                 <Button onClick={() => confirm()} size="small">
                   Apply
                 </Button>
-              </div>
-            </div>
+              </Stack>
+            </Stack>
           );
         },
         onFilter: (value, record) => {
@@ -206,7 +208,7 @@ const TableDemo = () => {
       return Math.round(Math.max(0, mean + z * sd) * 100) / 100;
     };
 
-    return Array.from({ length: 1000 }, (_, i) => {
+    return Array.from({ length: 100 }, (_, i) => {
       const id = (i + 1).toString();
       const key = id;
       const first = firstNames[Math.floor(rand() * firstNames.length)];
