@@ -54,7 +54,10 @@ export function Form({ form, children, onFinish, onFinishFailed }) {
   return (
     <FormContext.Provider value={methods}>
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(handleSubmit, handleError)}>
+        <form
+          onSubmit={methods.handleSubmit(handleSubmit, handleError)}
+          noValidate
+        >
           <div
             style={{
               display: "grid",

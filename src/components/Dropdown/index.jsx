@@ -17,7 +17,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { useMergedState } from "../../utils";
+import { throttle, useMergedState } from "../../utils";
 import Stack from "../Stack";
 import { DropdownItem } from "./DropdownItem";
 import { DropdownMenu } from "./DropdownMenu";
@@ -203,17 +203,21 @@ const Dropdown = forwardRef(function Dropdown(
   }, [open]);
 
   useEffect(() => {
-    const handleResize = () => {
-      setPopupWidth(referenceRef?.current?.getBoundingClientRect()?.width);
-    };
+    if (!referenceRef?.current) return;
 
-    window.addEventListener("resize", handleResize);
-    handleResize();
+    const handleResize = throttle(() => {
+      const width = referenceRef.current?.getBoundingClientRect()?.width;
+      setPopupWidth(width);
+    });
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(referenceRef.current);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      observer.disconnect();
+      handleResize.cancel();
     };
-  }, []);
+  }, [referenceRef]);
 
   useEffect(() => {
     return () => {

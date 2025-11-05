@@ -142,7 +142,7 @@ const Select = forwardRef(function Select(
     return (
       <DropdownMenu
         ref={(el) => (menuRef.current = el)}
-        style={{ maxHeight: "400px", overflow: "auto" }}
+        style={{ maxHeight: "300px", overflow: "auto" }}
       >
         {noItem ? (
           <DropdownItem style={{ justifyContent: "center" }} view key="no-item">

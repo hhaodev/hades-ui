@@ -15,7 +15,7 @@ import {
 } from "../Icon";
 import Link from "../Link";
 
-const UploadFile = forwardRef(
+const Uploader = forwardRef(
   (
     {
       value,
@@ -311,8 +311,8 @@ const UploadFile = forwardRef(
   }
 );
 
-UploadFile.displayName = "UploadFile";
-export default UploadFile;
+Uploader.displayName = "Uploader";
+export default Uploader;
 
 const renderNoItem = () => (
   <div

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { UploadFile } from "../../components";
+import { Uploader } from "../../components";
 
 const FileUploadDemo = () => {
   const [file, setFile] = useState([]);
 
-  return <UploadFile value={file} multiple onChange={setFile} />;
+  return <Uploader value={file} multiple onChange={setFile} />;
 };
 
 export default FileUploadDemo;

@@ -48,7 +48,7 @@ const Sidebar = ({
   treeLine = false,
   collapse,
   hasCollapseButton = true,
-  width: widthProp = 480,
+  width: widthProp = 240,
   resize = true,
 }) => {
   const sidebarId = useId().replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -224,6 +224,18 @@ const Sidebar = ({
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "transparent";
+          }}
+        />
+      )}
+      {resize && ghostLeft !== null && open && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
           }}
         />
       )}

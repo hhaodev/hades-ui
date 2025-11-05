@@ -7,7 +7,7 @@ import {
   Input,
   Select,
   Stack,
-  UploadFile,
+  Uploader,
 } from "../../components";
 
 const FormDemo = () => {
@@ -59,7 +59,7 @@ const FormDemo = () => {
         </Form.Item>
 
         <Form.Item label="File" name="file">
-          <UploadFile
+          <Uploader
             accept={[".jpg", ".png", "image/*", ".xls", ".xlsx"]}
             multiple
             maxSize={1 * 1024 * 1024}
