@@ -203,7 +203,7 @@ const Dropdown = forwardRef(function Dropdown(
   }, [open]);
 
   useEffect(() => {
-    if (!referenceRef?.current) return;
+    if (!referenceRef?.current || !menu || disabled) return;
 
     const handleResize = throttle(() => {
       const width = referenceRef.current?.getBoundingClientRect()?.width;
@@ -217,7 +217,7 @@ const Dropdown = forwardRef(function Dropdown(
       observer.disconnect();
       handleResize.cancel();
     };
-  }, [referenceRef]);
+  }, [menu, referenceRef, disabled]);
 
   useEffect(() => {
     return () => {
@@ -254,7 +254,7 @@ const Dropdown = forwardRef(function Dropdown(
       },
       onBlur: (e) => {
         children.props.onBlur?.(e);
-        if (!isHoverTrigger || disabled) return;
+        if (disabled) return;
         const relatedTarget = e.relatedTarget;
         if (
           dropdownRef.current &&
@@ -272,6 +272,44 @@ const Dropdown = forwardRef(function Dropdown(
       },
     };
     triggerNode = cloneElement(children, triggerProps);
+  } else {
+    triggerNode = (
+      <div
+        data-disabled-action={disabled ? "true" : "false"}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isClickTrigger || disabled) return;
+          setOpen(open ? false : true);
+        }}
+        onMouseEnter={() => {
+          if (!isHoverTrigger || disabled) return;
+          setOpen(true);
+        }}
+        onMouseLeave={() => {
+          if (!isHoverTrigger || disabled) return;
+          setOpen(false);
+        }}
+        onFocus={() => {
+          if (!isHoverTrigger || disabled) return;
+          setOpen(true);
+        }}
+        onBlur={(e) => {
+          if (disabled) return;
+          const relatedTarget = e.relatedTarget;
+          if (
+            dropdownRef.current &&
+            dropdownRef.current.contains(relatedTarget)
+          ) {
+            return;
+          }
+          setOpen(false);
+        }}
+        ref={referenceRef}
+        tabIndex={0}
+      >
+        {children}
+      </div>
+    );
   }
 
   let menuContent = null;
@@ -325,7 +363,6 @@ const Dropdown = forwardRef(function Dropdown(
               transform: visible
                 ? "translate(0, 0)"
                 : getInitialTransform(actualPlacement),
-              pointerEvents: visible ? "auto" : "none",
               transition: "opacity 0.2s ease, transform 0.2s ease",
               zIndex: "var(--z-dropdown)",
             }}
